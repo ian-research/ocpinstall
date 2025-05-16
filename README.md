@@ -26,7 +26,7 @@ https://mp.weixin.qq.com/s/tptiCSCIa9JJj3aMDpUJow
   
   ["openshift-install包"]="/opt/openshift-install-linux-4.18.10.tar.gz" 下载地址 https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.18.10/
   
-  ["docker-ce安装包"]="/opt/docker-ce.tar.gz"  包内容包括 containerd.io-1.7.27-3.1.el9.x86_64.rpm docker-ce-28.0.4-1.el9.x86_64.rpm docker-ce-rootless-extras-28.0.4-1.el9.x86_64.rpm docker-buildx-plugin-0.22.0-1.el9.x86_64.rpm docker-ce-cli-28.0.4-1.el9.x86_64.rpm docker-compose-plugin-2.34.0-1.el9.x86_64.rpm
+  ["docker-ce安装包"]="/opt/docker-ce.tar.gz"  包内容包括 containerd.io-1.7.27-3.1.el9.x86_64.rpm docker-ce-28.0.4-1.el9.x86_64.rpm docker-ce-rootless-extras-28.0.4-1.el9.x86_64.rpm docker-buildx-plugin-0.22.0-1.el9.x86_64.rpm docker-ce-cli-28.0.4-1.el9.x86_64.rpm docker-compose-plugin-2.34.0-1.el9.x86_64.rpm 请自行打包并上传到对应的路径
 
 脚本运行之后会检查对应的离线文件是否存在，如果不存在则会报错退出
 
