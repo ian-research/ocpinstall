@@ -16,15 +16,15 @@ https://mp.weixin.qq.com/s/tptiCSCIa9JJj3aMDpUJow
 
 事先准备的离线包包括，请都存放在opt目录下：
   
-  ["离线镜像包"]="/opt/mirror_000001.tar"
+  ["离线镜像包"]="/opt/mirror_000001.tar" 参考https://mp.weixin.qq.com/s/tptiCSCIa9JJj3aMDpUJow
   
-  ["Harbor安装包"]="/opt/harbor-offline-installer-v2.12.2.tgz"
+  ["Harbor安装包"]="/opt/harbor-offline-installer-v2.12.2.tgz" 下载地址 https://github.com/goharbor/harbor/releases
   
-  ["oc-mirror包"]="/opt/oc-mirror.rhel9.tar.gz"
+  ["oc-mirror包"]="/opt/oc-mirror.rhel9.tar.gz" 下载地址 https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.18.10/
   
-  ["openshift-client包"]="/opt/openshift-client-linux-4.18.10.tar.gz"
+  ["openshift-client包"]="/opt/openshift-client-linux-4.18.10.tar.gz"  下载地址 https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.18.10/
   
-  ["openshift-install包"]="/opt/openshift-install-linux-4.18.10.tar.gz"
+  ["openshift-install包"]="/opt/openshift-install-linux-4.18.10.tar.gz" 下载地址 https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.18.10/
   
   ["docker-ce安装包"]="/opt/docker-ce.tar.gz"  包内容包括 containerd.io-1.7.27-3.1.el9.x86_64.rpm docker-ce-28.0.4-1.el9.x86_64.rpm docker-ce-rootless-extras-28.0.4-1.el9.x86_64.rpm docker-buildx-plugin-0.22.0-1.el9.x86_64.rpm docker-ce-cli-28.0.4-1.el9.x86_64.rpm docker-compose-plugin-2.34.0-1.el9.x86_64.rpm
 
