@@ -35,6 +35,7 @@ HELPER_IP_ADDRESS=${HELPER_IP_ADDRESS:-}
 SSH_KEY="$STATE_ROOT/ssh/id_ed25519"
 NFS_SC_DIR="/mnt/ocp5-nfs"
 NTP_SERVER=${NTP_SERVER:-}
+NTP_MODE=${NTP_MODE:-upstream}
 NFS_CIDR=${NFS_CIDR:-}
 LOG_FILE="/var/log/openshift5-install-local.log"
 export PATH="$BIN_DIR:$PATH"
@@ -408,19 +409,18 @@ configure_nfs() {
 # 配置chrony
 configure_chrony() {
     log "配置 chrony..."
-    [[ -n $NTP_SERVER ]] || die "请设置可访问的内部 NTP_SERVER"
+    local content
+    content=$(python3 "$SCRIPT_DIR/lib/artifacts.py" helper-chrony "$NTP_SERVER" "$NFS_CIDR" "$HELPER_IP_ADDRESS" "$NTP_MODE")
     backup_file /etc/chrony.conf
-    cat <<EOF > /etc/chrony.conf
-driftfile /var/lib/chrony/drift
-makestep 1.0 3
-rtcsync
-logdir /var/log/chrony
-server $NTP_SERVER iburst
-allow $NFS_CIDR
-EOF
+    printf '%s\n' "$content" > /etc/chrony.conf
     systemctl enable chronyd
     systemctl restart chronyd
     chronyc -a makestep
+    if [[ $NTP_MODE == upstream ]]; then
+        chronyc waitsync 30 1 0 2 || die '上游 NTP 未同步，停止安装；修复授时后再继续'
+    else
+        log '本地授时模式：节点以 Helper 时钟为准，未验证 UTC 准确性；请确认 Helper 时间正确。'
+    fi
 }
 
 # 配置bind
@@ -804,10 +804,11 @@ create_harbor_project() {
 upload_ocp_image() {
     log "配置 OpenShift 离线镜像仓库..."
     [[ -f $IMAGESET_CONFIG ]] || die "缺少离线下载时使用的 ImageSetConfiguration: $IMAGESET_CONFIG"
-    echo "使用镜像配置: $IMAGESET_CONFIG；请确保离线包包含 $OCP_RELEASE"
+    echo "使用镜像配置: ${IMAGESET_CONFIG}；请确保离线包包含 $OCP_RELEASE"
     # 推送镜像到本地仓库
     log "推送镜像到本地镜像仓库..."
     bash "$SCRIPT_DIR/prepare-offline.sh" import --bundle "$BUNDLE_DIR" \
+        --cache-dir "$STATE_ROOT/platform-import-cache" \
         --authfile /root/.docker/config.json --registry "$LOCAL_REGISTRY/$LOCAL_REPOSITORY" --version "$OCP_RELEASE"
     log "OpenShift 离线镜像同步完成！"
 }
@@ -841,7 +842,7 @@ create_install_config() {
 create_manifest_config() {
     # 创建manifest文件
     log "创建manifest文件..."
-    [[ ! -e "$INSTALL_DIR" ]] || die "安装目录已存在：$INSTALL_DIR。请先归档旧安装状态，不要覆盖已有集群资料。"
+    [[ ! -e "$INSTALL_DIR" ]] || die "安装目录已存在：${INSTALL_DIR}。请先归档旧安装状态，不要覆盖已有集群资料。"
     mkdir -p "$INSTALL_DIR"
     chmod 700 "$INSTALL_DIR"
     cp -f "$STATE_ROOT/install-config.yaml" "$INSTALL_DIR/install-config.yaml"
@@ -906,8 +907,7 @@ main() {
     hint
     [[ -f $IMAGESET_CONFIG ]] || die "请提供 bundle 内的 imagesetconfiguration.json"
     python3 "$SCRIPT_DIR/lib/offline.py" verify --bundle "$(dirname "$IMAGESET_CONFIG")" --version "$OCP_RELEASE"
-    [[ -n $NTP_SERVER && -n $NFS_CIDR ]] || die "请设置 NTP_SERVER 和 NFS_CIDR"
-    validate_ip "$NTP_SERVER" || validate_domain "$NTP_SERVER" || die "NTP_SERVER 无效"
+    [[ -n $NFS_CIDR ]] || die "请设置 NFS_CIDR"
     python3 -c 'import ipaddress,sys; ipaddress.IPv4Network(sys.argv[1])' "$NFS_CIDR"
     [[ ! -e /var/www/html/auth/kubeconfig && ! -e /var/www/html/auth/kubeadmin-password ]] || die "检测到旧版公开凭据，请先移至安全位置并轮换凭据"
     [[ ! -e $INSTALL_DIR ]] || die "安装目录已存在，请先归档: $INSTALL_DIR"
@@ -915,6 +915,7 @@ main() {
     config_oc_cli
     [[ $(openshift-install version | head -n 1) == *" $OCP_RELEASE" ]] || die "安装器版本与配置不一致"
     add_host_info
+    python3 "$SCRIPT_DIR/lib/artifacts.py" helper-chrony "$NTP_SERVER" "$NFS_CIDR" "$HELPER_IP_ADDRESS" "$NTP_MODE" >/dev/null
     collect_ips
     show_summary
     confirm_config

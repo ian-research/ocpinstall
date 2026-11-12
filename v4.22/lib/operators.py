@@ -100,7 +100,7 @@ def image_config(plan):
                 packages.append({'name': item['package'], 'defaultChannel': item['channel'],
                                  'channels': [{'name': item['channel'], 'minVersion': item['version'], 'maxVersion': item['version']}]})
         if packages:
-            repository = f'{operator_profile.resource_prefix(plan["targetVersion"])}-{source["alias"]}-{plan["planHash"][:12]}'
+            repository = operator_profile.catalog_repository(plan, source['alias'])
             tag = 'snapshot'
             # Some oc-mirror rebuilds replace the first occurrence of the tag.
             # Keep it out of the repository name so the replacement stays in the tag.

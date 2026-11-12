@@ -1,4 +1,5 @@
 import importlib.util
+import fcntl
 import json
 import os
 from pathlib import Path
@@ -28,6 +29,9 @@ class OfflineTests(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
         self.base = Path(self.tmp.name).resolve()
+        lock_directory = patch.object(offline.tempfile, 'gettempdir', return_value=str(self.base))
+        lock_directory.start()
+        self.addCleanup(lock_directory.stop)
         self.bundle = self.base / 'bundle with spaces'
         self.auth = self.base / 'auth.json'
         self.auth.write_text('{"auths":{"registry.redhat.io":{"auth":"test"}}}')
@@ -128,6 +132,15 @@ class OfflineTests(unittest.TestCase):
         self.assertIn(str(self.auth), command)
         self.assertNotIn('--dest-tls-verify=false', command)
         self.assertFalse((self.bundle / 'auth.json').exists())
+
+    def test_concurrent_mirror_is_rejected_before_start(self):
+        lock = self.base / f'ocpinstall-oc-mirror-{os.getuid()}.lock'
+        with lock.open('w') as held:
+            fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            with patch.object(offline.sys, 'platform', 'linux'), patch.object(offline, '_mirror') as run:
+                with self.assertRaisesRegex(ValueError, '已有 oc-mirror'):
+                    offline.mirror(self.options, self.bundle, True)
+                run.assert_not_called()
 
     def test_failed_retry_removes_success_marker(self):
         self.bundle_fixture()

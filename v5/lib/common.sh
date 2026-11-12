@@ -63,6 +63,7 @@ parse_security_options() {
             --help|-h)
                 printf '用法: bash %s [--relaxed-security] [--security-namespace NAME]\n' "${0##*/}"
                 echo '默认保留主机安全策略；--relaxed-security 将 SELinux 设为 permissive 并关闭 firewalld。'
+                echo '授时：NTP_SERVER 指定真实内部上游；无上游时显式设置 NTP_MODE=local 并省略 NTP_SERVER。'
                 echo 'install-cluster.sh 另支持 --remove-bootstrap（先等待 bootstrap-complete）。'
                 echo '--repo-mode bundle 使用完整交付包内的 RPM；existing 使用现有 YUM/RHUI；iso（默认）使用 RHEL DVD。'
                 echo '--skip-firewalld 跳过 firewalld 安装、启停和规则管理；用于由外部规则管理防火墙的环境。'

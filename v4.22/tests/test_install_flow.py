@@ -14,6 +14,40 @@ def function(name):
 
 
 class InstallFlowTests(unittest.TestCase):
+    def test_platform_import_cache_stays_outside_delivery(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            config = base / 'bundle/platform/imagesetconfiguration.json'
+            config.parent.mkdir(parents=True)
+            config.write_text('{}')
+            output = base / 'command.txt'
+            script = ('set -euo pipefail\nlog() { :; }\n'
+                      'bash() { printf "%s\\n" "$@" > "$OUTPUT"; }\n'
+                      + function('upload_ocp_image') + '\nupload_ocp_image\n')
+            env = dict(os.environ, SCRIPT_DIR=str(ROOT), IMAGESET_CONFIG=str(config),
+                       BUNDLE_DIR=str(config.parent), STATE_ROOT=str(base / 'private-state'),
+                       OUTPUT=str(output), LOCAL_REGISTRY='mirror.example.com',
+                       LOCAL_REPOSITORY='openshift', OCP_RELEASE='test')
+            subprocess.run(['bash', '-c', script], env=env, check=True)
+            command = output.read_text().splitlines()
+            self.assertEqual(command[command.index('--cache-dir') + 1], str(base / 'private-state/platform-import-cache'))
+
+    def test_unsynchronized_upstream_stops_installation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            config = Path(directory) / 'chrony.conf'
+            script = ('set -euo pipefail\nlog() { :; }\nbackup_file() { :; }\n'
+                      'systemctl() { :; }\npython3() { echo "server 192.168.1.1 iburst"; }\n'
+                      'chronyc() { [[ $1 != waitsync ]]; }\n'
+                      'die() { echo "$*" >&2; exit 1; }\n'
+                      'SCRIPT_DIR=/unused\nNTP_SERVER=192.168.1.1\nNTP_MODE=upstream\n'
+                      'NFS_CIDR=192.168.1.0/24\nHELPER_IP_ADDRESS=192.168.1.10\n'
+                      + function('configure_chrony').replace('/etc/chrony.conf', str(config))
+                      + '\nconfigure_chrony\necho UNEXPECTED_SUCCESS\n')
+            result = subprocess.run(['bash', '-c', script], text=True, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('上游 NTP 未同步', result.stderr)
+            self.assertNotIn('UNEXPECTED_SUCCESS', result.stdout)
+
     def test_existing_repos_skip_iso_and_repo_mutations(self):
         script = ('set -euo pipefail\nYUM_REPO_MODE=existing\n'
                   'log() { :; }\n'

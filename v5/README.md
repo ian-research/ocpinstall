@@ -13,6 +13,8 @@
 
 5.x 文件在独立的 `v5/` 目录，但 Helper 会使用相同的系统服务和端口，**请使用独立 RHEL 9 Helper 主机**。安装脚本检测到旧版 `/opt/ocpinstall` 或 `/opt/harbor/harbor/harbor.yml` 时会退出。不能在同一 Helper 上同时运行两套 DNS、HAProxy 和 Harbor，也不是把现有 4.x 集群原地升级到 5.x 的工具。
 
+授时默认使用真正可达的内部上游 `NTP_SERVER`，不能填写 Helper 自己。没有上游的完全隔离环境，可显式设置 `NTP_MODE=local` 并省略 `NTP_SERVER`，以 Helper 时钟统一节点；请先核对 Helper 时间。上游模式未同步会停止安装。完整交付路径与重试方法见 [DELIVERY.md](DELIVERY.md)。
+
 ## 1. 联网主机准备工具和镜像
 
 使用 Linux x86_64，安装 Python 3.9+、Bash。源仓库 pull secret 保存在 bundle 外，权限 `600`，例如 `/root/redhat-pull-secret.json`。

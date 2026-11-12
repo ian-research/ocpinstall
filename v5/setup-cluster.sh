@@ -206,7 +206,7 @@ EOF
     oc adm policy add-role-to-user use-scc-hostmount-anyuid -z nfs-provisioner --role-namespace $NFS_NAMESPACE -n $NFS_NAMESPACE
 
     other_defaults=$(oc get storageclass -o json | jq -r '.items[] | select(.metadata.annotations["storageclass.kubernetes.io/is-default-class"] == "true") | .metadata.name | select(. != "nfs-storage")')
-    [[ -z $other_defaults ]] || die "已有其他默认 StorageClass: $other_defaults；请先确认默认存储选择"
+    [[ -z $other_defaults ]] || die "已有其他默认 StorageClass: ${other_defaults}；请先确认默认存储选择"
     # 设置默认 StorageClass
     echo "🚀 设置默认 StorageClass..."
     oc patch storageclass $STORAGE_CLASS_NAME -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class": "true"}}}'

@@ -18,3 +18,7 @@ def resource_prefix(version):
 
 def validate_target(version):
     return bool(re.fullmatch(re.escape(release().rsplit('.', 1)[0]) + r'\.\d+', version))
+
+
+def catalog_repository(plan, alias):
+    return f'{resource_prefix(plan["targetVersion"])}-{alias}-{plan["planHash"][:12]}'

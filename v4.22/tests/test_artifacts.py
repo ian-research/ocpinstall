@@ -90,6 +90,33 @@ class ArtifactTests(unittest.TestCase):
         self.assertEqual(len(files), 2)
         self.assertEqual(files[-1]['path'], '/etc/chrony.conf')
 
+    def test_helper_rejects_self_referencing_ntp(self):
+        for address in ('192.168.1.10', '127.0.0.1', '0.0.0.0'):
+            with patch.object(a.socket, 'getaddrinfo', return_value=[(2, 2, 17, '', (address, 123))]):
+                with self.assertRaisesRegex(ValueError, '自身'):
+                    a.helper_chrony_config('ntp.example.com', '192.168.1.0/24', '192.168.1.10')
+
+    def test_helper_local_ntp_requires_explicit_mode_without_upstream(self):
+        config = a.helper_chrony_config('', '192.168.1.0/24', '192.168.1.10', 'local')
+        self.assertIn('local stratum 10', config)
+        self.assertNotIn('server ', config)
+        self.assertIn('allow 192.168.1.0/24', config)
+        with self.assertRaises(ValueError):
+            a.helper_chrony_config('ntp.example.com', '192.168.1.0/24', '192.168.1.10', 'local')
+
+    def test_helper_upstream_dns_failure_and_network_are_checked(self):
+        with patch.object(a.socket, 'getaddrinfo', side_effect=a.socket.gaierror):
+            with self.assertRaisesRegex(ValueError, '无法解析'):
+                a.helper_chrony_config('missing.example.com', '192.168.1.0/24', '192.168.1.10')
+        with self.assertRaises(ValueError):
+            a.helper_chrony_config('', '192.168.2.0/24', '192.168.1.10', 'local')
+
+    def test_helper_upstream_has_no_silent_local_fallback(self):
+        with patch.object(a.socket, 'getaddrinfo', return_value=[(2, 2, 17, '', ('192.168.1.1', 123))]):
+            config = a.helper_chrony_config('ntp.example.com', '192.168.1.0/24', '192.168.1.10')
+        self.assertIn('server ntp.example.com iburst', config)
+        self.assertNotIn('local stratum', config)
+
     def test_published_commands_have_correct_hash_and_offline_flag(self):
         public = self.root / 'public'
         public.mkdir()

@@ -26,7 +26,7 @@
 bash v5/prepare-operators.sh
 ```
 
-首层菜单选择“准备完整离线包”，填写保存目录、pull secret 和 oc-mirror 路径；随后搜索 Operator，选择包、channel/version，可重复添加。依赖解析后展示计划，确认后下载。只准备平台、不选 Operator 时可用 `--platform-only`。
+首层菜单选择“准备完整离线包”，填写保存目录、pull secret 和 oc-mirror 路径；随后搜索 Operator，选择包、channel/version，可重复添加。依赖解析后展示计划，确认后下载。只准备平台、不选 Operator 时，可在首层菜单选择“仅准备平台完整包”，或使用 `--platform-only`。
 
 可复用的命令行示例：
 
@@ -57,9 +57,11 @@ AWS 测试可明确选择 `--helper-mode existing`：使用目标机已有的 YU
 
 ```bash
 bash '/offline/new location/verify.sh'
-sudo env NTP_SERVER=192.168.100.1 NFS_CIDR=192.168.100.0/24 \
+sudo env NTP_SERVER=192.168.100.254 NFS_CIDR=192.168.100.0/24 \
   bash '/offline/new location/install.sh'
 ```
+
+`NTP_SERVER` 必须是真正可用的内部上游，不能填写 Helper 自身；默认会等待同步，失败即停止。完全隔离、没有上游时，可显式使用 `NTP_MODE=local` 且不设置 `NTP_SERVER`，按 RHEL chrony 的 `local stratum 10` 模式统一节点时间；该模式以 Helper 时钟为准，需要先确认其时间正确。参见 [RHEL 9 隔离网络授时说明](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html/configuring_basic_system_settings/configuring-time-synchronization_configuring-basic-system-settings)。
 
 `install.sh` 按包内记录自动选择软件源；沿用安装脚本的域名、IP 和仓库密码交互。RHCOS ISO 位于 `platform/boot/rhcos-live.iso`。脚本生成 Ignition 与各节点的磁盘安装命令后，需要按命令启动和安装实体服务器/虚拟机；裸金属 UPI 的开机、磁盘选择和 CSR 核对不会自动跳过。
 
@@ -96,3 +98,13 @@ AWS 明确由外部规则管理防火墙时可在安装和配置命令末尾增�
 - 全新 Helper 的安装仍需独立 RHEL 主机、正确网络/DNS/NTP、足够资源和可用的集群 pull-only 仓库账户。不会把联网源 pull secret 自动当作集群凭据。
 
 实测范围及仍待验收的复杂组件见 [VALIDATION.md](VALIDATION.md)；Operator 依赖规则与额外镜像要求见 [OPERATORS.md](OPERATORS.md)。
+
+## 产品清单的交接
+
+选中 Virtualization、ACM/MCE 或 AI 时，安装后配置还会在 Operator 包的 `product-manifests/` 中生成安装阶段清单：
+
+- `01-subscriptions.json`：按目录声明的安装作用域生成 Namespace、OperatorGroup 和固定版本 Subscription，首次采用手动审批。
+- `02-hyperconverged.json`、`02-multiclusterengine.json`：使用该 bundle 实际声明的稳定 API，等待 CSV Succeeded 后应用。
+- `03-multiclusterhub.json`：MCE 订阅源指向本次实际离线 CatalogSource，包含计划中的 channel/CSV。
+
+ACM/MCE 清单默认 High；小型验证可在配置前设置 `ACM_AVAILABILITY=Basic`。先等待 MCP 和目录就绪，审阅并应用订阅、批准计划内 CSV，再按目录内 README 应用业务 CR。它们不会混入自动应用的镜像规则文件。AI 目前生成 Operator 订阅；DSCI/DSC、默认动态存储、IDP 和 CPU Workbench 的整体验收仍需在 4.22 上完成。

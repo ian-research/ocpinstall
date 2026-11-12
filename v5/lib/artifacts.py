@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import socket
 import subprocess
 import sys
 import tarfile
@@ -86,6 +87,36 @@ def chrony_config(server):
         raise ValueError('无效 NTP 服务器名称')
     return (f'server {server} iburst prefer\ndriftfile /var/lib/chrony/drift\n'
             'makestep 1.0 3\nrtcsync\nlogdir /var/log/chrony\n')
+
+
+def helper_chrony_config(server, cidr, helper, mode='upstream'):
+    network = ipaddress.IPv4Network(cidr)
+    address = ipaddress.IPv4Address(helper)
+    if address not in network:
+        raise ValueError('NFS_CIDR 必须包含 Helper；该网段也用于限制 NTP 客户端')
+    if mode == 'local':
+        if server:
+            raise ValueError('NTP_MODE=local 时不要设置 NTP_SERVER，避免误认为已同步上游')
+        source = 'local stratum 10\n'
+    elif mode == 'upstream':
+        if not server or not re.fullmatch(r'[A-Za-z0-9.-]+', server):
+            raise ValueError('请设置可访问的内部 NTP_SERVER，或显式设置 NTP_MODE=local')
+        try:
+            resolved = {ipaddress.ip_address(item[4][0]) for item in
+                        socket.getaddrinfo(server, 123, socket.AF_INET, socket.SOCK_DGRAM)}
+        except socket.gaierror as error:
+            raise ValueError('NTP_SERVER 无法解析；请先修复 DNS 或使用上游 IPv4') from error
+        if any(ip == address or ip.is_loopback or ip.is_unspecified for ip in resolved):
+            raise ValueError('NTP_SERVER 指向 Helper 自身；请使用真实上游或显式设置 NTP_MODE=local')
+        source = f'server {server} iburst\n'
+    else:
+        raise ValueError('NTP_MODE 必须为 upstream 或 local')
+    return ('driftfile /var/lib/chrony/drift\nmakestep 1.0 3\nrtcsync\n'
+            'logdir /var/log/chrony\n' + source + f'allow {network}\n')
+
+
+def helper_chrony(server, cidr, helper, mode='upstream'):
+    print(helper_chrony_config(server, cidr, helper, mode), end='')
 
 
 def ignition_file(path, content):
@@ -224,7 +255,7 @@ def remove_bootstrap(path):
 
 if __name__ == '__main__':
     actions = {'install-config': install_config, 'prepare-manifests': prepare_manifests,
-               'bootstrap-ntp': bootstrap_ntp, 'commands': commands,
+               'bootstrap-ntp': bootstrap_ntp, 'helper-chrony': helper_chrony, 'commands': commands,
                'extract-tools': extract_tools, 'remove-bootstrap': remove_bootstrap}
     try:
         actions[sys.argv[1]](*sys.argv[2:])

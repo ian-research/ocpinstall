@@ -6,6 +6,7 @@ import re
 import tarfile
 
 import offline
+from operator_profile import catalog_repository
 
 
 class RegistryArchives:
@@ -119,7 +120,7 @@ def build_record(bundle, archives, plan):
     oci = json.loads((bundle / 'operator-catalogs.json').read_text())
     for catalog in config['mirror']['operators']:
         source = next(c for c in oci['catalogs'] if c['pinned'] == catalog['catalog'] and
-                      catalog['targetCatalog'].endswith('-' + c['alias'] + '-' + plan['planHash'][:12]))
+                      catalog['targetCatalog'] == catalog_repository(plan, c['alias']))
         folder = (bundle / 'images/working-dir/operator-catalogs' / source['alias'] /
                   source['ociDigest'].split(':')[1] / 'filtered-catalogs')
         candidates = []

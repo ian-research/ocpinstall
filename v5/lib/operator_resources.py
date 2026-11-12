@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 import sys
+import os
 
 import offline
 from operator_resolver import read_documents
@@ -11,9 +12,10 @@ from operators import load_plan
 from operator_oci import verify_catalogs
 from operator_profile import resource_prefix
 from operator_archive import verify_record
+import product_manifests
 
 
-def prepare(bundle, output):
+def prepare(bundle, output, availability='High'):
     bundle = bundle.resolve()
     offline.verify(bundle)
     if 'operators-plan.json' not in json.loads((bundle / 'checksums.json').read_text()):
@@ -47,12 +49,13 @@ def prepare(bundle, output):
         cloned['metadata'].setdefault('labels', {})['ocpinstall.ian-research/operator-plan'] = plan['planHash'][:12]
         result.append(cloned)
     offline.save_json(output, {'apiVersion': 'v1', 'kind': 'List', 'items': result})
+    product_manifests.render(plan, result, output.parent / 'product-manifests', availability)
     print('已生成独立命名的 Operator 资源：' + str(output))
 
 
 if __name__ == '__main__':
     try:
-        prepare(Path(sys.argv[1]), Path(sys.argv[2]))
+        prepare(Path(sys.argv[1]), Path(sys.argv[2]), os.environ.get('ACM_AVAILABILITY', 'High'))
     except (ValueError, OSError, KeyError) as error:
         print(f'错误: {error}', file=sys.stderr)
         sys.exit(1)
