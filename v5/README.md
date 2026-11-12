@@ -196,6 +196,9 @@ sudo env KUBECONFIG=/opt/ocp5/install/auth/kubeconfig \
 
 可设置 `CREATE_ADMIN=true` 交互创建实验 admin（至少 12 位密码、cluster-admin）。独立维护 `ocp5-htpasswd`，保留其他 OAuth provider。不要用于接管已有同名用户。
 
+
+管理员初始化仅用于新账号。已有 `admin` 用户、同名凭据或 OAuth provider 时会停止，避免重置他人账号；后续维护请省略 `CREATE_ADMIN=true`。OAuth 更新使用并发版本检查，失败需先核对已有状态再重试。
+
 ## 可选宽松安全模式
 
 ```bash

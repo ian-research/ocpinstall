@@ -10,6 +10,8 @@ if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
 fi
 export PATH="$BIN_DIR:$PATH"
 trap 'printf "错误: 第 %s 行执行失败，请检查输出后重试。\n" "$LINENO" >&2' ERR
+ADMIN_TMP_FILE=
+trap '[[ -z ${ADMIN_TMP_FILE:-} ]] || rm -f -- "$ADMIN_TMP_FILE"' EXIT
 
 #
 # Author: Jun Sun
@@ -239,22 +241,40 @@ config_image_registry() {
     esac
 }
 
+# 只创建新管理员，拒绝重置或接管已有账号。
+validate_admin_creation() {
+    [[ ${CREATE_ADMIN:-false} == true ]] || return 0
+    local existing
+    existing=$(oc get user admin --ignore-not-found -o name)
+    [[ -z $existing ]] || die 'admin 用户已存在；未重置密码或授予权限。维护配置时请省略 CREATE_ADMIN=true'
+    existing=$(oc get secret ocp422-htpasswd -n openshift-config --ignore-not-found -o name)
+    [[ -z $existing ]] || die '管理员 Secret 已存在；请先核对已有或上次未完成的账号配置'
+    existing=$(oc get oauth cluster -o json | jq -r '[.spec.identityProviders[]? | select(.name == "ocp422-htpasswd")] | length')
+    [[ $existing == 0 ]] || die '同名 OAuth provider 已存在，拒绝替换'
+}
+
 # 可选用户初始化，保留已有 OAuth identityProviders。
 create_users() {
     [[ ${CREATE_ADMIN:-false} == true ]] || return 0
-    local password htpasswd_file providers patch
+    validate_admin_creation
+    local password htpasswd_file providers patch oauth revision
     read -r -s -p "设置 admin 密码（至少 12 位）: " password
     echo
     [[ ${#password} -ge 12 ]] || die "密码至少 12 位"
     htpasswd_file=$(mktemp)
+    ADMIN_TMP_FILE=$htpasswd_file
     printf '%s\n' "$password" | htpasswd -iBc "$htpasswd_file" admin
     unset password
     oc create secret generic ocp422-htpasswd --from-file="htpasswd=$htpasswd_file" \
-        -n openshift-config --dry-run=client -o yaml | oc apply -f -
+        -n openshift-config
     rm -f "$htpasswd_file"
-    providers=$(oc get oauth cluster -o json | jq -c '.spec.identityProviders // []')
+    ADMIN_TMP_FILE=
+    oauth=$(oc get oauth cluster -o json)
+    providers=$(printf '%s' "$oauth" | jq -c '.spec.identityProviders // []')
+    revision=$(printf '%s' "$oauth" | jq -r '.metadata.resourceVersion')
     patch=$(jq -cn --argjson providers "$providers" \
-      '{spec:{identityProviders:([$providers[] | select(.name != "ocp422-htpasswd")] + [{name:"ocp422-htpasswd",mappingMethod:"claim",type:"HTPasswd",htpasswd:{fileData:{name:"ocp422-htpasswd"}}}])}}')
+      --arg revision "$revision" \
+      '{metadata:{resourceVersion:$revision},spec:{identityProviders:($providers + [{name:"ocp422-htpasswd",mappingMethod:"claim",type:"HTPasswd",htpasswd:{fileData:{name:"ocp422-htpasswd"}}}])}}')
     oc patch oauth cluster --type=merge -p "$patch"
     oc adm policy add-cluster-role-to-user cluster-admin admin
 }
@@ -314,6 +334,7 @@ conditions={c["type"]:c["status"] for c in json.load(sys.stdin)["status"]["condi
 if conditions.get("Available") != "True" or conditions.get("Progressing") != "False" or conditions.get("Failing") != "False":
     sys.exit("集群尚未安装完成或存在故障，拒绝继续配置")'
     python3 "$SCRIPT_DIR/lib/cluster_health.py"
+    validate_admin_creation
     configure_registry_trust
     if [[ $RELAXED_SECURITY == true ]]; then
         oc get namespace "$SECURITY_NAMESPACE" >/dev/null

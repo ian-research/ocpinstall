@@ -800,8 +800,9 @@ start_harbor() {
 create_harbor_project() {
   log " 创建Harbor项目 [$LOCAL_REPOSITORY]..."
   local status
-  status=$(curl --silent --show-error --cacert "$CERT_DIR/ca.crt" \
-    -u "admin:$HARBOR_PASSWORD" -o /dev/null \
+  status=$(printf 'user = "admin:%s"\n' "$HARBOR_PASSWORD" | \
+    curl --config - --silent --show-error --cacert "$CERT_DIR/ca.crt" \
+    --connect-timeout 10 --max-time 60 --retry 3 --retry-delay 2 --retry-connrefused -o /dev/null \
     -w '%{http_code}' -H "Content-Type: application/json" \
     -X POST "https://${LOCAL_REGISTRY}/api/v2.0/projects" \
     -d "{\"project_name\":\"$LOCAL_REPOSITORY\",\"metadata\":{\"public\":\"false\"}}")

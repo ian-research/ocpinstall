@@ -98,6 +98,9 @@ bash v4.22/apply-operators.sh \
 
 等待 MachineConfigPool 完成更新、CatalogSource 为 READY 后，在 Console 中选择离线目录和计划中的 channel/version。首次建议手动审批 InstallPlan，核对依赖包，再验证 CSV Succeeded 和实际 CR 的运行。仅下载或导入成功不等于所有 Operator 功能已验证。
 
+
+管理员初始化仅用于新账号。已有 `admin` 用户、同名凭据或 OAuth provider 时会停止，避免重置他人账号；后续维护请省略 `CREATE_ADMIN=true`。OAuth 更新使用并发版本检查，失败需先核对已有状态再重试。
+
 ## 官方依据与验证范围
 
 - [Red Hat 4.22：oc-mirror v2 与依赖筛选限制](https://docs.redhat.com/en/documentation/openshift_container_platform/4.22/html/disconnected_environments/about-installing-oc-mirror-v2)
