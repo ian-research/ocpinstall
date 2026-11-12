@@ -1,5 +1,5 @@
 {
-  "collectedAtUTC": "2026-11-12T19:39:38.578169+00:00",
+  "collectedAtUTC": "2026-11-12T20:06:15.824281+00:00",
   "records": {
     "verify-performance-results.json": {
       "state": "passed",
@@ -369,6 +369,59 @@
         "clock_adjusted": false,
         "result": "NTP response served at stratum 10; client reported offset -0.603061 seconds (ignored)"
       }
+    },
+    "registry-trust-results.json": {
+      "state": "passed",
+      "stage": "complete",
+      "sourceSha256": "07bd17ac3c0f8c46221446dcb94feb7f551b57ec041ade16cfca07dfc933501f",
+      "injectedIntoComponents": {
+        "openshift-catalogd": true,
+        "openshift-operator-controller": true
+      },
+      "clusterCatalogServing": {
+        "ocp5-583c2d06ed85-1895f52643": true,
+        "ocp5-a36c57c2d366-a16d020bb5": true,
+        "ocp5-fcaffcaf2de1-8a7f1d33c6": true
+      },
+      "rolloutRequested": true,
+      "installerPolicySupport": {
+        "5.0.1": true,
+        "4.22.22": true
+      },
+      "firstRun": {
+        "configMap": "ocpinstall-registry-ca",
+        "previousCertificateCount": 0,
+        "certificateCount": 1,
+        "bundleChanged": true,
+        "proxyReferenceChanged": true
+      },
+      "secondRun": {
+        "configMap": "ocpinstall-registry-ca",
+        "previousCertificateCount": 1,
+        "certificateCount": 1,
+        "bundleChanged": false,
+        "proxyReferenceChanged": false
+      }
+    },
+    "registry-trust-shipping-results.json": {
+      "state": "passed",
+      "stage": "complete",
+      "sourceSha256": "f5069647e9a06c7d8353a934968bbbfa1244de2c33a33cfd286c20b4fd139a99",
+      "clusterCatalogServing": {
+        "ocp5-583c2d06ed85-1895f52643": true,
+        "ocp5-a36c57c2d366-a16d020bb5": true,
+        "ocp5-fcaffcaf2de1-8a7f1d33c6": true
+      },
+      "installerPolicySupport": {
+        "5.0.1": true,
+        "4.22.22": true
+      },
+      "caMergeIdempotent": true,
+      "reloadedComponents": [
+        "openshift-catalogd/catalogd-controller-manager",
+        "openshift-operator-controller/operator-controller-controller-manager"
+      ],
+      "idempotentReload": []
     },
     "product-plan-results.json": {
       "state": "passed",

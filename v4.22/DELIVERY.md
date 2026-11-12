@@ -84,6 +84,8 @@ sudo env OCP_REGISTRY_STORAGE=unchanged CREATE_ADMIN=false \
 4. 缺少搬迁前生成的平台镜像规则时，先从本包平台归档重新导入并生成规则；再使用本地 Harbor 凭据导入 Operator 包（默认 `/root/.docker/config.json`，也可 `--authfile /secure/harbor-auth.json`）。
 5. 运行配置脚本，应用平台镜像规则和独立命名的离线 Operator 目录。
 
+新安装明确设置 `additionalTrustBundlePolicy: Always`。配置阶段将 Helper 的公开 Harbor CA 合并进集群组件信任，保留已有 CA 和代理地址配置；单独配置其他 Helper 时可用 `REGISTRY_CA=/secure/harbor-ca.crt` 指定。CA 发生变化时，先验证其已注入目录服务，再刷新 OLM v1 的证书缓存；重复执行且 CA 未变时不重启组件。这样目录服务与节点使用相同的本地仓库信任。参数依据见 [官方安装器的信任策略说明](https://github.com/openshift/installer/blob/main/docs/user/customization.md)。
+
 集群未达到 Available、仍在 Progressing 或 Failing 时，配置脚本拒绝修改集群。内部 Registry 默认保持现状；需要持久存储、动态 StorageClass、身份认证或额外操作数镜像时，应按所选组件的要求准备。等待 MCP 更新、CatalogSource READY 后再安装计划中的 Operator。配置离线目录不等于自动创建所有 Operator 的 Subscription 或业务 CR。
 
 AWS 明确由外部规则管理防火墙时可在安装和配置命令末尾增加 `--skip-firewalld`。默认仍保留 SELinux 和主机安全策略；`--relaxed-security` 沿用独立脚本的显式开关，配置阶段的 SCC 仅作用于指定命名空间。
@@ -92,6 +94,7 @@ AWS 明确由外部规则管理防火墙时可在安装和配置命令末尾增�
 
 - 同一交付目录/Operator 目录禁止并发执行。缓存与交付目录不得互相包含。
 - 固定版本和选包计划；切换版本、Helper 模式或选包组合请使用新目录。
+- 脚本快照只收录指定入口、公共代码及版本配置，不收录代码目录中临时放置的 pull secret、额外 JSON 或私人笔记；重试会刷新旧快照。
 - 下载临时文件通过校验才替换正式文件；成功收集的 Helper 资产按清单复用。
 - 平台和 Operator 采用独立、完整导出；Operator 归档额外校验 bundle、relatedImages、过滤目录标签及镜像层是否齐全。
 - 首次输入错误（例如凭据路径填错）可修正后使用原目录重试；自动失败记录不会把空目录误判为混有其他文件。

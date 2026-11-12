@@ -271,6 +271,15 @@ configure_relaxed_scc() {
     done
 }
 
+configure_registry_trust() {
+    local ca=${REGISTRY_CA:-$STATE_ROOT/harbor/cert/ca.crt}
+    if [[ -n ${REGISTRY_CA:-} || -f $ca ]]; then
+        python3 "$SCRIPT_DIR/lib/registry_trust.py" --ca-file "$ca" --kubeconfig "$KUBECONFIG"
+    else
+        echo '未提供本地仓库 CA，沿用集群已有的信任配置。'
+    fi
+}
+
 # 配置operators
 configure_operators() {
     echo "配置 Operators..."
@@ -302,6 +311,7 @@ import json,sys
 conditions={c["type"]:c["status"] for c in json.load(sys.stdin)["status"]["conditions"]}
 if conditions.get("Available") != "True" or conditions.get("Progressing") != "False" or conditions.get("Failing") != "False":
     sys.exit("集群尚未安装完成或存在故障，拒绝继续配置")'
+    configure_registry_trust
     if [[ $RELAXED_SECURITY == true ]]; then
         oc get namespace "$SECURITY_NAMESPACE" >/dev/null
         relax_host_security

@@ -10,6 +10,7 @@ import sys
 from operator_profile import release
 from operator_resources import prepare
 from operators import load_plan
+from registry_trust import ensure as ensure_registry_trust, reload_components
 
 
 def main():
@@ -17,6 +18,7 @@ def main():
     parser.add_argument('--bundle', required=True)
     parser.add_argument('--kubeconfig', default=os.environ.get('KUBECONFIG'))
     parser.add_argument('--dry-run', action='store_true', help='服务端预检查，不写入集群')
+    parser.add_argument('--registry-ca', default=os.environ.get('REGISTRY_CA'), help='明确提供的本地镜像仓库 CA 文件；保留并合并已有 CA')
     args = parser.parse_args()
     if not args.kubeconfig:
         raise ValueError('请提供 --kubeconfig 或 KUBECONFIG；不要把其内容粘贴到终端')
@@ -34,6 +36,9 @@ def main():
         raise ValueError('集群尚未安装完成或存在故障；未应用任何资源')
     output = bundle / 'operator-resources.json'
     prepare(bundle, output, os.environ.get('ACM_AVAILABILITY', 'High'))
+    if args.registry_ca:
+        receipt = ensure_registry_trust(args.registry_ca, env, args.dry_run)
+        reload_components(receipt, env)
     command = ['oc', 'apply', '-f', str(output)]
     if args.dry_run:
         command.append('--dry-run=server')

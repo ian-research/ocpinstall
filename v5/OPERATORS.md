@@ -120,6 +120,8 @@ bash v5/apply-operators.sh --bundle "/offline/operator bundle" \
 # 检查通过后去掉 --dry-run 正式应用
 ```
 
+使用内部 CA 的目标仓库时，增加 `--registry-ca /secure/harbor-ca.crt`；正式应用前会保留并合并现有集群 CA，预检查只读取合并计划。
+
 入口先检查集群版本和安装完成状态，再验证离线包；失败时不修改 OperatorHub。`--dry-run` 使用服务端验证，不关闭默认目录。正式执行会关闭默认联网目录。复杂组件生成的 `product-manifests/` 需按其中 README 分阶段应用；小型 ACM 验证可显式设置 `ACM_AVAILABILITY=Basic`。
 
 AI 的 CPU Workbenches 范围用于限定配置和功能验收，不会删改官方 CSV 的 `relatedImages`。因此包中仍保留 Operator 声明的其他功能镜像，不能按少数 Workbench 镜像估算整个离线包容量；镜像归档、独立缓存和目标仓库需要分别预留空间。

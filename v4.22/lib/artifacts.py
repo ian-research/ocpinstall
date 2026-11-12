@@ -76,6 +76,7 @@ def install_config(resources, destination):
         'platform': {'none': {}}, 'fips': False, 'pullSecret': json.dumps(secret),
         'sshKey': Path(os.environ['SSH_KEY'] + '.pub').read_text().strip(),
         'additionalTrustBundle': (Path(os.environ['CERT_DIR']) / 'ca.crt').read_text(),
+        'additionalTrustBundlePolicy': 'Always',
         'imageDigestSources': mirror_sources(resources, [os.environ['RELEASE_SOURCE'],
             os.environ['COMPONENT_SOURCE']], registry + '/' + os.environ['LOCAL_REPOSITORY'])
     }

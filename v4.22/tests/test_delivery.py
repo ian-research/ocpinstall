@@ -50,6 +50,30 @@ class DeliveryTests(unittest.TestCase):
             self.assertNotIn(str(self.root), (moved / name).read_text())
             self.assertIn('$ROOT', (moved / name).read_text())
 
+    def test_snapshot_excludes_local_auth_and_removes_retired_files_on_retry(self):
+        source = self.root.parent / 'public source'
+        contents = {'install-cluster.sh': '#!/bin/bash\n', 'README.md': 'public',
+                    'lib/offline.py': '# public code', 'config/versions.sh': '# public profile',
+                    'pull-secret.json': 'fixture credential', 'notes.md': 'fixture private note',
+                    'config/auth.json': 'fixture credential', 'lib/auth.json': 'fixture credential'}
+        for name, content in contents.items():
+            p = source / name; p.parent.mkdir(parents=True, exist_ok=True); p.write_text(content)
+        stale = self.root / 'scripts/retired-auth.json'
+        stale.parent.mkdir(); stale.write_text('fixture credential')
+        with patch.object(delivery, 'SOURCE', source):
+            delivery.snapshot_scripts(self.root)
+        copied = {str(p.relative_to(self.root / 'scripts')) for p in (self.root / 'scripts').rglob('*') if p.is_file()}
+        self.assertEqual(copied, {'install-cluster.sh', 'README.md', 'lib/offline.py', 'config/versions.sh'})
+
+    def test_snapshot_rejects_destination_symlink_before_writing(self):
+        outside = self.root.parent / 'outside'
+        outside.mkdir()
+        marker = outside / 'unchanged'; marker.write_text('fixture')
+        (self.root / 'scripts').symlink_to(outside, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, '普通目录'):
+            delivery.snapshot_scripts(self.root)
+        self.assertEqual(list(outside.iterdir()), [marker])
+
     def test_boot_tools_and_script_corruption_blocks_changes(self):
         self.fixture()
         for name in ('platform/boot/rhcos-live.iso', 'scripts/install-cluster.sh', 'helper/harbor-offline-installer.tgz', 'platform/images/mirror_000001.tar'):

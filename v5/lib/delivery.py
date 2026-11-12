@@ -14,6 +14,7 @@ import tarfile
 import urllib.request
 import time
 import http.client
+import tempfile
 
 import offline
 import operator_profile
@@ -194,17 +195,30 @@ def prepare_helper(args, root, cache):
 
 def snapshot_scripts(root):
     destination = root / 'scripts'
-    for path in SOURCE.rglob('*'):
-        relative = path.relative_to(SOURCE)
-        if not path.is_file() or path.is_symlink() or '__pycache__' in relative.parts:
-            continue
-        if relative.parts[0] not in ('lib', 'config') and len(relative.parts) != 1:
-            continue
-        if path.suffix not in ('.sh', '.py', '.go', '.mod', '.sum', '.md', '.json'):
-            continue
-        target = destination / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(path, target)
+    if destination.is_symlink() or (destination.exists() and not destination.is_dir()):
+        raise ValueError('scripts 快照路径必须是本包内的普通目录')
+    entrypoints = {'install-cluster.sh', 'setup-cluster.sh', 'prepare-offline.sh',
+                   'prepare-operators.sh', 'apply-operators.sh',
+                   'README.md', 'DELIVERY.md', 'OPERATORS.md', 'VALIDATION.md'}
+    configuration = {'versions.sh', 'ai-3.5.2-cpu-images.json', 'ai-3.5.3-cpu-images.json'}
+    candidates = [SOURCE / name for name in entrypoints]
+    candidates += [SOURCE / 'config' / name for name in configuration]
+    candidates += list((SOURCE / 'lib').glob('*.py')) + list((SOURCE / 'lib').glob('*.sh'))
+    candidates += [SOURCE / 'lib/operator-semantics' / name for name in ('main.go', 'go.mod', 'go.sum')]
+    with tempfile.TemporaryDirectory(prefix='.scripts-stage-', dir=root) as temporary:
+        fresh = Path(temporary) / 'scripts'
+        fresh.mkdir()
+        for path in sorted(set(candidates)):
+            relative = path.relative_to(SOURCE)
+            if not path.is_file() or path.is_symlink() or '__pycache__' in relative.parts:
+                continue
+            target = fresh / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(path, target)
+        # Refresh the tool-owned snapshot so a retry cannot retain retired files.
+        if destination.exists():
+            shutil.rmtree(destination)
+        fresh.replace(destination)
     for name, action in (('install.sh', 'install'), ('configure.sh', 'configure'), ('verify.sh', 'verify')):
         path = root / name
         path.write_text('#!/usr/bin/env bash\nset -Eeuo pipefail\n'

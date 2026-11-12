@@ -66,6 +66,7 @@ class ArtifactTests(unittest.TestCase):
         self.assertEqual(json.loads(config['pullSecret']), data)
         self.assertEqual(config['compute'][0]['replicas'], 0)
         self.assertEqual(config['platform'], {'none': {}})
+        self.assertEqual(config['additionalTrustBundlePolicy'], 'Always')
         self.assertEqual(config['networking']['machineNetwork'], [{'cidr': '192.168.1.0/24'}])
         self.assertEqual(output.stat().st_mode & 0o777, 0o600)
 

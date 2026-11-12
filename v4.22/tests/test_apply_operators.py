@@ -23,10 +23,12 @@ class ApplyOperatorTests(unittest.TestCase):
             {'type': 'Available', 'status': 'True'}, {'type': 'Progressing', 'status': 'False'},
             {'type': 'Failing', 'status': 'False'}]}}
 
-    def run_apply(self, dry_run=False):
+    def run_apply(self, dry_run=False, registry_ca=None):
         command = ['apply_operators.py', '--bundle', str(self.bundle), '--kubeconfig', '/private/admin.conf']
         if dry_run:
             command.append('--dry-run')
+        if registry_ca:
+            command += ['--registry-ca', registry_ca]
         with patch.object(sys, 'argv', command), \
              patch.object(apply_operators, 'load_plan', return_value={'targetVersion': self.version}), \
              patch.object(apply_operators, 'prepare') as prepare, \
@@ -66,6 +68,15 @@ class ApplyOperatorTests(unittest.TestCase):
         commands = [call.args[0] for call in self.run.call_args_list]
         self.assertIn('patch', commands[1])
         self.assertEqual(commands[-1][:2], ['oc', 'apply'])
+
+    def test_explicit_ca_uses_preview_mode_for_server_dry_run(self):
+        with patch.object(apply_operators, 'ensure_registry_trust') as trust, \
+             patch.object(apply_operators, 'reload_components') as reload:
+            self.run_apply(True, '/public/harbor-ca.crt')
+        self.assertEqual(trust.call_args.args[0], '/public/harbor-ca.crt')
+        self.assertTrue(trust.call_args.args[2])
+        self.assertEqual(trust.call_args.args[1]['KUBECONFIG'], '/private/admin.conf')
+        reload.assert_called_once()
 
     def test_failed_bundle_verification_cannot_disable_default_catalogs(self):
         command = ['apply_operators.py', '--bundle', str(self.bundle), '--kubeconfig', '/private/admin.conf']
