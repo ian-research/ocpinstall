@@ -4,13 +4,14 @@
 
 | 范围 | 结果 |
 |---|---|
+| 官方 4.22.22 工具 | 已真实下载并验证客户端、标准安装器、kubectl 硬链接和执行权限；[记录](tests/evidence/tools-2026-11-13.json) |
 | 三节点 4.22.22 | 尚未完成实机验收；独立版本脚本与平台配置已提供 |
 | 共享流程在 5.0.1 的离线平台安装 | 已使用本地 Harbor 安装；不能据此认定 4.22 已验收 |
 | 共享流程在 5.0.1 的安装后基础功能 | Deployment/Route、扩缩容、重启、DNS、非 root 容器、静态 NFS PVC、RBAC、内部 Registry 已验证 |
 | 共享引擎在 5.0.1 的 Operator 可搬迁导出/导入 | Web Terminal 1.17.2 + DevWorkspace 1.0.0，10 个镜像；全新缓存、不同含空格路径、只转移校验清单内文件、外网阻断的导入通过 |
 | 5.0.1 的 Operator 实际使用 | 两个 CSV 均 Succeeded；创建 DevWorkspace 达到 Running，并成功执行标记命令 |
 | 共享引擎在 5.0.1 的完整 delivery 打包 | 完整组合导出与换路径整包校验已通过，收集 359 个 Helper RPM；新路径下从平台归档重建规则、阻断外网导入、安装后配置通过，MCP 收敛，原有工作空间仍 Running |
-| 本地回归 | 两版分别 91 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
+| 本地回归 | 两版分别 93 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
 | 全新物理 Helper 的 RPM 初始化 | 已实现完整收集及本地 GPG 校验安装模式，尚未在一台新物理服务器全量验收 |
 | Virtualization / ACM | 兼容组合和业务依赖规则已补入，完整离线组件及工作负载验收尚未完成 |
 | OpenShift AI | 当前官方支持矩阵列出 4.22，未列出 5.0；5.x 准备脚本明确拒绝该组合 |

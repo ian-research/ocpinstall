@@ -1,0 +1,12 @@
+{
+  "collectedAtUTC": "2026-11-12T18:58:14.295907+00:00",
+  "tools": {
+    "state": "passed",
+    "version": "4.22.22",
+    "client": "Client Version: 4.22.22",
+    "kubectl": "Client Version: v1.35.2",
+    "installer": "/opt/ocp5-operator-test/422-tools-bin/openshift-install 4.22.22",
+    "officialKubectlHardlinkPreserved": true,
+    "allToolsExecutable": true
+  }
+}

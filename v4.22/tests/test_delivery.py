@@ -52,7 +52,7 @@ class DeliveryTests(unittest.TestCase):
 
     def test_boot_tools_and_script_corruption_blocks_changes(self):
         self.fixture()
-        for name in ('platform/boot/rhcos-live.iso', 'scripts/install-cluster.sh', 'helper/harbor-offline-installer.tgz'):
+        for name in ('platform/boot/rhcos-live.iso', 'scripts/install-cluster.sh', 'helper/harbor-offline-installer.tgz', 'platform/images/mirror_000001.tar'):
             path = self.root / name
             original = path.read_bytes()
             path.write_bytes(b'corrupt')
@@ -61,6 +61,22 @@ class DeliveryTests(unittest.TestCase):
                     delivery.execute(SimpleNamespace(action='install'), self.root)
                 run.assert_not_called()
             path.write_bytes(original)
+
+    def test_large_archive_is_hashed_once_without_skipping_integrity(self):
+        self.fixture()
+        archive = (self.root / 'platform/images/mirror_000001.tar').resolve()
+        with patch.object(offline, 'digest', wraps=offline.digest) as digest:
+            delivery.verify(self.root)
+        self.assertEqual(sum(call.args[0].resolve() == archive for call in digest.call_args_list), 1)
+
+    def test_parent_cannot_disagree_with_child_archive_hash(self):
+        self.fixture()
+        path = self.root / 'delivery.json'
+        record = json.loads(path.read_text())
+        record['files']['platform/images/mirror_000001.tar'] = '0' * 64
+        offline.save_json(path, record)
+        with self.assertRaisesRegex(ValueError, '子包校验清单不一致'):
+            delivery.verify(self.root)
 
     def test_wrong_version_rejected(self):
         self.fixture()

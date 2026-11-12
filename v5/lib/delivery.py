@@ -231,9 +231,25 @@ def verify(root):
         required.add('operators/checksums.json')
     if not required <= record['files'].keys():
         raise ValueError('交付清单缺少必要的安装、配置或启动文件')
+    # Child verification hashes the large image archives. Authenticate each child
+    # manifest first and require exact agreement, rather than hashing every tar
+    # once here and then again in offline.verify().
+    covered = set()
+    for child in ('platform', 'operators') if record['operators'] else ('platform',):
+        name = child + '/checksums.json'
+        path = safe_path(root, name)
+        if not path.is_file() or offline.digest(path) != record['files'][name]:
+            raise ValueError('子包校验清单缺失或 SHA256 不匹配: ' + name)
+        covered.add(name)
+        for relative, expected in json.loads(path.read_text()).items():
+            combined = child + '/' + relative
+            safe_path(root, combined)
+            if record['files'].get(combined) != expected:
+                raise ValueError('交付与子包校验清单不一致: ' + combined)
+            covered.add(combined)
     for name, expected in record['files'].items():
         path = safe_path(root, name)
-        if not path.is_file() or offline.digest(path) != expected:
+        if not path.is_file() or (name not in covered and offline.digest(path) != expected):
             raise ValueError('交付文件缺失或 SHA256 不匹配: ' + name)
     requirements = json.loads((root / 'helper/requirements.json').read_text())
     if requirements['mode'] != record['helperMode']:
@@ -254,9 +270,11 @@ def verify(root):
 
 def seal(root, operators_enabled):
     files = []
+    recorded = {}
     for folder in ('platform', 'operators') if operators_enabled else ('platform',):
         child = root / folder
         checksums = json.loads((child / 'checksums.json').read_text())
+        recorded.update({child / name: value for name, value in checksums.items()})
         files += [child / name for name in checksums] + [child / 'checksums.json']
     for folder in ('scripts', 'helper', 'platform/tools', 'platform/boot'):
         files += [p for p in (root / folder).rglob('*') if p.is_file() and not p.is_symlink()]
@@ -264,7 +282,8 @@ def seal(root, operators_enabled):
     offline.save_json(root / 'delivery.json', {'schema': 'ocpinstall/delivery/v1',
         'version': operator_profile.release(), 'arch': 'amd64', 'operators': operators_enabled,
         'helperMode': json.loads((root / 'helper/requirements.json').read_text())['mode'],
-        'files': {str(p.relative_to(root)): offline.digest(p) for p in sorted(set(files))}})
+        'files': {str(p.relative_to(root)): recorded[p] if p in recorded else offline.digest(p)
+                  for p in sorted(set(files))}})
     try:
         verify(root)
     except Exception:

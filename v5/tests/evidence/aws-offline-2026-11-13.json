@@ -1,6 +1,26 @@
 {
-  "collectedAtUTC": "2026-11-12T18:10:44.040134+00:00",
+  "collectedAtUTC": "2026-11-12T18:58:14.295907+00:00",
   "records": {
+    "verify-performance-results.json": {
+      "state": "passed",
+      "elapsedSeconds": 43.467,
+      "imageArchiveHashPasses": {
+        "platform/images/mirror_000001.tar": 1,
+        "platform/images/mirror_000002.tar": 1,
+        "operators/images/mirror_000001.tar": 1
+      },
+      "verifierSha256": "c30f70570f0027c81fc6ce3befb58f6f5f2e67d90b9d0aee9444c9be05eede5f",
+      "deliveryFileSha256": "5155ab8df16128db0af3d3c90a69d6245c8dff83a3d45e74f6de0e98ff8edfdd"
+    },
+    "422-tools-results.json": {
+      "state": "passed",
+      "version": "4.22.22",
+      "client": "Client Version: 4.22.22",
+      "kubectl": "Client Version: v1.35.2",
+      "installer": "/opt/ocp5-operator-test/422-tools-bin/openshift-install 4.22.22",
+      "officialKubectlHardlinkPreserved": true,
+      "allToolsExecutable": true
+    },
     "portable-results.json": {
       "state": "passed",
       "stage": "offline-import",
