@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+"""Apply a verified 4.22 Operator bundle without changing helper host security."""
+import argparse
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+from operator_profile import release
+from operator_resources import prepare
+from operators import load_plan
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--bundle', required=True)
+    parser.add_argument('--kubeconfig', default=os.environ.get('KUBECONFIG'))
+    parser.add_argument('--dry-run', action='store_true', help='服务端预检查，不写入集群')
+    args = parser.parse_args()
+    if not args.kubeconfig:
+        raise ValueError('请提供 --kubeconfig 或 KUBECONFIG；不要把其内容粘贴到终端')
+    env = dict(os.environ, KUBECONFIG=str(Path(args.kubeconfig).expanduser().resolve()))
+    bundle = Path(args.bundle).expanduser().resolve()
+    plan = load_plan(bundle)
+    cluster = json.loads(subprocess.run(['oc', 'get', 'clusterversion', 'version', '-o', 'json'],
+                                        env=env, check=True, text=True, capture_output=True).stdout)
+    actual = cluster['status']['desired']['version']
+    minor = release().rsplit('.', 1)[0]
+    if actual.rsplit('.', 1)[0] != minor or plan['targetVersion'].rsplit('.', 1)[0] != minor:
+        raise ValueError(f'当前集群 {actual} 与本脚本 {minor} 不匹配；未应用任何资源')
+    output = bundle / 'operator-resources.json'
+    prepare(bundle, output)
+    command = ['oc', 'apply', '-f', str(output)]
+    if args.dry_run:
+        command.append('--dry-run=server')
+    else:
+        subprocess.run(['oc', 'patch', 'OperatorHub', 'cluster', '--type', 'merge',
+                        '-p', '{"spec":{"disableAllDefaultSources":true}}'], env=env, check=True)
+    subprocess.run(command, env=env, check=True)
+    print('预检查完成' if args.dry_run else '已应用离线目录及镜像规则；请等待 MCP 更新和 CatalogSource READY，再安装 Operator')
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (ValueError, OSError, KeyError, subprocess.CalledProcessError) as error:
+        print(f'错误: {error}', file=sys.stderr)
+        sys.exit(1)

@@ -1,0 +1,98 @@
+# 完整离线准备 → 安装 → 配置
+
+本入口把 **OpenShift 4.22.22 / amd64 本体、匹配的 oc/kubectl/安装器、导出端同一 oc-mirror、RHCOS Live ISO、Helper RPM/Harbor，以及可选 Operator** 放到同一交付目录。平台镜像与 Operator 镜像仍独立保存，避免不同目录的生成资源相互覆盖。旧版根目录脚本不受影响。
+
+```text
+交付目录/
+  platform/       平台镜像、工具、RHCOS 启动 ISO
+  operators/      所选 Operator、依赖、过滤目录、镜像归档
+  helper/         RHEL 9 / Docker RPM、签名 key、Harbor 离线包
+  scripts/        本版本安装、配置及准备脚本的快照
+  delivery.json   相对路径和 SHA256 清单
+  install.sh      初始化 Helper、导入平台、生成安装资料
+  configure.sh    等待安装完成、导入 Operator、执行安装后配置
+  verify.sh       搬迁后校验整包
+```
+
+## 联网准备机
+
+完整 `rpm` 模式使用 **RHEL 9 x86_64**，目标 Helper 的 RHEL 版本须与准备机相同。准备机必须已启用有权访问的 RHEL 软件源，并具备 Python 3.9+、Bash 4+、skopeo、`dnf download`（dnf-plugins-core）及 createrepo_c。需要足够磁盘同时保存缓存、镜像归档和目录镜像；复杂 Operator 组合可能达到数百 GB。源 pull secret 放在交付目录外。
+
+从红帽获取官方 oc-mirror v2 并解压为名为 `oc-mirror` 的可执行文件。完整入口会把此二进制打包到工具目录，确保源端与离线端一致。它不会另行下载一个不同版本的插件。
+
+直接运行：
+
+```bash
+bash v4.22/prepare-operators.sh
+```
+
+首层菜单选择“准备完整离线包”，填写保存目录、pull secret 和 oc-mirror 路径；随后搜索 Operator，选择包、channel/version，可重复添加。依赖解析后展示计划，确认后下载。只准备平台、不选 Operator 时可用 `--platform-only`。
+
+可复用的命令行示例：
+
+```bash
+bash v4.22/prepare-operators.sh delivery export \
+  --bundle '/data/ocp422 delivery' \
+  --cache-dir /data/ocp422-delivery-cache \
+  --authfile /secure/redhat-pull-secret.json \
+  --oc-mirror /data/bin/oc-mirror \
+  --helper-mode rpm \
+  --select redhat/web-terminal
+```
+
+`--select`、`--catalog ALIAS=IMAGE` 可重复；不指定 `--select` 时终端会进入选包交互。`--image` 可重复补充平台或运行负载需要的镜像。工具和 ISO 根据固定版本官方元数据的 SHA256 下载校验。Harbor 默认从官方 GitHub 固定的 v2.12.2 发布地址下载，核对该发布提供的 MD5，再记录交付用 SHA256；该 SHA256 不是上游数字签名。已有可信 Harbor 包时可加：
+
+```bash
+  --harbor-archive /data/harbor-offline-installer-v2.12.2.tgz \
+  --harbor-sha256 实际核实的64位SHA256
+```
+
+RHEL/Docker 软件及其依赖通过 `dnf download --resolve --alldeps` 收集，生成本地软件源。目标安装时只启用该离线源，保留 RPM 签名检查。订阅配置、RHUI 私钥及源仓库登录信息留在准备机的缓存或原位置，不装入交付包。
+
+AWS 测试可明确选择 `--helper-mode existing`：使用目标机已有的 YUM/RHUI 和 Docker，不收集 Helper RPM。**此模式只保证 OpenShift/Operator 镜像离线，不代表 Helper 初始化完全离线。**物理隔离环境使用默认 `rpm` 模式，或继续使用独立安装入口的 RHEL DVD 模式。
+
+## 搬迁和安装
+
+可以改变目录和磁盘挂载位置，也支持目录名包含空格。保留完整目录结构；不要只复制一个 tar。缓存留在源端，凭据另行安全提供。
+
+```bash
+bash '/offline/new location/verify.sh'
+sudo env NTP_SERVER=192.168.100.1 NFS_CIDR=192.168.100.0/24 \
+  bash '/offline/new location/install.sh'
+```
+
+`install.sh` 按包内记录自动选择软件源；沿用安装脚本的域名、IP 和仓库密码交互。RHCOS ISO 位于 `platform/boot/rhcos-live.iso`。脚本生成 Ignition 与各节点的磁盘安装命令后，需要按命令启动和安装实体服务器/虚拟机；裸金属 UPI 的开机、磁盘选择和 CSR 核对不会自动跳过。
+
+集群私有状态默认 `/opt/ocp422`。需要自选时给安装与配置两个入口传入相同的 `--state-root /绝对路径`，状态目录不能在交付包内。安装目录已经存在时拒绝覆盖，以免破坏现有集群。初装失败后查看阶段输出；不要删除现有安装状态强行重跑，也不要复用已过期的 Ignition。
+
+## 衔接安装后配置
+
+节点启动后执行：
+
+```bash
+sudo env OCP_REGISTRY_STORAGE=unchanged CREATE_ADMIN=false \
+  bash '/offline/new location/configure.sh'
+```
+
+配置入口读取本机 `handoff.json` 中的版本、域名和仓库信息，依次：
+
+1. 校验整包及版本。
+2. 等待 bootstrap 完成，移除 HAProxy 的 bootstrap 后端。
+3. 等待 `install-complete`；节点/CSR 未准备好时停止在安装阶段。
+4. 使用本地 Harbor 凭据导入 Operator 包（默认 `/root/.docker/config.json`，也可 `--authfile /secure/harbor-auth.json`）。
+5. 运行配置脚本，应用平台镜像规则和独立命名的离线 Operator 目录。
+
+集群未达到 Available、仍在 Progressing 或 Failing 时，配置脚本拒绝修改集群。内部 Registry 默认保持现状；需要持久存储、动态 StorageClass、身份认证或额外操作数镜像时，应按所选组件的要求准备。等待 MCP 更新、CatalogSource READY 后再安装计划中的 Operator。配置离线目录不等于自动创建所有 Operator 的 Subscription 或业务 CR。
+
+AWS 明确由外部规则管理防火墙时可在安装和配置命令末尾增加 `--skip-firewalld`。默认仍保留 SELinux 和主机安全策略；`--relaxed-security` 沿用独立脚本的显式开关，配置阶段的 SCC 仅作用于指定命名空间。
+
+## 重试和交付边界
+
+- 同一交付目录/Operator 目录禁止并发执行。缓存与交付目录不得互相包含。
+- 固定版本和选包计划；切换版本、Helper 模式或选包组合请使用新目录。
+- 下载临时文件通过校验才替换正式文件；成功收集的 Helper 资产按清单复用。
+- 平台和 Operator 采用独立、完整导出；Operator 归档额外校验 bundle、relatedImages、过滤目录标签及镜像层是否齐全。
+- 失败重试移除旧成功标记。仅下载完成并通过整包校验才生成 `delivery.json`；阶段见 `delivery-state.json`，该状态文件不能代替校验。
+- 全新 Helper 的安装仍需独立 RHEL 主机、正确网络/DNS/NTP、足够资源和可用的集群 pull-only 仓库账户。不会把联网源 pull secret 自动当作集群凭据。
+
+实测范围及仍待验收的复杂组件见 [VALIDATION.md](VALIDATION.md)；Operator 依赖规则与额外镜像要求见 [OPERATORS.md](OPERATORS.md)。
