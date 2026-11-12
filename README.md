@@ -1,3 +1,16 @@
+# 按 OpenShift 版本选择入口
+
+| 平台 | 完整离线准备、安装和配置 | Operator 说明 | 实测范围 |
+|---|---|---|---|
+| 4.22.22 | [4.22 完整流程](v4.22/DELIVERY.md) | [4.22 Operator](v4.22/OPERATORS.md) | [4.22 验证记录](v4.22/VALIDATION.md) |
+| 5.0.1 | [5.x 完整流程](v5/DELIVERY.md) | [5.x Operator](v5/OPERATORS.md) | [5.x 验证记录](v5/VALIDATION.md) |
+
+新版本分别保存在 `v4.22/` 和 `v5/`，不覆盖旧版脚本。运行对应目录的 `prepare-operators.sh`，首层选择完整交付或仅 Operator；完整包生成 `verify.sh`、`install.sh`、`configure.sh` 三个入口。完成下载不代表所有组件已获运行验收，请先查看相应验证记录。
+
+下面保留原有根目录脚本的历史说明；新部署请从上表选择对应版本。
+
+---
+
 # ocpinstall
 Use bash scripts for quick and easy install openshift
 
