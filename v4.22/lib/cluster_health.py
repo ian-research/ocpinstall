@@ -34,7 +34,12 @@ def require_ready(env):
         failures.append('nodes:empty')
     for item in nodes:
         state = conditions(item)
+        config = item['metadata'].get('annotations', {})
+        prefix = 'machineconfiguration.openshift.io/'
         if (state.get('Ready') != 'True' or item.get('spec', {}).get('unschedulable')
+                or config.get(prefix + 'state') != 'Done'
+                or not config.get(prefix + 'currentConfig')
+                or config.get(prefix + 'currentConfig') != config.get(prefix + 'desiredConfig')
                 or any(state.get(key) == 'True' for key in ('MemoryPressure', 'DiskPressure', 'PIDPressure'))):
             failures.append('node:' + item['metadata']['name'])
     pools = read('machineconfigpools', env)

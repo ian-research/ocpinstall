@@ -10,7 +10,7 @@
 | Operator 可搬迁导出/导入 | Web Terminal 1.17.2 + DevWorkspace 1.0.0，10 个镜像；全新缓存、不同含空格路径、只转移校验清单内文件、外网阻断的导入通过 |
 | Operator 实际使用 | 两个 CSV 均 Succeeded；创建 DevWorkspace 达到 Running，并成功执行标记命令 |
 | 完整 delivery 打包 | 完整组合导出与换路径整包校验已通过，收集 359 个 Helper RPM；新路径下从平台归档重建规则、阻断外网导入、安装后配置通过，MCP 收敛，原有工作空间仍 Running |
-| 本地回归 | 两版分别 141 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
+| 本地回归 | 两版分别 142 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
 | 全新隔离 Helper 初始化 | RHEL 9.6 虚拟机完成 359 RPM 本地 GPG 安装、默认 SELinux/firewalld、Docker/Harbor、平台离线导入及 Ignition/handoff 生成；未启动第二套集群节点，物理服务器尚待单独验收 |
 | 授时与缓存针对性回归 | 在隔离 Helper 完成 30 项实测：拒绝 NTP 自引用、上游不可达时失败、显式本地 stratum 10 回应真实 NTP 查询、缓存位于包外；安全策略保持开启 |
 | 本地仓库的组件证书信任 | AWS 实测完成 CA 注入后刷新目录服务、三份 ClusterCatalog Serving；重复执行不修改 CA、不重启组件。合并已有用户 CA、保留代理字段及并发保护另有回归检查。官方 4.22.22/5.0.1 安装器均确认支持 Always 策略 |
@@ -30,9 +30,9 @@
 
 ## 当前复杂组件测试的恢复记录
 
-Virtualization 触发的 MCP 更新中，三个控制平面 Operator 异常，缺失的 guard Pod 使维护保护规则阻止下一节点更新。dsh 曾临时将三个 guard PDB 的 `minAvailable` 从 2 降为 1；该验收任务已停止，三个值均已要求恢复并核对为 2。此临时操作未写入脚本，也不能作为可重复安装的解决方案。当前节点更新和复杂组件功能尚待重新验收，不能沿用早先安装完成时的健康快照宣称通过。
+Virtualization 触发的 MCP 更新中，三个控制平面 Operator 异常，缺失的 guard Pod 使维护保护规则阻止下一节点更新。dsh 曾临时将三个 guard PDB 的 `minAvailable` 从 2 降为 1；该验收任务已停止，三个值均已要求恢复并核对为 2。此临时操作未写入脚本，也不能作为可重复安装的解决方案。本轮 MCP 已恢复为 3/3 完成，三个节点均 Ready 且可调度，三个 PDB 均为 2、各有三个健康 guard，四个核心管理组件就绪。复杂组件功能仍待验收，不能沿用早先安装完成时的健康快照宣称通过。
 
-两版配置与应用入口新增实际管理组件和节点/MCP 检查，防止 ClusterVersion 的旧健康状态掩盖控制器异常。遇到此类故障应先恢复组件及维护保护，再继续安装，不通过强制驱逐、关闭 SELinux 或降低 PDB 来绕过问题。
+两版配置与应用入口新增实际管理组件和节点/MCP 检查，防止 ClusterVersion 的旧健康状态掩盖控制器异常；节点 MachineConfig 必须为 Done 且当前配置与目标配置相同。新检查已通过真实 5.0 集群只读验证，源码摘要随实测数据保存。遇到此类故障应先恢复组件及维护保护，再继续安装，不通过强制驱逐、关闭 SELinux 或降低 PDB 来绕过问题。
 
 ## 实测中的工具问题
 

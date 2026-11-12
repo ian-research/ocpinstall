@@ -1,5 +1,5 @@
 {
-  "collectedAtUTC": "2026-11-12T20:39:37.447305+00:00",
+  "collectedAtUTC": "2026-11-12T21:00:12.658567+00:00",
   "records": {
     "verify-performance-results.json": {
       "state": "passed",
@@ -515,6 +515,106 @@
       "readyNodeCount": 3
     },
     "hostSELinux": "Enforcing",
-    "publicConsoleHTTP": 200
+    "publicConsoleHTTP": 200,
+    "cluster-health-gate-results.json": {
+      "sourceSha256": "4a1728be46a0289e1c678fb24d9567fc85828d627d12781568265206c1b45bae",
+      "collectedAtUTC": "2026-11-12T21:00:12.658567+00:00",
+      "mode": "read-only-actual-runtime",
+      "state": "passed"
+    },
+    "core-recovery-observation": {
+      "collectedAtUTC": "2026-11-12T20:59:24.770638+00:00",
+      "machineConfigPools": [
+        {
+          "name": "master",
+          "conditions": {
+            "PinnedImageSetsDegraded": "False",
+            "RenderDegraded": "False",
+            "NodeDegraded": "False",
+            "Degraded": "False",
+            "Updated": "True",
+            "Updating": "False"
+          },
+          "updated": 3,
+          "total": 3
+        },
+        {
+          "name": "worker",
+          "conditions": {
+            "PinnedImageSetsDegraded": "False",
+            "Updating": "False",
+            "NodeDegraded": "False",
+            "Degraded": "False",
+            "RenderDegraded": "False",
+            "Updated": "True"
+          },
+          "updated": 0,
+          "total": 0
+        }
+      ],
+      "readyNodeCount": 3,
+      "schedulableNodeCount": 3,
+      "guardPDBs": [
+        {
+          "name": "etcd-guard-pdb",
+          "namespace": "openshift-etcd",
+          "minAvailable": 2,
+          "currentHealthy": 3,
+          "allowed": 1
+        },
+        {
+          "name": "kube-apiserver-guard-pdb",
+          "namespace": "openshift-kube-apiserver",
+          "minAvailable": 2,
+          "currentHealthy": 3,
+          "allowed": 1
+        },
+        {
+          "name": "kube-controller-manager-guard-pdb",
+          "namespace": "openshift-kube-controller-manager",
+          "minAvailable": 2,
+          "currentHealthy": 3,
+          "allowed": 1
+        }
+      ],
+      "coreOperatorDeployments": [
+        {
+          "namespace": "openshift-etcd-operator",
+          "name": "etcd-operator",
+          "expected": 1,
+          "ready": 1,
+          "available": 1
+        },
+        {
+          "namespace": "openshift-kube-apiserver-operator",
+          "name": "kube-apiserver-operator",
+          "expected": 1,
+          "ready": 1,
+          "available": 1
+        },
+        {
+          "namespace": "openshift-kube-controller-manager-operator",
+          "name": "kube-controller-manager-operator",
+          "expected": 1,
+          "ready": 1,
+          "available": 1
+        },
+        {
+          "namespace": "openshift-kube-scheduler-operator",
+          "name": "openshift-kube-scheduler-operator",
+          "expected": 1,
+          "ready": 1,
+          "available": 1
+        }
+      ],
+      "temporaryPDBChangeDuringAcceptance": {
+        "originalMinAvailable": 2,
+        "temporarilyLoweredTo": 1,
+        "allRestoredTo": 2,
+        "includedInShippingScripts": false
+      },
+      "functionalAcceptance": "pending",
+      "tokenReadFailureRootCause": "not-yet-confirmed"
+    }
   }
 }

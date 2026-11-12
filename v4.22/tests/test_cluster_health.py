@@ -17,6 +17,10 @@ def item(name, **states):
 class ClusterHealthTests(unittest.TestCase):
     def setUp(self):
         self.nodes = [item('master1', Ready='True')]
+        self.nodes[0]['metadata']['annotations'] = {
+            'machineconfiguration.openshift.io/state': 'Done',
+            'machineconfiguration.openshift.io/currentConfig': 'rendered-current',
+            'machineconfiguration.openshift.io/desiredConfig': 'rendered-current'}
         self.pools = [item('master', Updated='True', Updating='False', Degraded='False')]
         self.operators = [item('etcd', Available='True', Progressing='False', Degraded='False')]
         self.deployment = {'metadata': {'name': 'operator', 'generation': 5},
@@ -59,9 +63,9 @@ class ClusterHealthTests(unittest.TestCase):
                 elif change == 'cordon':
                     self.nodes[0]['spec'] = {'unschedulable': True}
                 elif change == 'pressure':
-                    self.nodes[0] = item('master1', Ready='True', MemoryPressure='True')
+                    self.nodes[0]['status']['conditions'].append({'type': 'MemoryPressure', 'status': 'True'})
                 else:
-                    self.nodes[0] = item('master1', Ready='Unknown')
+                    self.nodes[0]['status']['conditions'][0]['status'] = 'Unknown'
                 with self.inspect(), self.assertRaisesRegex(ValueError, 'machineconfigpool:master|node:master1'):
                     cluster_health.require_ready({})
 
@@ -72,6 +76,14 @@ class ClusterHealthTests(unittest.TestCase):
         self.nodes, self.pools, self.operators = [], [], []
         with patch.object(cluster_health, 'read', return_value=[]), self.assertRaisesRegex(ValueError, 'empty'):
             cluster_health.require_ready({})
+
+    def test_node_configuration_mismatch_blocks_even_if_status_flags_are_stale(self):
+        for key, value in [('desiredConfig', 'rendered-next'), ('state', 'Working'), ('currentConfig', '')]:
+            with self.subTest(key=key):
+                self.setUp()
+                self.nodes[0]['metadata']['annotations']['machineconfiguration.openshift.io/' + key] = value
+                with self.inspect(), self.assertRaisesRegex(ValueError, 'node:master1'):
+                    cluster_health.require_ready({})
 
     def test_failed_health_query_fails_closed(self):
         with patch.object(cluster_health, 'read', side_effect=subprocess.TimeoutExpired(['oc'], 45)), \
