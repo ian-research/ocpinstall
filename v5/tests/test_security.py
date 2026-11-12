@@ -1,6 +1,7 @@
 from pathlib import Path
 import subprocess
 import unittest
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -12,6 +13,25 @@ def install_function(name):
 
 
 class SecurityTests(unittest.TestCase):
+    def test_other_version_state_blocks_before_host_changes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            own, foreign = Path(temporary) / 'own', Path(temporary) / 'other-version'
+            foreign.mkdir()
+            program = 'source "$1"; shift; guard_helper_state "$@"; echo WOULD_CHANGE_HOST'
+            result = subprocess.run(['bash', '-c', program, 'test', str(ROOT / 'lib/common.sh'), str(own), str(foreign)],
+                                    text=True, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertNotIn('WOULD_CHANGE_HOST', result.stdout)
+
+    def test_current_version_state_reaches_its_existing_install_guard(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            own = Path(temporary) / 'own'
+            own.mkdir()
+            program = 'source "$1"; shift; guard_helper_state "$@"'
+            result = subprocess.run(['bash', '-c', program, 'test', str(ROOT / 'lib/common.sh'), str(own), str(own)],
+                                    text=True, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_skip_firewalld_is_explicit_and_validated(self):
         program = 'source "$1"; parse_security_options "${@:2}"; echo "$SKIP_FIREWALLD $RELAXED_SECURITY"'
         for args, expected in (([], 'false false'), (['--skip-firewalld'], 'true false')):

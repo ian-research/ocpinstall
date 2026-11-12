@@ -902,7 +902,7 @@ main() {
     require_host
     if [[ ${REMOVE_BOOTSTRAP:-false} == true ]]; then remove_bootstrap; return; fi
     check_root
-    [[ ! -e /opt/ocpinstall && ! -e /opt/harbor/harbor/harbor.yml ]] || die "发现 4.x Helper 状态，请使用独立 Helper 主机"
+    guard_helper_state "$STATE_ROOT" /opt/ocpinstall /opt/ocp5 /opt/ocp422 /opt/harbor/harbor/harbor.yml
     hint
     [[ -f $IMAGESET_CONFIG ]] || die "请提供 bundle 内的 imagesetconfiguration.json"
     python3 "$SCRIPT_DIR/lib/offline.py" verify --bundle "$(dirname "$IMAGESET_CONFIG")" --version "$OCP_RELEASE"

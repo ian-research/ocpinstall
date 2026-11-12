@@ -35,6 +35,16 @@ backup_file() {
     [[ ! -f $1 || -f $1.ocp5.bak ]] || cp -p -- "$1" "$1.ocp5.bak"
 }
 
+guard_helper_state() {
+    local current=${1%/} known
+    shift
+    for known in "$@"; do
+        if [[ $known != "$current" && -e $known ]]; then
+            die "发现其他版本或路径的 Helper 状态：${known}。请使用独立 Helper；未修改系统。"
+        fi
+    done
+}
+
 parse_security_options() {
     RELAXED_SECURITY=${RELAXED_SECURITY:-false}
     SECURITY_NAMESPACE=${SECURITY_NAMESPACE:-default}
