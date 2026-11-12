@@ -117,6 +117,52 @@ class ArtifactTests(unittest.TestCase):
         self.assertIn('server ntp.example.com iburst', config)
         self.assertNotIn('local stratum', config)
 
+    def test_helper_retry_pins_topology_without_storing_secrets(self):
+        path = self.root / 'helper-plan.json'
+        values = ('fixture-version', 'lab.example.com', '192.168.1.10', '192.168.1.20',
+                  '192.168.1.0/24', '', 'local', '192.168.1.21', '192.168.1.22', '192.168.1.23')
+        a.helper_plan(path, *values)
+        original = path.read_bytes()
+        a.helper_plan(path, *values)
+        self.assertEqual(path.read_bytes(), original)
+        self.assertEqual(path.stat().st_mode & 0o777, 0o600)
+        with self.assertRaisesRegex(ValueError, '不同的安装计划'):
+            a.helper_plan(path, values[0], 'other.example.com', *values[2:])
+        self.assertEqual(path.read_bytes(), original)
+        self.assertNotIn('password', original.decode().lower())
+
+    def test_helper_retry_allows_fixing_an_unavailable_time_source(self):
+        path = self.root / 'helper-plan.json'
+        prefix = ('fixture-version', 'lab.example.com', '192.168.1.10', '192.168.1.20', '192.168.1.0/24')
+        a.helper_plan(path, *prefix, '192.168.1.254', 'upstream', '192.168.1.21')
+        a.helper_plan(path, *prefix, '192.168.1.1', 'upstream', '192.168.1.21')
+        self.assertEqual(json.loads(path.read_text())['ntpServer'], '192.168.1.1')
+
+    def test_unmanaged_harbor_is_never_adopted_or_overwritten(self):
+        existing = self.root / 'harbor/harbor/harbor.yml'
+        existing.parent.mkdir(parents=True)
+        existing.write_text('existing fixture')
+        path = self.root / 'helper-plan.json'
+        with self.assertRaisesRegex(ValueError, '拒绝覆盖已有仓库'):
+            a.helper_plan(path, 'fixture', 'lab.test', '192.168.1.10', '192.168.1.20',
+                          '192.168.1.0/24', '', 'local')
+        self.assertFalse(path.exists())
+        self.assertEqual(existing.read_text(), 'existing fixture')
+
+    def test_hosts_retry_does_not_duplicate_or_hide_conflicting_addresses(self):
+        path = self.root / 'hosts'
+        path.write_text('127.0.0.1 localhost\n')
+        a.helper_hosts(path, '192.168.1.10', 'helper.lab.test')
+        original = path.read_text()
+        a.helper_hosts(path, '192.168.1.10', 'helper.lab.test')
+        self.assertEqual(path.read_text(), original)
+        with self.assertRaisesRegex(ValueError, '不同 Helper 地址'):
+            a.helper_hosts(path, '192.168.1.11', 'helper.lab.test')
+        self.assertEqual(path.read_text(), original)
+        path.write_text(original + '192.168.1.11 helper.lab.test\n')
+        with self.assertRaisesRegex(ValueError, '不同 Helper 地址'):
+            a.helper_hosts(path, '192.168.1.10', 'helper.lab.test')
+
     def test_published_commands_have_correct_hash_and_offline_flag(self):
         public = self.root / 'public'
         public.mkdir()

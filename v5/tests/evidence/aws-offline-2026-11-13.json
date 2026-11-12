@@ -1,5 +1,5 @@
 {
-  "collectedAtUTC": "2026-11-12T18:58:14.295907+00:00",
+  "collectedAtUTC": "2026-11-12T19:20:09.853277+00:00",
   "records": {
     "verify-performance-results.json": {
       "state": "passed",
@@ -60,6 +60,115 @@
       "mcp": "converged",
       "existingOperand": "Running",
       "deliveryFileSha256": "5155ab8df16128db0af3d3c90a69d6245c8dff83a3d45e74f6de0e98ff8edfdd"
+    },
+    "helper-qa-results.json": {
+      "result": "passed_with_findings",
+      "stage": "complete",
+      "stageStatus": {
+        "cluster_nodes": "not_created_intentional",
+        "delivery_copy_verify": "passed",
+        "handoff": "passed",
+        "ignition": "passed",
+        "install_rpm_default_security": "passed",
+        "isolation_no_nat_dhcp_or_internet": "passed",
+        "ntp_sync": "finding_not_synchronised",
+        "platform_image_import": "passed",
+        "qa_pull_robot": "passed",
+        "vm_boot_rhel96": "passed",
+        "wait_for_configure": "not_run_intentional",
+        "yum_docker_harbor_dns_haproxy_nfs_http": "passed"
+      },
+      "delivery": {
+        "version": "5.0.1",
+        "helperMode": "rpm",
+        "fileCount": 457,
+        "totalWithManifest": 458,
+        "deliveryJsonSha256": "5155ab8df16128db0af3d3c90a69d6245c8dff83a3d45e74f6de0e98ff8edfdd",
+        "vmManifestSha256": "5155ab8df16128db0af3d3c90a69d6245c8dff83a3d45e74f6de0e98ff8edfdd",
+        "hostVerifyPassed": true,
+        "vmVerifyPassed": true,
+        "testedCodeHashes": {
+          "configure.sh": {
+            "actual": "cd83e97faa10b322da007dd058c018a333b5f06cda1647516e404c998de2c215",
+            "expected": "cd83e97faa10b322da007dd058c018a333b5f06cda1647516e404c998de2c215"
+          },
+          "delivery-plan.json": {
+            "actual": "3ce26f562e16a151a621a55d89ef0ba7113583da077bb13885464be231d0b88b",
+            "expected": "3ce26f562e16a151a621a55d89ef0ba7113583da077bb13885464be231d0b88b"
+          },
+          "helper/requirements.json": {
+            "actual": "db9a86fa7ece84313524543a1fe0a6623d6187316e1a8d1470c999435864dd4c",
+            "expected": "db9a86fa7ece84313524543a1fe0a6623d6187316e1a8d1470c999435864dd4c"
+          },
+          "install.sh": {
+            "actual": "3461f5d76cbca2d3158275aa16e5abb01a9f85e1da1413223b3f1a44f39f27f2",
+            "expected": "3461f5d76cbca2d3158275aa16e5abb01a9f85e1da1413223b3f1a44f39f27f2"
+          },
+          "scripts/config/versions.sh": {
+            "actual": "87229ade02d0d0aba7f45e9f9434d7826fbcc733aa3464986b148369cef43829",
+            "expected": "87229ade02d0d0aba7f45e9f9434d7826fbcc733aa3464986b148369cef43829"
+          },
+          "scripts/install-cluster.sh": {
+            "actual": "7be91a200f60da3cc680019bc069e9a9311f9743c139d2d2becf29fb4706ef34",
+            "expected": "7be91a200f60da3cc680019bc069e9a9311f9743c139d2d2becf29fb4706ef34"
+          },
+          "scripts/lib/artifacts.py": {
+            "actual": "f43ff16f00e7cba3253147eb045398b309d5e61a330366c4192ecdaf7a9d8caf",
+            "expected": "f43ff16f00e7cba3253147eb045398b309d5e61a330366c4192ecdaf7a9d8caf"
+          },
+          "scripts/lib/common.sh": {
+            "actual": "37f5905b1383bb0bfb1ddfead43cd480c60e8e1ea1ef2c43950fb21d5ace919a",
+            "expected": "37f5905b1383bb0bfb1ddfead43cd480c60e8e1ea1ef2c43950fb21d5ace919a"
+          },
+          "scripts/lib/delivery.py": {
+            "actual": "85e03c4900711e396944081e6518e918102eafa4c16cb17a681245fa58bbf633",
+            "expected": "85e03c4900711e396944081e6518e918102eafa4c16cb17a681245fa58bbf633"
+          },
+          "scripts/lib/offline.py": {
+            "actual": "ac9b40dfa42b378cb5eb4c465ee666e2d1f4e2a0c4ca19636f33d1d1b77aff89",
+            "expected": "ac9b40dfa42b378cb5eb4c465ee666e2d1f4e2a0c4ca19636f33d1d1b77aff89"
+          },
+          "scripts/setup-cluster.sh": {
+            "actual": "766d93805315f757dbd07a5bc5727d1d035e045f60c6fc2520694d18394154c0",
+            "expected": "766d93805315f757dbd07a5bc5727d1d035e045f60c6fc2520694d18394154c0"
+          },
+          "verify.sh": {
+            "actual": "ca438f09a849de32bd0e5b270e2a67fc0c0cabc614a56e2d715921576bf75a88",
+            "expected": "ca438f09a849de32bd0e5b270e2a67fc0c0cabc614a56e2d715921576bf75a88"
+          }
+        },
+        "testedCodeHashesAllMatch": true
+      },
+      "install": {
+        "clusterNodesBooted": false,
+        "clusterNodesCreated": false,
+        "configureExecuted": false,
+        "waitForExecuted": false,
+        "installConfigMode": {
+          "exists": true,
+          "gid": 0,
+          "group": "root",
+          "mode": "0o600",
+          "path": "/opt/ocp5/install-config.yaml",
+          "size": 3431,
+          "uid": 0,
+          "user": "root"
+        }
+      },
+      "security": {
+        "selinux": "Enforcing",
+        "firewalld": "running",
+        "masquerade": false,
+        "rpmGpgcheck": true
+      },
+      "cleanup": {
+        "evidenceCopiedOut": true,
+        "vmState": "shut off",
+        "existingConsoleHttpStatus": 200,
+        "existingMastersStillRunning": true,
+        "existingNodesReady": true,
+        "hostDiskFreeGiB": 494.24
+      }
     },
     "product-plan-results.json": {
       "state": "passed",

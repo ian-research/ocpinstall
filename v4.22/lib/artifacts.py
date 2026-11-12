@@ -119,6 +119,39 @@ def helper_chrony(server, cidr, helper, mode='upstream'):
     print(helper_chrony_config(server, cidr, helper, mode), end='')
 
 
+def helper_plan(path, version, domain, helper, bootstrap, cidr, ntp_server, ntp_mode, *masters):
+    path = Path(path)
+    plan = {'version': version, 'domain': domain, 'helper': helper, 'bootstrap': bootstrap,
+            'masters': list(masters), 'clientCIDR': cidr, 'ntpServer': ntp_server, 'ntpMode': ntp_mode}
+    if path.exists():
+        previous = json.loads(path.read_text())
+        immutable = ('version', 'domain', 'helper', 'bootstrap', 'masters', 'clientCIDR')
+        if any(previous.get(key) != plan[key] for key in immutable):
+            raise ValueError('Helper 已有不同的安装计划；请核对原配置或使用独立 Helper，拒绝覆盖')
+        if previous != plan:
+            write_json(path, plan)  # A failed upstream can be corrected before Ignition exists.
+        return
+    if (path.parent / 'harbor/data').exists() or (path.parent / 'harbor/harbor/harbor.yml').exists():
+        raise ValueError('检测到未记录安装计划的 Harbor；请使用独立 Helper，拒绝覆盖已有仓库')
+    write_json(path, plan)
+
+
+def helper_hosts(path, address, hostname):
+    path = Path(path)
+    content = path.read_text()
+    present = False
+    for line in content.splitlines():
+        fields = line.split('#', 1)[0].split()
+        if hostname in fields[1:]:
+            if fields[0] != address:
+                raise ValueError('hosts 中已有不同 Helper 地址；请核对后再继续')
+            present = True
+    if present:
+        return
+    with path.open('a') as stream:
+        stream.write(('' if content.endswith('\n') else '\n') + address + ' ' + hostname + '\n')
+
+
 def ignition_file(path, content):
     return {'path': path, 'mode': 420, 'overwrite': True,
             'contents': {'source': 'data:text/plain;charset=utf-8;base64,' +
@@ -255,7 +288,8 @@ def remove_bootstrap(path):
 
 if __name__ == '__main__':
     actions = {'install-config': install_config, 'prepare-manifests': prepare_manifests,
-               'bootstrap-ntp': bootstrap_ntp, 'helper-chrony': helper_chrony, 'commands': commands,
+               'bootstrap-ntp': bootstrap_ntp, 'helper-chrony': helper_chrony,
+               'helper-plan': helper_plan, 'helper-hosts': helper_hosts, 'commands': commands,
                'extract-tools': extract_tools, 'remove-bootstrap': remove_bootstrap}
     try:
         actions[sys.argv[1]](*sys.argv[2:])

@@ -10,8 +10,8 @@
 | Operator 可搬迁导出/导入 | Web Terminal 1.17.2 + DevWorkspace 1.0.0，10 个镜像；全新缓存、不同含空格路径、只转移校验清单内文件、外网阻断的导入通过 |
 | Operator 实际使用 | 两个 CSV 均 Succeeded；创建 DevWorkspace 达到 Running，并成功执行标记命令 |
 | 完整 delivery 打包 | 完整组合导出与换路径整包校验已通过，收集 359 个 Helper RPM；新路径下从平台归档重建规则、阻断外网导入、安装后配置通过，MCP 收敛，原有工作空间仍 Running |
-| 本地回归 | 两版分别 106 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
-| 全新物理 Helper 的 RPM 初始化 | 已实现完整收集及本地 GPG 校验安装模式，尚未在一台新物理服务器全量验收 |
+| 本地回归 | 两版分别 113 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
+| 全新隔离 Helper 初始化 | RHEL 9.6 虚拟机完成 359 RPM 本地 GPG 安装、默认 SELinux/firewalld、Docker/Harbor、平台离线导入及 Ignition/handoff 生成；未启动第二套集群节点，物理服务器尚待单独验收 |
 | Virtualization / ACM | 兼容组合和业务依赖规则已补入，完整离线组件及工作负载验收尚未完成 |
 | OpenShift AI | 当前官方支持矩阵列出 4.22，未列出 5.0；5.x 准备脚本明确拒绝该组合 |
 
@@ -30,6 +30,8 @@
 所提供的官方 oc-mirror 构建在从 registry catalog 的归档导入时仍访问源 catalog。上游已有修复，但当时官方发布包早于该修复。当前流程先准备本地 OCI catalog，导出与导入均使用包内相对路径；该路径已完成阻断外网的实测。
 
 另一个已修复问题是过滤 catalog 的 targetTag 与仓库名包含相同文本时，现有工具可能替换错误位置。生成器保证 tag 不出现在 repository 名称中；导出后额外检查归档中的正确过滤目录标签及全部镜像 descriptor/layer，缺失时不生成成功清单。独立交付使用完整导出，避免把仅含增量的归档误当成可搬迁全量包。
+
+新 Helper 实测还发现上游 NTP 自引用，当前代码拒绝该配置并提供显式 `NTP_MODE=local`；默认上游模式等待同步，失败停止。平台导入缓存移至私有状态目录；首次输入失败可使用原目录重试。生成 Ignition 前的重试固定 Helper 拓扑，并复用已有 Harbor 配置和数据。
 
 官方 `openshift-install-rhel9-amd64.tar.gz` 中的二进制为 `openshift-install-fips`；当前非 FIPS 安装改用官方标准 `openshift-install-linux.tar.gz`，不会把 FIPS 文件直接改名。
 

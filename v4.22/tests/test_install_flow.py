@@ -14,6 +14,30 @@ def function(name):
 
 
 class InstallFlowTests(unittest.TestCase):
+    def test_harbor_retry_preserves_existing_password_configuration(self):
+        with tempfile.TemporaryDirectory() as directory:
+            state = Path(directory)
+            harbor = state / 'harbor/harbor'
+            harbor.mkdir(parents=True)
+            config = harbor / 'harbor.yml'
+            config.write_text('harbor_admin_password: fixture-original\n')
+            installer = harbor / 'install.sh'
+            installer.write_text('#!/bin/sh\ntouch "$TEST_STAMP"\n')
+            installer.chmod(0o700)
+            script = ('set -euo pipefail\nlog() { :; }\n'
+                      'die() { echo "$*" >&2; exit 1; }\nsudo() { "$@"; }\n'
+                      'tar() { echo "unexpected overwrite" >&2; exit 1; }\n'
+                      + function('install_harbor') + '\ninstall_harbor\n')
+            env = dict(os.environ, STATE_ROOT=str(state), CERT_DIR=str(state / 'cert'),
+                       OCP_DOMAIN='lab.test', HARBOR_PASSWORD='fixture-new-value', TEST_STAMP=str(state / 'installed'))
+            rejected = subprocess.run(['bash', '-c', script], env=env, text=True, capture_output=True)
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertFalse((state / 'installed').exists())
+            (state / 'helper-plan.json').write_text('{}')
+            subprocess.run(['bash', '-c', script], env=env, check=True)
+            self.assertTrue((state / 'installed').exists())
+            self.assertEqual(config.read_text(), 'harbor_admin_password: fixture-original\n')
+
     def test_platform_import_cache_stays_outside_delivery(self):
         with tempfile.TemporaryDirectory() as directory:
             base = Path(directory)

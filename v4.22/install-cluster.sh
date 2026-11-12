@@ -731,6 +731,15 @@ install_harbor() {
     local SERVER_CERT="${CERT_DIR}/${OCP_DOMAIN}.cert"
     local SERVER_KEY="${CERT_DIR}/${OCP_DOMAIN}.key"
 
+    if [[ -f $STATE_ROOT/harbor/harbor/harbor.yml ]]; then
+        [[ -f $STATE_ROOT/helper-plan.json ]] || die '已有 Harbor 缺少本安装流程的计划记录，拒绝覆盖'
+        [[ -f $STATE_ROOT/harbor/harbor/install.sh ]] || die '已有 Harbor 安装文件不完整，请先检查失败阶段'
+        log '重试使用已有 Harbor 配置和数据；不会改写数据库或管理员密码。'
+        cd "$STATE_ROOT/harbor/harbor"
+        sudo ./install.sh
+        return
+    fi
+
     # 创建 Harbor 配置目录
     mkdir -p "$STATE_ROOT/harbor"
 
@@ -919,8 +928,11 @@ main() {
     collect_ips
     show_summary
     confirm_config
+    python3 "$SCRIPT_DIR/lib/artifacts.py" helper-plan "$STATE_ROOT/helper-plan.json" \
+        "$OCP_RELEASE" "$OCP_DOMAIN" "$HELPER_IP_ADDRESS" "$BOOTSTRAP_IP" \
+        "$NFS_CIDR" "$NTP_SERVER" "$NTP_MODE" "${MASTER_IPS[@]}"
     backup_file /etc/hosts
-    printf "%s %s\n" "$HELPER_IP_ADDRESS" "$HELPER_HOSTNAME" >> /etc/hosts
+    python3 "$SCRIPT_DIR/lib/artifacts.py" helper-hosts /etc/hosts "$HELPER_IP_ADDRESS" "$HELPER_HOSTNAME"
     backup_file /etc/resolv.conf
     hostnamectl set-hostname "$HELPER_HOSTNAME"
     configure_local_yum

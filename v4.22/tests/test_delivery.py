@@ -102,6 +102,34 @@ class DeliveryTests(unittest.TestCase):
                 with delivery.locked(self.root):
                     self.fail('Concurrent lock admitted')
 
+    def test_input_failure_can_retry_the_same_directory(self):
+        auth = self.root.parent / 'source-auth.json'
+        command = ['delivery.py', 'export', '--bundle', str(self.root), '--platform-only', '--authfile', str(auth)]
+        with patch.object(delivery.sys, 'argv', command), patch.object(delivery.sys, 'platform', 'linux'), \
+             patch.object(delivery.sys.stdin, 'isatty', return_value=False):
+            with self.assertRaises(FileNotFoundError):
+                delivery.main()
+            self.assertEqual(json.loads((self.root / 'delivery-state.json').read_text())['failedAt'], 'input-validation')
+            auth.write_text('{"auths":{"registry.test":{"auth":"fixture"}}}')
+            with patch.object(delivery, 'prepare_tools', side_effect=ValueError('reached-tools')):
+                with self.assertRaisesRegex(ValueError, 'reached-tools'):
+                    delivery.main()
+        self.assertEqual(json.loads((self.root / 'delivery-state.json').read_text())['failedAt'], 'tools')
+        self.assertFalse((self.root / 'delivery.json').exists())
+
+    def test_input_retry_still_rejects_unrelated_existing_files(self):
+        auth = self.root.parent / 'source-auth.json'
+        auth.write_text('{"auths":{"registry.test":{"auth":"fixture"}}}')
+        (self.root / 'unrelated-private-file').write_text('fixture')
+        command = ['delivery.py', 'export', '--bundle', str(self.root), '--platform-only', '--authfile', str(auth)]
+        with patch.object(delivery.sys, 'argv', command), patch.object(delivery.sys, 'platform', 'linux'), \
+             patch.object(delivery.sys.stdin, 'isatty', return_value=False), patch.object(delivery, 'prepare_tools') as tools:
+            for attempt in range(2):
+                with self.assertRaisesRegex(ValueError, '请选择空目录'):
+                    delivery.main()
+            tools.assert_not_called()
+        self.assertFalse((self.root / 'delivery-plan.json').exists())
+
     def test_installer_uses_relative_platform_and_helper_locations(self):
         args = SimpleNamespace(action='install', state_root=str(self.root.parent / 'private-state'), script_args=['--skip-firewalld'])
         with patch.object(delivery, 'verify', return_value={'version': operator_profile.release(), 'helperMode': 'existing'}), \

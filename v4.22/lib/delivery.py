@@ -301,7 +301,7 @@ def export(args, root, cache):
               'operators': not args.platform_only, 'select': args.select, 'catalog': args.catalog,
               'image': args.image, 'archiveSize': args.archive_size}
     path = root / 'delivery-plan.json'
-    if not path.exists() and any(p.name != '.delivery.lock' for p in root.iterdir()):
+    if not path.exists() and any(p.name not in ('.delivery.lock', 'delivery-state.json') for p in root.iterdir()):
         raise ValueError('首次准备请选择空目录，避免将既有文件或凭据混入交付包')
     if path.exists() and json.loads(path.read_text()) != intent:
         raise ValueError('已有不同交付计划；请使用新目录，避免覆盖历史离线包')
