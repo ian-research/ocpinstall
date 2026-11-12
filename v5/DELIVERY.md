@@ -16,7 +16,7 @@
 
 ## 联网准备机
 
-完整 `rpm` 模式使用 **RHEL 9 x86_64**，目标 Helper 的 RHEL 版本须与准备机相同。准备机必须已启用有权访问的 RHEL 软件源，并具备 Python 3.9+、Bash 4+、skopeo、`dnf download`（dnf-plugins-core）及 createrepo_c。需要足够磁盘同时保存缓存、镜像归档和目录镜像；复杂 Operator 组合可能达到数百 GB。源 pull secret 放在交付目录外。
+完整 `rpm` 模式使用 **RHEL 9 x86_64**，目标 Helper 的 RHEL 版本须与准备机相同。准备机必须已启用有权访问的 RHEL 软件源，并具备 Python 3.9+、PyYAML、Bash 4+、skopeo、`dnf download`（dnf-plugins-core）及 createrepo_c。需要足够磁盘同时保存缓存、镜像归档和目录镜像；复杂 Operator 组合可能达到数百 GB。源 pull secret 放在交付目录外。
 
 从红帽获取官方 oc-mirror v2 并解压为名为 `oc-mirror` 的可执行文件。完整入口会把此二进制打包到工具目录，确保源端与离线端一致。它不会另行下载一个不同版本的插件。
 
@@ -79,7 +79,7 @@ sudo env OCP_REGISTRY_STORAGE=unchanged CREATE_ADMIN=false \
 1. 校验整包及版本。
 2. 等待 bootstrap 完成，移除 HAProxy 的 bootstrap 后端。
 3. 等待 `install-complete`；节点/CSR 未准备好时停止在安装阶段。
-4. 使用本地 Harbor 凭据导入 Operator 包（默认 `/root/.docker/config.json`，也可 `--authfile /secure/harbor-auth.json`）。
+4. 缺少搬迁前生成的平台镜像规则时，先从本包平台归档重新导入并生成规则；再使用本地 Harbor 凭据导入 Operator 包（默认 `/root/.docker/config.json`，也可 `--authfile /secure/harbor-auth.json`）。
 5. 运行配置脚本，应用平台镜像规则和独立命名的离线 Operator 目录。
 
 集群未达到 Available、仍在 Progressing 或 Failing 时，配置脚本拒绝修改集群。内部 Registry 默认保持现状；需要持久存储、动态 StorageClass、身份认证或额外操作数镜像时，应按所选组件的要求准备。等待 MCP 更新、CatalogSource READY 后再安装计划中的 Operator。配置离线目录不等于自动创建所有 Operator 的 Subscription 或业务 CR。
