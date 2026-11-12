@@ -1,0 +1,35 @@
+{
+  "collectedAtUTC": "2026-11-12T19:39:38.578169+00:00",
+  "scope": "4.22.22 tools and catalog; fresh-path offline import only, no 4.22 Kubernetes installation",
+  "records": {
+    "422-tools-results.json": {
+      "state": "passed",
+      "version": "4.22.22",
+      "client": "Client Version: 4.22.22",
+      "kubectl": "Client Version: v1.35.2",
+      "installer": "/opt/ocp5-operator-test/422-tools-bin/openshift-install 4.22.22",
+      "officialKubectlHardlinkPreserved": true,
+      "allToolsExecutable": true
+    },
+    "422-operator-results.json": {
+      "state": "passed",
+      "stage": "complete",
+      "version": "4.22.22",
+      "planHash": "a0c39278fb23511e3f570e939e7f87bd52ec778e5c542a583fc17373d7216529",
+      "sourceWorkingDirTransferred": false,
+      "externalConnectionBlocked": true,
+      "wrongClusterApplyBlocked": true
+    },
+    "ai-image-size-audit.json": {
+      "state": "passed",
+      "imageCount": 145,
+      "targetVersion": "4.22.22",
+      "operatorVersion": "3.5.2",
+      "uniqueLayerCount": 1274,
+      "compressedAllPlatformsBytes": 315852933951,
+      "conservativeThreeCopyBytes": 969033638333,
+      "fitsWith150GiBFloor": false,
+      "freeDiskBytes": 465745465344
+    }
+  }
+}

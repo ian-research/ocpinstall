@@ -1,5 +1,5 @@
 {
-  "collectedAtUTC": "2026-11-12T19:20:09.853277+00:00",
+  "collectedAtUTC": "2026-11-12T19:39:38.578169+00:00",
   "records": {
     "verify-performance-results.json": {
       "state": "passed",
@@ -170,82 +170,44 @@
         "hostDiskFreeGiB": 494.24
       }
     },
-    "product-plan-results.json": {
+    "product-transfer-final-results.json": {
       "state": "passed",
-      "results": [
-        {
-          "name": "5-virt",
-          "planHash": "583c2d06ed85212db1488cd95bf2c4ffa97cd0c18846e3d9dac659d736baba54",
-          "packages": [
-            {
-              "name": "kubevirt-hyperconverged",
-              "version": "5.0.0",
-              "relatedImageCount": 69
-            }
-          ],
-          "additionalImageCount": 1
+      "stage": "complete",
+      "products": {
+        "product-5-virt": {
+          "state": "passed",
+          "stage": "offline-import-complete",
+          "archiveBytes": 18543960576,
+          "externalConnectionBlocked": true
         },
-        {
-          "name": "5-acm",
-          "planHash": "a36c57c2d36651685ce8bb128b4a1b64d141b3101524cbe586b40e23a33a64a9",
-          "packages": [
-            {
-              "name": "advanced-cluster-management",
-              "version": "5.0.0",
-              "relatedImageCount": 51
-            },
-            {
-              "name": "multicluster-engine",
-              "version": "5.0.0",
-              "relatedImageCount": 45
-            }
-          ],
-          "additionalImageCount": 0
-        },
-        {
-          "name": "422-components",
-          "planHash": "1746970aae1b0c50a2959e3fd031c51456526c09eb4c5ef255d47e5347cc15bd",
-          "packages": [
-            {
-              "name": "advanced-cluster-management",
-              "version": "5.0.0",
-              "relatedImageCount": 51
-            },
-            {
-              "name": "multicluster-engine",
-              "version": "5.0.0",
-              "relatedImageCount": 45
-            },
-            {
-              "name": "kubevirt-hyperconverged",
-              "version": "4.22.16",
-              "relatedImageCount": 69
-            },
-            {
-              "name": "rhods-operator",
-              "version": "3.5.2",
-              "relatedImageCount": 150
-            }
-          ],
-          "additionalImageCount": 9
+        "product-5-acm": {
+          "state": "passed",
+          "stage": "offline-import-complete",
+          "archiveBytes": 32318697472,
+          "externalConnectionBlocked": true
         }
-      ]
+      }
     },
-    "cluster": {
-      "version": "5.0.1",
-      "conditions": {
-        "RetrievedUpdates": "False",
-        "ImplicitlyEnabledCapabilities": "False",
-        "ReleaseAccepted": "True",
-        "Available": "True",
-        "Failing": "False",
-        "Progressing": "False"
-      },
-      "nodeCount": 3,
-      "readyNodeCount": 3
+    "422-operator-results.json": {
+      "state": "passed",
+      "stage": "complete",
+      "version": "4.22.22",
+      "planHash": "a0c39278fb23511e3f570e939e7f87bd52ec778e5c542a583fc17373d7216529",
+      "sourceWorkingDirTransferred": false,
+      "externalConnectionBlocked": true,
+      "wrongClusterApplyBlocked": true
     },
-    "hostSELinux": "Enforcing",
-    "publicConsoleHTTP": 200,
+    "ai-image-size-audit.json": {
+      "state": "passed",
+      "imageCount": 145,
+      "targetVersion": "4.22.22",
+      "operatorVersion": "3.5.2",
+      "uniqueLayerCount": 1274,
+      "compressedAllPlatformsBytes": 315852933951,
+      "conservativeThreeCopyBytes": 969033638333,
+      "fitsWith150GiBFloor": false,
+      "freeDiskBytes": 465745465344
+    },
     "helper-robustness-results.json": {
       "overall": "PASS",
       "checks": [
@@ -406,8 +368,83 @@
         "query_rc": 0,
         "clock_adjusted": false,
         "result": "NTP response served at stratum 10; client reported offset -0.603061 seconds (ignored)"
+      }
+    },
+    "product-plan-results.json": {
+      "state": "passed",
+      "results": [
+        {
+          "name": "5-virt",
+          "planHash": "583c2d06ed85212db1488cd95bf2c4ffa97cd0c18846e3d9dac659d736baba54",
+          "packages": [
+            {
+              "name": "kubevirt-hyperconverged",
+              "version": "5.0.0",
+              "relatedImageCount": 69
+            }
+          ],
+          "additionalImageCount": 1
+        },
+        {
+          "name": "5-acm",
+          "planHash": "a36c57c2d36651685ce8bb128b4a1b64d141b3101524cbe586b40e23a33a64a9",
+          "packages": [
+            {
+              "name": "advanced-cluster-management",
+              "version": "5.0.0",
+              "relatedImageCount": 51
+            },
+            {
+              "name": "multicluster-engine",
+              "version": "5.0.0",
+              "relatedImageCount": 45
+            }
+          ],
+          "additionalImageCount": 0
+        },
+        {
+          "name": "422-components",
+          "planHash": "1746970aae1b0c50a2959e3fd031c51456526c09eb4c5ef255d47e5347cc15bd",
+          "packages": [
+            {
+              "name": "advanced-cluster-management",
+              "version": "5.0.0",
+              "relatedImageCount": 51
+            },
+            {
+              "name": "multicluster-engine",
+              "version": "5.0.0",
+              "relatedImageCount": 45
+            },
+            {
+              "name": "kubevirt-hyperconverged",
+              "version": "4.22.16",
+              "relatedImageCount": 69
+            },
+            {
+              "name": "rhods-operator",
+              "version": "3.5.2",
+              "relatedImageCount": 150
+            }
+          ],
+          "additionalImageCount": 9
+        }
+      ]
+    },
+    "cluster": {
+      "version": "5.0.1",
+      "conditions": {
+        "RetrievedUpdates": "False",
+        "ImplicitlyEnabledCapabilities": "False",
+        "ReleaseAccepted": "True",
+        "Available": "True",
+        "Failing": "False",
+        "Progressing": "False"
       },
-      "sourceEvidenceSha256": "b2e269f390259ebb77d07b579dca9dd5f0693689b8ba8bbd4e1bada739d587aa"
-    }
+      "nodeCount": 3,
+      "readyNodeCount": 3
+    },
+    "hostSELinux": "Enforcing",
+    "publicConsoleHTTP": 200
   }
 }

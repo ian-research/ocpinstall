@@ -13,7 +13,7 @@ python3 -m pip install PyYAML==6.0.3
 bash v5/prepare-operators.sh
 ```
 
-菜单支持下载、只生成计划、导入、校验。依次选择：
+首层选择 1 会连同 OpenShift 本体准备完整交付包，选择 2 进入仅 Operator 子菜单，选择 3 只准备平台完整包。仅 Operator 子菜单支持下载、只生成计划、导入、校验，依次选择：
 
 1. 离线包的保存路径，可使用包含空格的路径；独立缓存默认为该路径加 `-cache`。
 2. catalog 别名及镜像地址，可用逗号添加多个目录。默认 `redhat=registry.redhat.io/redhat/redhat-operator-index:v5.0`；脚本读取并锁定实际 digest，访问失败会停止，不自动换成 4.x 目录。
@@ -121,3 +121,5 @@ bash v5/apply-operators.sh --bundle "/offline/operator bundle" \
 ```
 
 入口先检查集群版本和安装完成状态，再验证离线包；失败时不修改 OperatorHub。`--dry-run` 使用服务端验证，不关闭默认目录。正式执行会关闭默认联网目录。复杂组件生成的 `product-manifests/` 需按其中 README 分阶段应用；小型 ACM 验证可显式设置 `ACM_AVAILABILITY=Basic`。
+
+AI 的 CPU Workbenches 范围用于限定配置和功能验收，不会删改官方 CSV 的 `relatedImages`。因此包中仍保留 Operator 声明的其他功能镜像，不能按少数 Workbench 镜像估算整个离线包容量；镜像归档、独立缓存和目标仓库需要分别预留空间。

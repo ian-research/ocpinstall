@@ -5,6 +5,7 @@
 | 范围 | 结果 |
 |---|---|
 | 官方 4.22.22 工具 | 已真实下载并验证客户端、标准安装器、kubectl 硬链接和执行权限；[记录](tests/evidence/tools-2026-11-13.json) |
+| 4.22 Operator 包离线导入 | 使用真实 4.22 目录及工具完成 Web Terminal/DevWorkspace 的换路径、全新缓存、阻断外网导入；在 5.0 上错误版本应用被阻止，未写入 4.22 资源；[记录](tests/evidence/operators-2026-11-13.json) |
 | 三节点 4.22.22 | 尚未完成实机验收；独立版本脚本与平台配置已提供 |
 | 共享流程在 5.0.1 的离线平台安装 | 已使用本地 Harbor 安装；不能据此认定 4.22 已验收 |
 | 共享流程在 5.0.1 的安装后基础功能 | Deployment/Route、扩缩容、重启、DNS、非 root 容器、静态 NFS PVC、RBAC、内部 Registry 已验证 |
@@ -24,6 +25,8 @@
 - **Virtualization**：5.0 平台使用 Virtualization 5.0；4.22 使用 Virtualization 4.22，禁止直接借用 5.0 默认 channel。HCO 关联镜像包含其控制组件，另补充并锁定 RHEL 9 guest container disk。基础虚拟机之外，桥接网络、SR-IOV、负载均衡、持久化/迁移能力需要对应网络和存储组件。
 - **ACM 5.0**：补选 MCE 5.0，不能依赖空的 OLM catalog dependency。创建 MultiClusterHub 时要把 `installer.open-cluster-management.io/mce-subscription-spec` 的 `source` 指向实际离线 CatalogSource。基础 Hub 验收不等于备份、Submariner、GitOps 或多托管集群场景验收。
 - **AI 3.5.2/3.5.3 / 4.22**：目前规则范围是 Dashboard 和 CPU Workbenches，额外收录红帽固定提交中的 CPU/Python 3.12 Workbench 镜像。需要默认动态 StorageClass、真实 IDP 用户以及至少两个 8 CPU/32 GiB 可调度节点。GPU、KServe、训练、llm-d、RAG 不包含在此基础范围；应按功能另选 cert-manager、Kueue、JobSet、Connectivity Link、LWS 等，并准备对象存储、模型数据及其他运行镜像。
+
+AI 3.5.2 的只读容量审计包含 145 个镜像引用；完整多架构引用中去重压缩层约 294 GiB（不含归档、缓存和 Harbor 的额外空间）。该数字是元数据审计，未下载镜像或在 4.22 上安装 AI；当前单台测试机空间不足以按保留余量的方案完成全量导入，需另行安排资源与测试窗口。
 
 按现有组合进行准备时，规则会拒绝不在当前核实范围内的版本，不静默借用其他平台 catalog。
 

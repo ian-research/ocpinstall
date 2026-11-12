@@ -9,6 +9,7 @@
 | `prepare-offline.sh` | 下载工具、生成镜像配置、导出/导入离线镜像、校验归档 |
 | `install-cluster.sh` | 配置 Helper、Harbor、DNS、HAProxy、HTTP、NFS/NTP，并生成安装资料 |
 | `setup-cluster.sh` | 应用离线 Operator 资源、可选 NFS、内部 Registry、管理员和宽松 SCC |
+| `apply-operators.sh` | 检查版本与集群状态，仅应用已验证 Operator 包的离线目录/镜像规则；支持服务端预检查 |
 | `prepare-operators.sh` | 交互选择 Operator，解析依赖并独立导出/导入离线包，详见 [OPERATORS.md](OPERATORS.md) |
 
 5.x 文件在独立的 `v5/` 目录，但 Helper 会使用相同的系统服务和端口，**请使用独立 RHEL 9 Helper 主机**。安装脚本检测到旧版 `/opt/ocpinstall` 或 `/opt/harbor/harbor/harbor.yml` 时会退出。不能在同一 Helper 上同时运行两套 DNS、HAProxy 和 Harbor，也不是把现有 4.x 集群原地升级到 5.x 的工具。

@@ -4,7 +4,7 @@
 
 本目录独立保存 4.22 版交互脚本，默认目标为 **4.22.22**，目录镜像为 `registry.redhat.io/redhat/redhat-operator-index:v4.22`。5.x 版在 [`../v5/`](../v5/)，两版的脚本、默认配置、离线包和集群资源名称分别管理，不能互相混用。
 
-首层菜单提供完整交付与仅 Operator 两种模式。完整模式包含本目录独立的安装、配置脚本；仅 Operator 的 `plan/export/import/verify` 命令不重复准备平台。旧版根目录脚本不被覆盖。
+首层菜单提供完整交付、仅 Operator 和仅平台完整包三种模式。完整模式包含本目录独立的安装、配置脚本；仅 Operator 的 `plan/export/import/verify` 命令不重复准备平台。旧版根目录脚本不被覆盖。
 
 授时默认使用真正可达的内部上游 `NTP_SERVER`，不能填写 Helper 自己。没有上游的完全隔离环境，可显式设置 `NTP_MODE=local` 并省略 `NTP_SERVER`，以 Helper 时钟统一节点；请先核对 Helper 时间。上游模式未同步会停止安装。完整交付路径与重试方法见 [DELIVERY.md](DELIVERY.md)。
 
@@ -17,7 +17,7 @@ python3 -m pip install PyYAML==6.0.3
 bash v4.22/prepare-operators.sh
 ```
 
-首层选择完整交付或仅 Operator；仅 Operator 子菜单提供下载、计划、导入和校验。
+首层选择完整交付、仅 Operator 或仅平台完整包；仅 Operator 子菜单提供下载、计划、导入和校验。
 
 选择下载后依次填写保存路径、catalog 和凭据文件路径；搜索 Operator、按序号选择 channel/版本，可反复添加，输入 `done` 结束。脚本显示自动补齐的依赖、版本约束和提供者，可补充额外运行时镜像，输入 `yes` 确认下载。可以先选“只生成依赖计划”，检查之后再下载。
 
