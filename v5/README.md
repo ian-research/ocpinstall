@@ -16,7 +16,9 @@
 
 授时默认使用真正可达的内部上游 `NTP_SERVER`，不能填写 Helper 自己。没有上游的完全隔离环境，可显式设置 `NTP_MODE=local` 并省略 `NTP_SERVER`，以 Helper 时钟统一节点；请先核对 Helper 时间。上游模式未同步会停止安装。完整交付路径与重试方法见 [DELIVERY.md](DELIVERY.md)。
 
-## 1. 联网主机准备工具和镜像
+## 1. 可选：分步准备工具和平台镜像
+
+推荐使用本文开头的完整离线准备入口，自动收集平台、工具、RHCOS、Helper RPM 和 Harbor。以下为单独维护平台包的分步方式；不要把分步平台包当作完整交付包。
 
 使用 Linux x86_64，安装 Python 3.9+、Bash。源仓库 pull secret 保存在 bundle 外，权限 `600`，例如 `/root/redhat-pull-secret.json`。
 
@@ -41,7 +43,7 @@ mkdir -p /data/ocp5-bin
 for archive in /data/ocp5-bundle/tools/*.tar.gz; do
   tar -xzf "$archive" -C /data/ocp5-bin
 done
-chmod +x /data/ocp5-bin/oc /data/ocp5-bin/oc-mirror /data/ocp5-bin/openshift-install
+chmod +x /data/ocp5-bin/oc /data/ocp5-bin/kubectl /data/ocp5-bin/oc-mirror /data/ocp5-bin/openshift-install
 export PATH=/data/ocp5-bin:$PATH
 oc mirror --v2 --help
 openshift-install version
@@ -92,7 +94,7 @@ bash v5/prepare-offline.sh export --bundle /data/ocp5-with-operators \
 ## 2. Helper 前提和输入
 
 - 独立、最小化安装的 RHEL 9 x86_64，root、Bash 4+、Python 3 已安装。
-- RHEL 9 ISO 挂载到 `/dev/sr0`。脚本通过 ISO 的 BaseOS/AppStream 安装依赖，包括 `python3-pyyaml`；请使用包含所需依赖的 RHEL 9 DVD 版本。
+- 手动 ISO 软件源模式：RHEL 9 ISO 挂载到 `/dev/sr0`。脚本通过 ISO 的 BaseOS/AppStream 安装依赖，包括 `python3-pyyaml`；请使用包含所需依赖的 RHEL 9 DVD 版本。
 - AWS RHEL 9 AMI 可改用 `--repo-mode existing`（或 `YUM_REPO_MODE=existing`），保留并使用现有 RHUI/YUM 源，跳过 DVD 挂载和源文件变更。此模式下 Helper 安装依赖时需要访问软件源。
 - Helper、Bootstrap 和三个 Master 的静态 IPv4 地址在同一 `/24` 且互不重复；网络不能与 `10.128.0.0/14` Pod 网络及 `172.30.0.0/16` Service 网络重叠。
 - 可访问的内部上游 NTP。脚本配置 Helper 提供 NTP，并在安装阶段向 Master MachineConfig 和 Bootstrap Ignition 写入 Helper 的时间源。Live ISO 阶段也应先确认时间正确。
@@ -107,7 +109,7 @@ bash v5/prepare-offline.sh export --bundle /data/ocp5-with-operators \
 | Harbor | `/opt/harbor-offline-installer-v2.12.2.tgz`，沿用 4.x PoC 的独立依赖版本 |
 | Docker RPM 集合 | `/opt/docker-ce.tar.gz`，解压后为 `/opt/docker-ce/` |
 
-Docker 集合沿用原脚本的 RHEL 9 RPM 名称：containerd.io 1.7.27-3.1、Docker CE/CLI/rootless extras 28.0.4-1、Buildx 0.22.0-1、Compose 2.34.0-1，以及目标 RHEL 9 所需依赖。Harbor、Docker 不跟随 OpenShift 版本号，尚需在目标主机验证这组依赖。当前脚本没有自动准备 RHEL、Harbor 和 Docker 的离线包。
+Docker 集合沿用原脚本的 RHEL 9 RPM 名称：containerd.io 1.7.27-3.1、Docker CE/CLI/rootless extras 28.0.4-1、Buildx 0.22.0-1、Compose 2.34.0-1，以及目标 RHEL 9 所需依赖。Harbor、Docker 不跟随 OpenShift 版本号，尚需在目标主机验证这组依赖。这段为手动准备方式沿用的依赖说明。完整交付模式会收集并记录实际的 Helper RPM 和 Harbor 版本，使用包内本地软件源，不要求提供 RHEL DVD ISO；RPM 准备机与离线 Helper 必须具有相同的 RHEL 小版本。
 
 默认运行路径：
 
@@ -149,7 +151,7 @@ Master 的 Chrony MachineConfig 在生成 Ignition **之前**加入安装目录�
 
 ## 4. 安装节点和完成引导
 
-1. 在联网主机用 **本次 标准 Linux 安装器**执行 `openshift-install coreos print-stream-json`，下载指定的 RHCOS Live ISO，转移到隔离环境。脚本不自动下载 ISO。
+1. 在联网主机用 **本次 标准 Linux 安装器**执行 `openshift-install coreos print-stream-json`，下载指定的 RHCOS Live ISO，转移到隔离环境。完整交付模式已自动下载该 ISO；只有手动分步模式需要自行准备。
 2. ISO 启动 Bootstrap 和 Master，确认地址、网关、DNS、时间及目标磁盘。
 3. 查看 `/opt/ocp5/node-install-commands.txt`。该文件为 Bootstrap/Master 分别生成 `sudo coreos-installer install ... --offline --copy-network --ignition-hash=sha512-...`，必须替换目标磁盘占位符。
 4. 安装并重启节点，在 Helper 上使用私有工具和凭据：
@@ -178,7 +180,7 @@ sudo env KUBECONFIG=/opt/ocp5/install/auth/kubeconfig \
   bash v5/setup-cluster.sh
 ```
 
-默认核对集群目标版本，禁用默认在线 Operator 源，应用导入生成的资源。只镜像了平台时不会产生可用的离线 Operator catalog；要使用 Operator 需在导出时选包。可设置 `APPLY_OPERATORS=false` 跳过应用。
+默认先核对集群版本、节点 Ready/可调度、MCP 收敛、ClusterOperator 状态，以及四个核心控制平面 Operator 的实际 Deployment 就绪情况；任何检查失败均停止后续集群变更，再禁用默认在线 Operator 源并应用导入生成的资源。只镜像了平台时不会产生可用的离线 Operator catalog；要使用 Operator 需在导出时选包。可设置 `APPLY_OPERATORS=false` 跳过应用。
 
 NTP 已在安装阶段配置，后置脚本不再重复应用 NTP MachineConfig。
 

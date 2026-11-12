@@ -32,6 +32,7 @@ class ApplyOperatorTests(unittest.TestCase):
         with patch.object(sys, 'argv', command), \
              patch.object(apply_operators, 'load_plan', return_value={'targetVersion': self.version}), \
              patch.object(apply_operators, 'prepare') as prepare, \
+             patch.object(apply_operators, 'require_ready') as health, \
              patch.object(apply_operators, 'disable_default_sources') as disable, \
              patch.object(apply_operators.subprocess, 'run', return_value=SimpleNamespace(stdout=json.dumps(self.cluster))) as run:
             try:
@@ -40,6 +41,7 @@ class ApplyOperatorTests(unittest.TestCase):
                 self.prepare = prepare
                 self.run = run
                 self.disable = disable
+                self.health = health
 
     def test_wrong_minor_is_blocked_before_preparation_or_mutation(self):
         self.cluster['status']['desired']['version'] = '4.18.10'
@@ -62,6 +64,7 @@ class ApplyOperatorTests(unittest.TestCase):
         self.assertIn('--dry-run=server', commands[-1])
         self.assertFalse(any('patch' in command for command in commands))
         self.disable.assert_not_called()
+        self.health.assert_called_once()
         self.assertEqual(self.run.call_args.kwargs['env']['KUBECONFIG'], '/private/admin.conf')
 
     def test_apply_preserves_explicit_basic_availability(self):
@@ -86,10 +89,27 @@ class ApplyOperatorTests(unittest.TestCase):
         with patch.object(sys, 'argv', command), \
              patch.object(apply_operators, 'load_plan', return_value={'targetVersion': self.version}), \
              patch.object(apply_operators, 'prepare', side_effect=ValueError('corrupt archive')), \
+             patch.object(apply_operators, 'require_ready'), \
              patch.object(apply_operators.subprocess, 'run', return_value=SimpleNamespace(stdout=json.dumps(self.cluster))) as run:
             with self.assertRaisesRegex(ValueError, 'corrupt archive'):
                 apply_operators.main()
             self.assertEqual(run.call_count, 1)
+
+    def test_runtime_health_failure_prevents_ca_policy_and_resource_changes(self):
+        command = ['apply_operators.py', '--bundle', str(self.bundle), '--kubeconfig', '/private/admin.conf']
+        with patch.object(sys, 'argv', command), \
+             patch.object(apply_operators, 'load_plan', return_value={'targetVersion': self.version}), \
+             patch.object(apply_operators, 'require_ready', side_effect=ValueError('MCP updating')), \
+             patch.object(apply_operators, 'prepare') as prepare, \
+             patch.object(apply_operators, 'ensure_registry_trust') as trust, \
+             patch.object(apply_operators, 'disable_default_sources') as disable, \
+             patch.object(apply_operators.subprocess, 'run', return_value=SimpleNamespace(stdout=json.dumps(self.cluster))) as run:
+            with self.assertRaisesRegex(ValueError, 'MCP updating'):
+                apply_operators.main()
+            self.assertEqual(run.call_count, 1)
+            prepare.assert_not_called()
+            trust.assert_not_called()
+            disable.assert_not_called()
 
 
 if __name__ == '__main__':

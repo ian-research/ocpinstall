@@ -12,6 +12,7 @@ from operator_resources import prepare
 from operators import load_plan
 from registry_trust import ensure as ensure_registry_trust, reload_components
 from catalog_policy import disable_default_sources
+from cluster_health import require_ready
 
 
 def main():
@@ -35,6 +36,7 @@ def main():
     conditions = {c['type']: c['status'] for c in cluster['status'].get('conditions', [])}
     if conditions.get('Available') != 'True' or conditions.get('Progressing') != 'False' or conditions.get('Failing') != 'False':
         raise ValueError('集群尚未安装完成或存在故障；未应用任何资源')
+    require_ready(env)
     output = bundle / 'operator-resources.json'
     prepare(bundle, output, os.environ.get('ACM_AVAILABILITY', 'High'))
     if args.registry_ca:
@@ -52,6 +54,6 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except (ValueError, OSError, KeyError, subprocess.CalledProcessError) as error:
+    except (ValueError, OSError, KeyError, subprocess.SubprocessError) as error:
         print(f'错误: {error}', file=sys.stderr)
         sys.exit(1)
