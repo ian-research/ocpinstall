@@ -26,7 +26,8 @@ def expand(catalogs, selections, target):
             images.append('registry.redhat.io/rhel9/rhel-guest-image:latest')
             requirements.append({'product': 'virtualization', 'version': version,
                 'scope': '基础虚拟机；包含 HCO relatedImages 和 RHEL 9 guest container disk',
-                'prerequisites': ['节点具有可用 /dev/kvm；实际创建 VM 验证硬件虚拟化',
+                'prerequisites': ['需在平台工作负载之外为控制组件和虚拟机预留 CPU/内存；多组件同时部署需叠加资源预算',
+                    '节点具有可用 /dev/kvm；实际创建 VM 验证硬件虚拟化',
                     '持久化 VM 需相应 StorageClass；NMState/SR-IOV/MetalLB 按所选网络功能另选'],
                 'supportSource': LIFECYCLE})
         elif package == 'advanced-cluster-management':
@@ -47,7 +48,8 @@ def expand(catalogs, selections, target):
                 raise ValueError('ACM 5.0 必须搭配经过核实的 MCE 5.0')
             requirements.append({'product': 'acm', 'version': version,
                 'runtimeDependency': 'multicluster-engine', 'scope': '基础 Hub、MCE、本地集群管理',
-                'prerequisites': ['MCH 的 mce-subscription-spec 必须指向本包离线 CatalogSource',
+                'prerequisites': ['按 Hub/MCE 及所启用组件的 Pod requests 规划额外 CPU/内存；平台最低规格不代表叠加组件可运行',
+                    'MCH 的 mce-subscription-spec 必须指向本包离线 CatalogSource',
                     'Search 等持久组件需要动态 StorageClass；备份/跨集群网络另选 OADP/Submariner'],
                 'supportSource': LIFECYCLE})
         elif package == 'rhods-operator':

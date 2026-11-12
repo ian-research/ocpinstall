@@ -1,5 +1,5 @@
 {
-  "collectedAtUTC": "2026-11-12T20:06:15.824281+00:00",
+  "collectedAtUTC": "2026-11-12T20:39:37.447305+00:00",
   "records": {
     "verify-performance-results.json": {
       "state": "passed",
@@ -422,6 +422,23 @@
         "openshift-operator-controller/operator-controller-controller-manager"
       ],
       "idempotentReload": []
+    },
+    "catalog-policy-results.json": {
+      "state": "passed",
+      "stage": "complete",
+      "sourceSha256": "629a9d2c35299bd4fb69b72fe1e37949468ee7df2e1fdb8723fb1cf021562a10",
+      "customOfflineSpecsPreserved": true,
+      "defaultCatalogRetryIdempotent": true,
+      "disabledDefaults": {
+        "openshift-certified-operators": "Unavailable",
+        "openshift-community-operators": "Unavailable",
+        "openshift-redhat-operators": "Unavailable"
+      },
+      "customOfflineCatalogServing": {
+        "ocp5-583c2d06ed85-1895f52643": true,
+        "ocp5-a36c57c2d366-a16d020bb5": true,
+        "ocp5-fcaffcaf2de1-8a7f1d33c6": true
+      }
     },
     "product-plan-results.json": {
       "state": "passed",

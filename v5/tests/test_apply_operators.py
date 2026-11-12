@@ -32,12 +32,14 @@ class ApplyOperatorTests(unittest.TestCase):
         with patch.object(sys, 'argv', command), \
              patch.object(apply_operators, 'load_plan', return_value={'targetVersion': self.version}), \
              patch.object(apply_operators, 'prepare') as prepare, \
+             patch.object(apply_operators, 'disable_default_sources') as disable, \
              patch.object(apply_operators.subprocess, 'run', return_value=SimpleNamespace(stdout=json.dumps(self.cluster))) as run:
             try:
                 apply_operators.main()
             finally:
                 self.prepare = prepare
                 self.run = run
+                self.disable = disable
 
     def test_wrong_minor_is_blocked_before_preparation_or_mutation(self):
         self.cluster['status']['desired']['version'] = '4.18.10'
@@ -59,6 +61,7 @@ class ApplyOperatorTests(unittest.TestCase):
         self.assertEqual(len(commands), 2)
         self.assertIn('--dry-run=server', commands[-1])
         self.assertFalse(any('patch' in command for command in commands))
+        self.disable.assert_not_called()
         self.assertEqual(self.run.call_args.kwargs['env']['KUBECONFIG'], '/private/admin.conf')
 
     def test_apply_preserves_explicit_basic_availability(self):
@@ -66,7 +69,7 @@ class ApplyOperatorTests(unittest.TestCase):
             self.run_apply()
         self.assertEqual(self.prepare.call_args.args[-1], 'Basic')
         commands = [call.args[0] for call in self.run.call_args_list]
-        self.assertIn('patch', commands[1])
+        self.disable.assert_called_once()
         self.assertEqual(commands[-1][:2], ['oc', 'apply'])
 
     def test_explicit_ca_uses_preview_mode_for_server_dry_run(self):

@@ -14,6 +14,24 @@ def function(name):
 
 
 class InstallFlowTests(unittest.TestCase):
+    def test_invalid_second_operator_bundle_cannot_change_cluster_policy(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            mirror = root / 'mirror/working-dir/cluster-resources'
+            mirror.mkdir(parents=True)
+            marker = root / 'mutated'
+            code = (ROOT / 'setup-cluster.sh').read_text()
+            start = code.index('configure_operators() {')
+            code = code[start:code.index('\n}', start)+2]
+            script = ('set -euo pipefail\ndie() { exit 1; }\n'
+                      'python3() { [[ $1 != */operator_resources.py ]]; }\n'
+                      'oc() { touch "$MARKER"; }\n' + code + '\nconfigure_operators\n')
+            env = dict(os.environ, MIRROR_DIR=str(root / 'mirror'), BUNDLE_DIR=str(root / 'platform'),
+                       OPERATOR_BUNDLE_DIR=str(root / 'broken-operators'), SCRIPT_DIR=str(ROOT), MARKER=str(marker))
+            result = subprocess.run(['bash', '-c', script], env=env, text=True, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertFalse(marker.exists())
+
     def test_harbor_retry_preserves_existing_password_configuration(self):
         with tempfile.TemporaryDirectory() as directory:
             state = Path(directory)

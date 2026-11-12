@@ -11,6 +11,7 @@ from operator_profile import release
 from operator_resources import prepare
 from operators import load_plan
 from registry_trust import ensure as ensure_registry_trust, reload_components
+from catalog_policy import disable_default_sources
 
 
 def main():
@@ -43,8 +44,7 @@ def main():
     if args.dry_run:
         command.append('--dry-run=server')
     else:
-        subprocess.run(['oc', 'patch', 'OperatorHub', 'cluster', '--type', 'merge',
-                        '-p', '{"spec":{"disableAllDefaultSources":true}}'], env=env, check=True)
+        disable_default_sources(env)
     subprocess.run(command, env=env, check=True)
     print('预检查完成' if args.dry_run else '已应用离线目录及镜像规则；请等待 MCP 更新和 CatalogSource READY，再安装 Operator')
 

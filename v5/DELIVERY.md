@@ -111,4 +111,18 @@ AWS 明确由外部规则管理防火墙时可在安装和配置命令末尾增�
 - `02-hyperconverged.json`、`02-multiclusterengine.json`：使用该 bundle 实际声明的稳定 API，等待 CSV Succeeded 后应用。
 - `03-multiclusterhub.json`：MCE 订阅源指向本次实际离线 CatalogSource，包含计划中的 channel/CSV。
 
+应用 HyperConverged 后还可能触发额外的节点配置更新；应再次等待 MCP Updated、所有节点恢复可调度及产品 Available，再启动虚拟机或判断容量不足。本次 5.0 实测出现了这一过程。
+
 ACM/MCE 清单默认 High；小型验证可在配置前设置 `ACM_AVAILABILITY=Basic`。先等待 MCP 和目录就绪，审阅并应用订阅、批准计划内 CSV，再按目录内 README 应用业务 CR。它们不会混入自动应用的镜像规则文件。AI 目前生成 Operator 订阅；DSCI/DSC、默认动态存储、IDP 和 CPU Workbench 的整体验收仍需在 4.22 上完成。
+
+## 节点容量也属于交付前提
+
+本次 5.0.1 三节点基础平台在每节点 4 CPU/16 GiB 上安装成功；随后部署 Virtualization、MCE 与 ACM 时，Virtualization 自动触发额外的 MachineConfigPool 更新，节点轮流暂时不可调度，其间出现 CPU/内存请求不足。容量结论需等 MCP 更新完成、全部节点恢复可调度后再判断；不能把滚动更新时的等待直接认定为稳态容量不足。基础平台规格也不代表复杂组件的容量保证。
+
+准备和安装前，应按厂商要求叠加平台、控制组件及实际工作负载的资源预算，另确认存储、硬件虚拟化和网络。Operator CSV 达到 Succeeded 后还需等待业务 CR 健康，并完成实际工作负载验收；查看 `oc get pods -A` 的 Pending 原因及节点的 Allocated resources。不要通过删减官方资源请求或启用虚拟化模拟来绕过验收。
+
+默认离线目录策略同时覆盖 Classic 和 OLM v1：关闭 Classic 默认源，并将仍指向官方在线仓库的默认 ClusterCatalog 设置为 Unavailable。已有自定义目录及同名但已改成本地镜像的目录保持原配置；已关闭的 OLM v1 默认目录不重复变更。
+
+升级脚本后，请在联网准备机使用新版仓库入口重新执行相同计划的 `delivery export`，保留缓存并重新封包；成功后转移新的整包。不要直接替换已封包的 `scripts/`，这样会破坏 SHA256 清单。切换选包计划、平台版本或 oc-mirror 二进制时使用新目录。
+
+本文中的 `v5/...` 命令以 Git 仓库根目录为工作目录。完整包的离线端直接使用包根目录三个入口；需要单独运行包内脚本时，把版本目录前缀替换为 `scripts/`。仅 Operator 模式须一并转移对应版本的脚本目录和匹配工具，或复用已有完整安装包中的脚本；无需保持原下载路径。

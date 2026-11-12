@@ -285,17 +285,19 @@ configure_operators() {
     echo "配置 Operators..."
     [[ -d "$MIRROR_DIR/working-dir/cluster-resources" ]] || die "缺少 oc-mirror 生成的 cluster-resources"
     local resources="$MIRROR_DIR/working-dir/cluster-resources/"
+    local -a resource_sets=()
     if [[ -f "$BUNDLE_DIR/operators-plan.json" ]]; then
         resources="$BUNDLE_DIR/operator-resources.json"
         python3 "$SCRIPT_DIR/lib/operator_resources.py" "$BUNDLE_DIR" "$resources"
     fi
-    oc patch OperatorHub cluster --type json -p '[{"op": "add", "path": "/spec/disableAllDefaultSources", "value": true}]'
-    oc apply -f "$resources"
+    resource_sets+=("$resources")
     if [[ -n ${OPERATOR_BUNDLE_DIR:-} && $OPERATOR_BUNDLE_DIR != "$BUNDLE_DIR" ]]; then
         resources="$OPERATOR_BUNDLE_DIR/operator-resources.json"
         python3 "$SCRIPT_DIR/lib/operator_resources.py" "$OPERATOR_BUNDLE_DIR" "$resources"
-        oc apply -f "$resources"
+        resource_sets+=("$resources")
     fi
+    python3 "$SCRIPT_DIR/lib/catalog_policy.py"
+    for resources in "${resource_sets[@]}"; do oc apply -f "$resources"; done
 }
 
 # NTP 已在安装阶段通过 MachineConfig 和 Bootstrap Ignition 设置。
