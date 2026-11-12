@@ -112,3 +112,15 @@ EC2 测试环境按已采用的方式增加 `--skip-firewalld`。后置脚本先
 
 
 需要同时准备 OpenShift 本体和安装工具时，首层菜单选择完整交付模式，见 [DELIVERY.md](DELIVERY.md)。原有 `export/import/verify` 命令仍表示仅操作 Operator 包。
+
+## 在已有集群单独应用离线目录
+
+镜像成功导入后，可仅应用本包的镜像规则与 CatalogSource：
+
+```bash
+bash v4.22/apply-operators.sh --bundle "/offline/operator bundle" \
+  --kubeconfig /secure/kubeconfig --dry-run
+# 检查通过后去掉 --dry-run 正式应用
+```
+
+入口先检查集群版本和安装完成状态，再验证离线包；失败时不修改 OperatorHub。`--dry-run` 使用服务端验证，不关闭默认目录。正式执行会关闭默认联网目录。复杂组件生成的 `product-manifests/` 需按其中 README 分阶段应用；小型 ACM 验证可显式设置 `ACM_AVAILABILITY=Basic`。

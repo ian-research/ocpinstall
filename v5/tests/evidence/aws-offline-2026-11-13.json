@@ -245,6 +245,169 @@
       "readyNodeCount": 3
     },
     "hostSELinux": "Enforcing",
-    "publicConsoleHTTP": 200
+    "publicConsoleHTTP": 200,
+    "helper-robustness-results.json": {
+      "overall": "PASS",
+      "checks": [
+        {
+          "id": "source_archive_sha256",
+          "status": "PASS"
+        },
+        {
+          "id": "source_tree_extracted",
+          "status": "PASS"
+        },
+        {
+          "id": "source_bundle_isolation",
+          "status": "PASS"
+        },
+        {
+          "id": "preflight_state",
+          "status": "PASS"
+        },
+        {
+          "id": "configure_chrony_extracted",
+          "status": "PASS"
+        },
+        {
+          "id": "artifacts_upstream_self_reference_rejected",
+          "status": "PASS"
+        },
+        {
+          "id": "artifacts_invalid_mode_rejected",
+          "status": "PASS"
+        },
+        {
+          "id": "artifacts_helper_outside_network_rejected",
+          "status": "PASS"
+        },
+        {
+          "id": "artifacts_invalid_cidr_rejected",
+          "status": "PASS"
+        },
+        {
+          "id": "artifacts_local_with_server_rejected",
+          "status": "PASS"
+        },
+        {
+          "id": "artifacts_local_config_valid",
+          "status": "PASS"
+        },
+        {
+          "id": "configure_chrony_self_reference_no_rewrite",
+          "status": "PASS"
+        },
+        {
+          "id": "configure_chrony_local_applied",
+          "status": "PASS"
+        },
+        {
+          "id": "chrony_local_stratum_10",
+          "status": "PASS"
+        },
+        {
+          "id": "chrony_no_upstream_self_reference",
+          "status": "PASS"
+        },
+        {
+          "id": "chrony_ntp_query_served",
+          "status": "PASS"
+        },
+        {
+          "id": "configure_chrony_upstream_unreachable_nonzero",
+          "status": "PASS"
+        },
+        {
+          "id": "configure_chrony_local_restored",
+          "status": "PASS"
+        },
+        {
+          "id": "chrony_local_stratum_10_restored",
+          "status": "PASS"
+        },
+        {
+          "id": "chrony_ntp_query_restored",
+          "status": "PASS"
+        },
+        {
+          "id": "selinux_enforcing_after",
+          "status": "PASS"
+        },
+        {
+          "id": "firewalld_active_after",
+          "status": "PASS"
+        },
+        {
+          "id": "chronyd_active_after",
+          "status": "PASS"
+        },
+        {
+          "id": "no_external_default_route",
+          "status": "PASS"
+        },
+        {
+          "id": "final_chrony_config_local_only",
+          "status": "PASS"
+        },
+        {
+          "id": "preserved_opt_ocp5",
+          "status": "PASS"
+        },
+        {
+          "id": "backup_policy",
+          "status": "PASS"
+        },
+        {
+          "id": "platform_import_capture_only",
+          "status": "PASS"
+        },
+        {
+          "id": "platform_import_cache_outside_bundle",
+          "status": "PASS"
+        },
+        {
+          "id": "platform_import_no_new_job",
+          "status": "PASS"
+        }
+      ],
+      "testedSourceHashes": {
+        "archive_sha256": "51e3809a97808946e338bfb6d976e21012554e85cec9d9dd58338efb4b7fc544",
+        "tree_sha256": "881b580042f9c5e2b7ef4c9dfc20764557efddea421fe52bb27f10bc141c1743",
+        "artifacts_py_sha256": "987768d507517e31f4aaeb6ad020a2a4cea6b8483a3eb4810ec0c19aa1f55440",
+        "install_cluster_sh_sha256": "ea02b4640fdf0289bda8c9a9946da2e680d2696449b27a2d0b22f3779b26a4fc",
+        "configure_chrony_function_sha256": "ed589b98f3f208c1067464f35f0b58242badadde7e04bdadced388357af1a577"
+      },
+      "security": {
+        "selinux": "Enforcing",
+        "firewalld": "active",
+        "chronyd": "active",
+        "no_external_default_route": true,
+        "chrony_stratum": 10,
+        "chrony_local_stratum": true,
+        "chrony_config_has_server_directive": false,
+        "chrony_config_upstream_self_reference": false,
+        "chrony_config_allow_nfs_cidr": true,
+        "ntp_query_ok": true,
+        "ntp_query_method": "chronyd -Q -t 30 (client-only, clock control disabled)"
+      },
+      "platformImport": {
+        "capture_only": true,
+        "command_executed": false,
+        "cache_outside_bundle": true
+      },
+      "cleanup": {
+        "status": "complete",
+        "qa_vm_shutdown": true,
+        "qa_vm_final_state": "shut off",
+        "temporary_keys_removed": true,
+        "original_keys_preserved": true
+      },
+      "externalNTPQuery": {
+        "query_rc": 0,
+        "clock_adjusted": false,
+        "result": "NTP response served at stratum 10; client reported offset -0.603061 seconds (ignored)"
+      },
+      "sourceEvidenceSha256": "b2e269f390259ebb77d07b579dca9dd5f0693689b8ba8bbd4e1bada739d587aa"
+    }
   }
 }

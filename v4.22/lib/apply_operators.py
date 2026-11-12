@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply a verified 4.22 Operator bundle without changing helper host security."""
+"""Apply verified Operator mirror rules to a ready cluster of the matching minor."""
 import argparse
 import json
 import os
@@ -29,8 +29,11 @@ def main():
     minor = release().rsplit('.', 1)[0]
     if actual.rsplit('.', 1)[0] != minor or plan['targetVersion'].rsplit('.', 1)[0] != minor:
         raise ValueError(f'当前集群 {actual} 与本脚本 {minor} 不匹配；未应用任何资源')
+    conditions = {c['type']: c['status'] for c in cluster['status'].get('conditions', [])}
+    if conditions.get('Available') != 'True' or conditions.get('Progressing') != 'False' or conditions.get('Failing') != 'False':
+        raise ValueError('集群尚未安装完成或存在故障；未应用任何资源')
     output = bundle / 'operator-resources.json'
-    prepare(bundle, output)
+    prepare(bundle, output, os.environ.get('ACM_AVAILABILITY', 'High'))
     command = ['oc', 'apply', '-f', str(output)]
     if args.dry_run:
         command.append('--dry-run=server')
