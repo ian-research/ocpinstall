@@ -56,3 +56,7 @@ Harbor 项目请求另经本机真实 HTTPS/curl 测试：模拟 503 后重试�
 - [AI 3.5.3 离线运行镜像清单，固定提交](https://github.com/red-hat-data-services/rhoai-disconnected-install-helper/blob/9d5a7fcde1061de090ddc0b2c3b58086698ef4b1/rhoai-3.5.3-imagesetconfig.yaml)
 - [oc-mirror v2 文档](https://docs.redhat.com/en/documentation/openshift_container_platform/4.22/html/disconnected_environments/about-installing-oc-mirror-v2)
 - [oc-mirror 离线 catalog 导入修复](https://github.com/openshift/oc-mirror/commit/4cfbc254b92f34b456f44ca3540e36d09f79fffa)
+
+## 本轮 5.0 联调的补充限制
+
+共享流程在 5.0 上的单个 RHEL 9.9 VM 已实际运行并正常停止；ACM/MCE 初始化未通过，Hub/策略未执行，正常卸载与控制器完整恢复尚未确认。该结果不作为 4.22 整机或 AI 的运行验收。最新记录见 [5.0 验证范围](../v5/VALIDATION.md)。

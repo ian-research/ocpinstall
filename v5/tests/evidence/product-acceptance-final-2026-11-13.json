@@ -1,0 +1,110 @@
+{
+  "state": "blocked-complex-component-acceptance",
+  "collectedAtUTC": "2026-11-12T22:21:50.141923+00:00",
+  "stages": {
+    "virtualizationBasicVM": "passed-historically-see-virtualization-basic-evidence",
+    "mceInitialization": "failed",
+    "acmHub": "not-run",
+    "governancePolicy": "not-run",
+    "four22ClusterAndAI": "not-tested"
+  },
+  "rollback": {
+    "normalMceDeleteRequestedAtUTC": "2026-11-12T21:45:58Z",
+    "testLocalRegistrationDetachAcceptedAtUTC": "2026-11-12T21:55:10Z",
+    "lastReadableMceAndRegistrationStillDeletingAtUTC": "2026-11-12T22:09:50Z",
+    "completionVerified": false,
+    "forceUsed": false,
+    "finalizersStripped": false,
+    "namespacesManuallyDeleted": false
+  },
+  "freshVerification": {
+    "collectedAtUTC": "2026-11-12T22:20:38.074980+00:00",
+    "resources": {
+      "mce": {
+        "readState": "api-error"
+      },
+      "localRegistration": {
+        "readState": "api-error"
+      },
+      "hco": {
+        "readState": "api-error"
+      }
+    },
+    "deployments": [
+      {
+        "namespace": "openshift-etcd-operator",
+        "name": "etcd-operator",
+        "readState": "unknown",
+        "errorType": "CalledProcessError"
+      },
+      {
+        "namespace": "openshift-kube-apiserver-operator",
+        "name": "kube-apiserver-operator",
+        "readState": "unknown",
+        "errorType": "CalledProcessError"
+      },
+      {
+        "namespace": "openshift-kube-controller-manager-operator",
+        "name": "kube-controller-manager-operator",
+        "readState": "unknown",
+        "errorType": "CalledProcessError"
+      },
+      {
+        "namespace": "openshift-kube-scheduler-operator",
+        "name": "openshift-kube-scheduler-operator",
+        "replicas": 1,
+        "ready": 1,
+        "readState": "read"
+      },
+      {
+        "namespace": "openshift-cnv",
+        "name": "hco-operator",
+        "replicas": 1,
+        "ready": 0,
+        "readState": "read"
+      },
+      {
+        "namespace": "openshift-cnv",
+        "name": "hco-webhook",
+        "replicas": 1,
+        "ready": 1,
+        "readState": "read"
+      },
+      {
+        "namespace": "openshift-operators",
+        "name": "devworkspace-controller-manager",
+        "readState": "unknown",
+        "errorType": "CalledProcessError"
+      }
+    ],
+    "finishedAtUTC": "2026-11-12T22:21:50.141923+00:00"
+  },
+  "workspaceHistoricalCheck": {
+    "workspace": {
+      "namespace": "offline-operator-smoke",
+      "name": "offline-workspace",
+      "phase": "Running"
+    },
+    "execProof": "DWO_EXEC_OK_1794520683 returned by oc exec in the running workspace pod at ~21:58Z"
+  },
+  "publicConsole": {
+    "checkedAtUTC": "2026-11-12T22:19:20.225804+00:00",
+    "url": "https://console.3-147-13-145.sslip.io",
+    "scope": "anonymous public HTTPS page; does not verify administrator login or management APIs",
+    "httpStatus": 200,
+    "containsOpenShiftMarkup": true
+  },
+  "bootPolicy": {
+    "serverDryRun": "passed",
+    "runtimeApplied": false,
+    "runtimeVerified": false,
+    "reason": "HCO/webhook health precondition was not met; no bypass"
+  },
+  "interpretation": "API/controller instability and shared-storage IO pressure observed; root cause not confirmed. Historical successes and short samples do not establish current full cluster health or a definite CPU/RAM diagnosis.",
+  "resourceChanges": {
+    "instanceCountChanged": false,
+    "guestSizingChanged": false,
+    "storagePerformanceChanged": false,
+    "lifetimeExtended": false
+  }
+}
