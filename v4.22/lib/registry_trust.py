@@ -10,6 +10,8 @@ import re
 import subprocess
 import time
 
+CACHE_ANNOTATION = 'ocpinstall.openshift.io/registry-ca-ready-sha256'
+
 
 def certificates(content):
     content = '\n'.join(line for line in content.splitlines() if not line.lstrip().startswith('#'))
@@ -29,9 +31,10 @@ def certificates(content):
 
 
 def oc(arguments, env, payload=None, structured=True):
-    output = subprocess.run(['oc', *arguments], env=env,
+    watching = arguments[:2] == ['rollout', 'status']
+    output = subprocess.run(['oc', *arguments, '--request-timeout=' + ('0' if watching else '30s')], env=env,
         input=json.dumps(payload) if payload is not None else None,
-        text=True, capture_output=True, check=True).stdout.strip()
+        text=True, capture_output=True, check=True, timeout=195 if watching else 45).stdout.strip()
     return (json.loads(output) if output else None) if structured else output
 
 
@@ -70,18 +73,21 @@ def ensure(ca_file, env=None, dry_run=False):
             oc(['patch', 'proxy', 'cluster', '--type', 'merge', '-p',
                 json.dumps(patch), '-o', 'json'], env)
     return {'dryRun': dry_run, 'configMap': name, 'previousCertificateCount': previous_count,
+            'caBundleSha256': hashlib.sha256(content.encode()).hexdigest(),
             'certificateCount': len(merged), 'incomingCertificateFingerprints': sorted(incoming),
             'bundleChanged': changed, 'proxyReferenceChanged': previous_name != name}
 
 
 def reload_components(receipt, env, timeout=300):
-    if receipt['dryRun'] or not (receipt['bundleChanged'] or receipt['proxyReferenceChanged']):
+    if receipt['dryRun']:
         return []
     components = []
     for namespace, name in (('openshift-catalogd', 'catalogd-controller-manager'),
                             ('openshift-operator-controller', 'operator-controller-controller-manager')):
         deployment = oc(['get', 'deployment', name, '-n', namespace, '--ignore-not-found', '-o', 'json'], env)
         if deployment is None:
+            continue
+        if deployment.get('metadata', {}).get('annotations', {}).get(CACHE_ANNOTATION) == receipt['caBundleSha256']:
             continue
         maps = set()
         for volume in deployment['spec']['template']['spec'].get('volumes', []):
@@ -114,6 +120,10 @@ def reload_components(receipt, env, timeout=300):
         # contains the requested certificate, so existing clusters recover too.
         oc(['rollout', 'restart', 'deployment/' + name, '-n', namespace], env, structured=False)
         oc(['rollout', 'status', 'deployment/' + name, '-n', namespace, '--timeout=180s'], env, structured=False)
+        # Mark completion only after rollout succeeds. If an earlier attempt
+        # stopped after writing the CA, the unchanged bundle still resumes here.
+        oc(['annotate', 'deployment/' + name, '-n', namespace,
+            CACHE_ANNOTATION + '=' + receipt['caBundleSha256'], '--overwrite'], env, structured=False)
         restarted.append(namespace + '/' + name)
     return restarted
 
@@ -135,5 +145,5 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except (ValueError, OSError, KeyError, subprocess.CalledProcessError) as error:
+    except (ValueError, OSError, KeyError, subprocess.SubprocessError) as error:
         raise SystemExit('CA 信任配置失败: ' + str(error))

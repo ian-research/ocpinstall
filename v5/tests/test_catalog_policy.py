@@ -12,6 +12,13 @@ import catalog_policy
 class CatalogPolicyTests(unittest.TestCase):
     served = {'spec': {'versions': [{'name': 'v1', 'served': True}]}}
 
+    def test_api_timeout_is_bounded_and_propagates(self):
+        with patch.object(catalog_policy.subprocess, 'run', side_effect=subprocess.TimeoutExpired(['oc'], 45)) as run:
+            with self.assertRaises(subprocess.TimeoutExpired):
+                catalog_policy.run(['get', 'operatorhub', 'cluster', '-o', 'json'], {})
+        self.assertEqual(run.call_args.kwargs['timeout'], 45)
+        self.assertIn('--request-timeout=30s', run.call_args.args[0])
+
     def item(self, name, image, mode='Available'):
         return {'metadata': {'name': name, 'resourceVersion': '12'},
                 'spec': {'availabilityMode': mode, 'source': {'image': {'ref': image}}}}

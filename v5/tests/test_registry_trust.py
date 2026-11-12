@@ -3,6 +3,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -86,15 +87,24 @@ class RegistryTrustTests(unittest.TestCase):
         self.assertEqual(oc.call_count, 2)
 
     def test_idempotent_or_preview_configuration_never_restarts_components(self):
-        for dry_run, changed in ((True, True), (False, False)):
-            with patch.object(registry_trust, 'oc') as oc:
-                result = registry_trust.reload_components({'dryRun': dry_run, 'bundleChanged': changed,
-                    'proxyReferenceChanged': False}, {})
-            self.assertEqual(result, [])
-            oc.assert_not_called()
+        with patch.object(registry_trust, 'oc') as oc:
+            result = registry_trust.reload_components({'dryRun': True}, {})
+        self.assertEqual(result, [])
+        oc.assert_not_called()
+
+    def test_unchanged_completed_cache_refresh_has_no_mutations(self):
+        deployment = {'metadata': {'annotations': {registry_trust.CACHE_ANNOTATION: 'a'*64}}}
+        with patch.object(registry_trust, 'oc', return_value=deployment) as oc:
+            result = registry_trust.reload_components({'dryRun': False, 'bundleChanged': False,
+                'proxyReferenceChanged': False, 'caBundleSha256': 'a'*64,
+                'incomingCertificateFingerprints': []}, {})
+        self.assertEqual(result, [])
+        self.assertEqual(oc.call_count, 2)
+        self.assertTrue(all(call.args[0][:2] == ['get', 'deployment'] for call in oc.call_args_list))
 
     def test_components_reload_only_after_the_actual_ca_is_injected(self):
         receipt = {'dryRun': False, 'bundleChanged': True, 'proxyReferenceChanged': False,
+                   'caBundleSha256': 'a'*64,
                    'incomingCertificateFingerprints': list(registry_trust.certificates(self.certs[1]))}
         commands = []
         deployment = {'spec': {'template': {'spec': {'volumes': [{'projected': {'sources': [
@@ -112,6 +122,50 @@ class RegistryTrustTests(unittest.TestCase):
         self.assertEqual(len(restarted), 2)
         first_restart = next(i for i, c in enumerate(commands) if c[:2] == ['rollout', 'restart'])
         self.assertEqual(sum(c[:2] == ['get', 'configmap'] for c in commands[:first_restart]), 2)
+
+    def test_unchanged_ca_resumes_only_the_refresh_that_did_not_complete(self):
+        namespaces = ['openshift-catalogd', 'openshift-operator-controller']
+        deployments = {ns: {'metadata': {'annotations': {}}, 'spec': {'template': {'spec': {
+            'volumes': [{'configMap': {'name': 'trusted-ca', 'items': [{'key': 'ca-bundle.crt'}]}}]}}}}
+            for ns in namespaces}
+        receipt = {'dryRun': False, 'bundleChanged': False, 'proxyReferenceChanged': False,
+                   'caBundleSha256': 'a'*64,
+                   'incomingCertificateFingerprints': list(registry_trust.certificates(self.certs[1]))}
+        failed = False
+        restarts = []
+        def oc(command, env, **kwargs):
+            nonlocal failed
+            ns = command[command.index('-n')+1]
+            if command[:2] == ['get', 'deployment']:
+                return deployments[ns]
+            if command[:2] == ['get', 'configmap']:
+                return {'data': {'ca-bundle.crt': self.certs[1]}}
+            if command[:2] == ['rollout', 'restart']:
+                restarts.append(ns)
+            if command[:2] == ['rollout', 'status'] and ns == namespaces[1] and not failed:
+                failed = True
+                raise subprocess.CalledProcessError(1, ['oc'])
+            if command[0] == 'annotate':
+                deployments[ns]['metadata']['annotations'][registry_trust.CACHE_ANNOTATION] = 'a'*64
+            return ''
+        with patch.object(registry_trust, 'oc', side_effect=oc):
+            with self.assertRaises(subprocess.CalledProcessError):
+                registry_trust.reload_components(receipt, {})
+            self.assertNotIn(registry_trust.CACHE_ANNOTATION, deployments[namespaces[1]]['metadata']['annotations'])
+            resumed = registry_trust.reload_components(receipt, {})
+        self.assertEqual(resumed, ['openshift-operator-controller/operator-controller-controller-manager'])
+        self.assertEqual(restarts.count(namespaces[0]), 1)
+        self.assertEqual(restarts.count(namespaces[1]), 2)
+
+    def test_api_calls_are_bounded_without_truncating_the_rollout_wait(self):
+        for arguments, request_timeout, process_timeout in [
+                (['get', 'proxy', 'cluster', '-o', 'json'], '30s', 45),
+                (['rollout', 'status', 'deployment/example', '--timeout=180s'], '0', 195)]:
+            with self.subTest(arguments=arguments), patch.object(registry_trust.subprocess, 'run',
+                    return_value=SimpleNamespace(stdout='{}')) as run:
+                registry_trust.oc(arguments, {}, structured=False)
+            self.assertIn('--request-timeout='+request_timeout, run.call_args.args[0])
+            self.assertEqual(run.call_args.kwargs['timeout'], process_timeout)
 
 
 if __name__ == '__main__':

@@ -10,7 +10,7 @@
 | Operator 可搬迁导出/导入 | Web Terminal 1.17.2 + DevWorkspace 1.0.0，10 个镜像；全新缓存、不同含空格路径、只转移校验清单内文件、外网阻断的导入通过 |
 | Operator 实际使用 | 两个 CSV 均 Succeeded；创建 DevWorkspace 达到 Running，并成功执行标记命令 |
 | 完整 delivery 打包 | 完整组合导出与换路径整包校验已通过，收集 359 个 Helper RPM；新路径下从平台归档重建规则、阻断外网导入、安装后配置通过，MCP 收敛，原有工作空间仍 Running |
-| 本地回归 | 两版分别 148 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
+| 本地回归 | 两版分别 152 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
 | 全新隔离 Helper 初始化 | RHEL 9.6 虚拟机完成 359 RPM 本地 GPG 安装、默认 SELinux/firewalld、Docker/Harbor、平台离线导入及 Ignition/handoff 生成；未启动第二套集群节点，物理服务器尚待单独验收 |
 | 授时与缓存针对性回归 | 在隔离 Helper 完成 30 项实测：拒绝 NTP 自引用、上游不可达时失败、显式本地 stratum 10 回应真实 NTP 查询、缓存位于包外；安全策略保持开启 |
 | 本地仓库的组件证书信任 | AWS 实测完成 CA 注入后刷新目录服务、三份 ClusterCatalog Serving；重复执行不修改 CA、不重启组件。合并已有用户 CA、保留代理字段及并发保护另有回归检查。官方 4.22.22/5.0.1 安装器均确认支持 Always 策略 |
@@ -22,6 +22,8 @@
 
 
 引导源字段检查记录见 `tests/evidence/boot-policy-server-2026-11-13.json`；4.22 catalog 声明两种 HCO API，不代表在 4.22 上做过运行验收。
+
+CA 刷新完成标记及 API 超时另有故障回归：证书写入后刷新中断时，重试会继续未完成组件，已完成组件不重复刷新。实际 5.0 已只读验证新标记通过服务端校验，未为此重启组件；运行刷新仍以此前记录的实测为准。
 
 Harbor 项目请求另经本机真实 HTTPS/curl 测试：模拟 503 后重试得到已有项目的 409，认证和私有项目内容检查通过。该测试不代表重装了一套 Harbor。管理员冲突、API 失败及创建凭据时的竞争失败已加入回归；没有在测试集群重置管理员密码。
 

@@ -61,6 +61,8 @@ class ApplyOperatorTests(unittest.TestCase):
         self.run_apply(True)
         commands = [call.args[0] for call in self.run.call_args_list]
         self.assertEqual(len(commands), 2)
+        self.assertEqual(self.run.call_args_list[0].kwargs['timeout'], 45)
+        self.assertEqual(self.run.call_args_list[-1].kwargs['timeout'], 90)
         self.assertIn('--dry-run=server', commands[-1])
         self.assertFalse(any('patch' in command for command in commands))
         self.disable.assert_not_called()

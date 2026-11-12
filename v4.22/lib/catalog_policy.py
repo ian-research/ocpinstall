@@ -13,7 +13,8 @@ DEFAULT_CATALOGS = {
 
 
 def run(arguments, env):
-    output = subprocess.run(['oc', *arguments], env=env, capture_output=True, text=True, check=True).stdout.strip()
+    output = subprocess.run(['oc', *arguments, '--request-timeout=30s'], env=env,
+                            capture_output=True, text=True, check=True, timeout=45).stdout.strip()
     return json.loads(output) if output else None
 
 
@@ -49,5 +50,5 @@ def disable_default_sources(env=None):
 if __name__ == '__main__':
     try:
         print(json.dumps(disable_default_sources(), ensure_ascii=False))
-    except (ValueError, OSError, KeyError, subprocess.CalledProcessError) as error:
+    except (ValueError, OSError, KeyError, subprocess.SubprocessError) as error:
         raise SystemExit('离线目录策略配置失败: ' + str(error))

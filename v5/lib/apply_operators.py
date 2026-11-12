@@ -27,8 +27,8 @@ def main():
     env = dict(os.environ, KUBECONFIG=str(Path(args.kubeconfig).expanduser().resolve()))
     bundle = Path(args.bundle).expanduser().resolve()
     plan = load_plan(bundle)
-    cluster = json.loads(subprocess.run(['oc', 'get', 'clusterversion', 'version', '-o', 'json'],
-                                        env=env, check=True, text=True, capture_output=True).stdout)
+    cluster = json.loads(subprocess.run(['oc', 'get', 'clusterversion', 'version', '-o', 'json', '--request-timeout=30s'],
+                                        env=env, check=True, text=True, capture_output=True, timeout=45).stdout)
     actual = cluster['status']['desired']['version']
     minor = release().rsplit('.', 1)[0]
     if actual.rsplit('.', 1)[0] != minor or plan['targetVersion'].rsplit('.', 1)[0] != minor:
@@ -42,12 +42,12 @@ def main():
     if args.registry_ca:
         receipt = ensure_registry_trust(args.registry_ca, env, args.dry_run)
         reload_components(receipt, env)
-    command = ['oc', 'apply', '-f', str(output)]
+    command = ['oc', 'apply', '-f', str(output), '--request-timeout=60s']
     if args.dry_run:
         command.append('--dry-run=server')
     else:
         disable_default_sources(env)
-    subprocess.run(command, env=env, check=True)
+    subprocess.run(command, env=env, check=True, timeout=90)
     print('预检查完成' if args.dry_run else '已应用离线目录及镜像规则；请等待 MCP 更新和 CatalogSource READY，再安装 Operator')
 
 

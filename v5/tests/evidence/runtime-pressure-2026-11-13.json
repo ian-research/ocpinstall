@@ -1,0 +1,45 @@
+{
+  "state": "observed-performance-pressure",
+  "collectedAtUTC": "2026-11-12T21:38:06.428617+00:00",
+  "scope": "point-in-time read-only 3 second samples; not a sizing benchmark",
+  "samples": [
+    {
+      "cpuBusyPercent": 32.7,
+      "cpuIowaitPercent": 6.6,
+      "memAvailableMiB": 73008.4,
+      "disks": {
+        "nvme0n1": {
+          "averageReadWriteAwaitMs": 42.29,
+          "busyPercent": 97.0
+        }
+      },
+      "target": "helper"
+    },
+    {
+      "cpuBusyPercent": 18.1,
+      "cpuIowaitPercent": 19.8,
+      "memAvailableMiB": 5679.9,
+      "disks": {
+        "vda": {
+          "averageReadWriteAwaitMs": 47.53,
+          "busyPercent": 71.6
+        }
+      },
+      "target": "test-master1"
+    },
+    {
+      "cpuBusyPercent": 12.6,
+      "cpuIowaitPercent": 6.7,
+      "memAvailableMiB": 5198.8,
+      "disks": {
+        "vda": {
+          "averageReadWriteAwaitMs": 49.15,
+          "busyPercent": 37.6
+        }
+      },
+      "target": "test-master3"
+    }
+  ],
+  "unavailableSamples": 1,
+  "interpretation": "High shared-disk latency and guest IO wait correlated with API timeouts; root cause not confirmed. CPU requests are reservations and do not prove CPU usage saturation. No resource resizing or storage performance changes were made."
+}

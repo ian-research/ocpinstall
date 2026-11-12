@@ -63,7 +63,7 @@ configure_oc_env() {
     mkdir -p "/root/.kube"
     export KUBECONFIG=${KUBECONFIG:-$INSTALL_DIR/auth/kubeconfig}
     [[ -r $KUBECONFIG ]] || die "无法读取 KUBECONFIG"
-    oc whoami >/dev/null
+    oc whoami --request-timeout=30s >/dev/null
 }
 
 nfs_sc() {
@@ -326,9 +326,9 @@ main() {
     require_host
     add_host_info
     configure_oc_env
-    actual_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}')
+    actual_version=$(oc get clusterversion version -o jsonpath='{.status.desired.version}' --request-timeout=30s)
     [[ $actual_version == "$OCP_RELEASE" ]] || die "集群版本 $actual_version 与目标 $OCP_RELEASE 不一致"
-    oc get clusterversion version -o json | python3 -c '
+    oc get clusterversion version -o json --request-timeout=30s | python3 -c '
 import json,sys
 conditions={c["type"]:c["status"] for c in json.load(sys.stdin)["status"]["conditions"]}
 if conditions.get("Available") != "True" or conditions.get("Progressing") != "False" or conditions.get("Failing") != "False":
