@@ -26,8 +26,10 @@ def expand(catalogs, selections, target):
             images.append('registry.redhat.io/rhel9/rhel-guest-image:latest')
             requirements.append({'product': 'virtualization', 'version': version,
                 'scope': '基础虚拟机；包含 HCO relatedImages 和 RHEL 9 guest container disk',
+                'bootSourcePolicy': 'manual-offline',
                 'prerequisites': ['需在平台工作负载之外为控制组件和虚拟机预留 CPU/内存；多组件同时部署需叠加资源预算',
                     '节点具有可用 /dev/kvm；实际创建 VM 验证硬件虚拟化',
+                    '基础清单关闭公共引导源自动导入；Fedora/CentOS 等系统需另行镜像并配置本地引导源',
                     '持久化 VM 需相应 StorageClass；NMState/SR-IOV/MetalLB 按所选网络功能另选'],
                 'supportSource': LIFECYCLE})
         elif package == 'advanced-cluster-management':

@@ -68,9 +68,17 @@ def render(plan, resources, destination, availability='High'):
                       'installPlanApproval': 'Manual'}}]
     stages['01-subscriptions.json'] = {'apiVersion': 'v1', 'kind': 'List', 'items': subscriptions}
     if 'kubevirt-hyperconverged' in selected:
+        version = api_version(selected['kubevirt-hyperconverged'], 'hco.kubevirt.io', 'HyperConverged')
+        if version == 'hco.kubevirt.io/v1':
+            boot_policy = {'workloadSources': {'enableCommonBootImageImport': False}}
+        elif version == 'hco.kubevirt.io/v1beta1':
+            boot_policy = {'enableCommonBootImageImport': False}
+        else:
+            raise ValueError('未核实该 HyperConverged API 的离线引导源字段，请先核对 CRD')
         stages['02-hyperconverged.json'] = {
-            'apiVersion': api_version(selected['kubevirt-hyperconverged'], 'hco.kubevirt.io', 'HyperConverged'),
-            'kind': 'HyperConverged', 'metadata': {'name': 'kubevirt-hyperconverged', 'namespace': 'openshift-cnv'}, 'spec': {}}
+            'apiVersion': version,
+            'kind': 'HyperConverged', 'metadata': {'name': 'kubevirt-hyperconverged', 'namespace': 'openshift-cnv'},
+            'spec': boot_policy}
     if 'multicluster-engine' in selected:
         stages['02-multiclusterengine.json'] = {
             'apiVersion': api_version(selected['multicluster-engine'], 'multicluster.openshift.io', 'MultiClusterEngine'),
@@ -98,6 +106,11 @@ def render(plan, resources, destination, availability='High'):
              '4. 检查产品健康并执行实际虚拟机、本地集群管理或 Workbench 验收。', '',
              f'ACM/MCE availabilityConfig 为 {availability}；需要调整时先审阅资源与存储要求。',
              'MCH 的 MCE 订阅源已固定到本包实际离线目录。']
+    if 'kubevirt-hyperconverged' in selected:
+        lines += ['', 'Virtualization 基础离线模式关闭公共引导镜像自动导入，避免尝试拉取未准备的 Fedora/CentOS 镜像。',
+                  '包内已镜像的 RHEL 9 container disk 可用于基础 VM；持久化或系统模板需要另外准备存储和引导源。',
+                  '其他系统请在新包中用 --image 准备所需镜像，并把自定义引导源指向实际本地镜像；不要直接重新启用在线默认源。',
+                  'HCO 就绪以实际 CRD 的 Available/Progressing/Degraded 条件及组件 Deployment 就绪为准，不依赖不存在的 status.phase。']
     if 'rhods-operator' in selected:
         lines += ['', 'AI 此处生成固定版本的 Operator 订阅。DSCI/DSC 与 Workbench 应在受支持的 4.22 平台上，',
                   '确认动态 StorageClass、IDP 和节点资源后按 CPU Workbenches 范围配置；此清单未生成未经实机验收的 AI 业务 CR。']

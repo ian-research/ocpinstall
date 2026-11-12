@@ -127,3 +127,9 @@ bash v5/apply-operators.sh --bundle "/offline/operator bundle" \
 AI 的 CPU Workbenches 范围用于限定配置和功能验收，不会删改官方 CSV 的 `relatedImages`。因此包中仍保留 Operator 声明的其他功能镜像，不能按少数 Workbench 镜像估算整个离线包容量；镜像归档、独立缓存和目标仓库需要分别预留空间。
 
 新版默认目录的处理依据：[红帽 OLM v1 目录管理说明](https://docs.redhat.com/en/documentation/openshift_container_platform/4.22/html-single/extensions/index)。
+
+### Virtualization 的离线引导源
+
+基础包包含固定摘要的 RHEL 9 guest container disk；产品清单关闭系统默认引导镜像自动导入，避免 Fedora/CentOS 的公共镜像轮询在隔离环境持续失败。这不影响手动创建使用本地已镜像 container disk 的 VM。其他系统需在准备阶段补充镜像，并把自定义引导源指向实际本地镜像，持久化模板还需要对应存储。不会把所有系统模板宣称为已可用。
+
+HCO `v1` 使用 `spec.workloadSources.enableCommonBootImageImport`；`v1beta1` 使用 `spec.enableCommonBootImageImport`。旧的 `spec.featureGates.enableCommonBootImageImport` 已被忽略，不能据此判定已经关闭。5.0 的两种实际 CRD 已核对；4.22 的 beta 字段依据[红帽引导源文档](https://docs.redhat.com/en/documentation/openshift_container_platform/4.22/html/virtualization/storage)。创建 HCO 后再次等待 MCP 收敛，并按 Available/Progressing/Degraded 条件和实际 Deployment 验证；不要求未在 CRD 中定义的 `status.phase`。

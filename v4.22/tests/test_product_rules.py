@@ -53,8 +53,9 @@ class ProductRuleTests(unittest.TestCase):
 
     def test_virtualization_422_includes_guest_boot_image(self):
         catalogs = CatalogFixture([('kubevirt-hyperconverged', '4.22.16')])
-        _, images, _ = product_rules.expand(catalogs, ['redhat/kubevirt-hyperconverged'], '4.22.22')
+        _, images, requirements = product_rules.expand(catalogs, ['redhat/kubevirt-hyperconverged'], '4.22.22')
         self.assertIn('registry.redhat.io/rhel9/rhel-guest-image:latest', images)
+        self.assertEqual(requirements[0]['bootSourcePolicy'], 'manual-offline')
 
 
 if __name__ == '__main__':

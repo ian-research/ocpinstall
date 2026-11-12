@@ -10,14 +10,18 @@
 | Operator 可搬迁导出/导入 | Web Terminal 1.17.2 + DevWorkspace 1.0.0，10 个镜像；全新缓存、不同含空格路径、只转移校验清单内文件、外网阻断的导入通过 |
 | Operator 实际使用 | 两个 CSV 均 Succeeded；创建 DevWorkspace 达到 Running，并成功执行标记命令 |
 | 完整 delivery 打包 | 完整组合导出与换路径整包校验已通过，收集 359 个 Helper RPM；新路径下从平台归档重建规则、阻断外网导入、安装后配置通过，MCP 收敛，原有工作空间仍 Running |
-| 本地回归 | 两版分别 146 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
+| 本地回归 | 两版分别 148 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
 | 全新隔离 Helper 初始化 | RHEL 9.6 虚拟机完成 359 RPM 本地 GPG 安装、默认 SELinux/firewalld、Docker/Harbor、平台离线导入及 Ignition/handoff 生成；未启动第二套集群节点，物理服务器尚待单独验收 |
 | 授时与缓存针对性回归 | 在隔离 Helper 完成 30 项实测：拒绝 NTP 自引用、上游不可达时失败、显式本地 stratum 10 回应真实 NTP 查询、缓存位于包外；安全策略保持开启 |
 | 本地仓库的组件证书信任 | AWS 实测完成 CA 注入后刷新目录服务、三份 ClusterCatalog Serving；重复执行不修改 CA、不重启组件。合并已有用户 CA、保留代理字段及并发保护另有回归检查。官方 4.22.22/5.0.1 安装器均确认支持 Always 策略 |
 | 默认在线目录策略 | 真实代码将三个官方在线默认 ClusterCatalog 设为 Unavailable，三份自定义离线目录的 spec 和 Serving 状态保持正常；重复运行不再变更已关闭的目录 |
-| Virtualization / ACM | 5.0 的 Virtualization 和 ACM/MCE 均已完成独立归档、换路径校验和阻断外网导入；本次 3×4 CPU/16 GiB 在 Virtualization 触发的 MCP 更新期间出现调度等待，需待更新及工作负载验收完成后判断稳态容量；4.22 对应组件尚未完成实机验收 |
+| Virtualization | 完整独立归档、换路径、阻断外网导入通过；29 个 Deployment 恢复原副本数并就绪；真实 RHEL 9.9 VM 在有足够内存的节点上运行，取得来宾系统信息后正常停止。固定到 master1 的初次放置因可用请求内存不足而失败；未调整节点规格 |
+| ACM/MCE | 完整独立归档、换路径、阻断外网导入通过；真实基础 Hub 功能验收仍在进行，不能以 CSV Succeeded 代替 |
+| Virtualization 离线引导源策略 | 发现默认 Fedora/CentOS 公共镜像轮询失败；新基础清单关闭自动导入。真实 5.0 服务端严格预演确认 v1/v1beta1 字段保留为 false，现有 HCO spec/代数未变；尚未据此宣称完成实时策略切换 |
 | OpenShift AI | 当前官方支持矩阵列出 4.22，未列出 5.0；5.x 准备脚本明确拒绝该组合 |
 
+
+引导源字段检查记录见 `tests/evidence/boot-policy-server-2026-11-13.json`；4.22 catalog 声明两种 HCO API，不代表在 4.22 上做过运行验收。
 
 Harbor 项目请求另经本机真实 HTTPS/curl 测试：模拟 503 后重试得到已有项目的 409，认证和私有项目内容检查通过。该测试不代表重装了一套 Harbor。管理员冲突、API 失败及创建凭据时的竞争失败已加入回归；没有在测试集群重置管理员密码。
 

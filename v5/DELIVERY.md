@@ -132,3 +132,9 @@ ACM/MCE 清单默认 High；小型验证可在配置前设置 `ACM_AVAILABILITY=
 配置入口和独立 Operator 应用入口会在写入集群前检查节点、MCP、ClusterOperator 和四个核心控制平面 Operator Deployment。仅看 ClusterVersion Available 或节点 Ready 不足以继续安装：控制器退出时，旧状态可能仍显示正常；节点在更新期间也可能 Ready 但不可调度。检查有超时，失败会列出阻塞资源，不自动重复写入。
 
 先确认故障原因、恢复管理组件并等节点更新完成，再重新运行同一入口。Virtualization 安装后可能触发额外的节点配置更新，应待该轮 MCP 收敛后再检查实际容量和组件功能。脚本不会降低控制平面维护保护规则、强制驱逐 Pod 或重启节点来掩盖阻塞；宽松安全开关也不包含这些操作。
+
+### Virtualization 的离线引导源
+
+基础包包含固定摘要的 RHEL 9 guest container disk；产品清单关闭系统默认引导镜像自动导入，避免 Fedora/CentOS 的公共镜像轮询在隔离环境持续失败。这不影响手动创建使用本地已镜像 container disk 的 VM。其他系统需在准备阶段补充镜像，并把自定义引导源指向实际本地镜像，持久化模板还需要对应存储。不会把所有系统模板宣称为已可用。
+
+HCO `v1` 使用 `spec.workloadSources.enableCommonBootImageImport`；`v1beta1` 使用 `spec.enableCommonBootImageImport`。旧的 `spec.featureGates.enableCommonBootImageImport` 已被忽略，不能据此判定已经关闭。5.0 的两种实际 CRD 已核对；4.22 的 beta 字段依据[红帽引导源文档](https://docs.redhat.com/en/documentation/openshift_container_platform/4.22/html/virtualization/storage)。创建 HCO 后再次等待 MCP 收敛，并按 Available/Progressing/Degraded 条件和实际 Deployment 验证；不要求未在 CRD 中定义的 `status.phase`。

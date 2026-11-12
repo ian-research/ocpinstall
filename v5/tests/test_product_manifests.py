@@ -66,9 +66,28 @@ class ProductManifestTests(unittest.TestCase):
         product_manifests.render(plan, resources, self.destination)
         hco = json.loads((self.destination / '02-hyperconverged.json').read_text())
         self.assertEqual(hco['apiVersion'], 'hco.kubevirt.io/v1')
+        self.assertEqual(hco['spec'], {'workloadSources': {'enableCommonBootImageImport': False}})
         subscriptions = json.loads((self.destination / '01-subscriptions.json').read_text())['items']
         group = next(r for r in subscriptions if r['kind'] == 'OperatorGroup')
         self.assertEqual(group['spec']['targetNamespaces'], ['openshift-cnv'])
+
+    def test_beta_api_uses_supported_boot_source_field_without_ignored_feature_gate(self):
+        plan, resources = self.fixture(['kubevirt-hyperconverged'])
+        plan['selected'][0]['properties'] = [p for p in plan['selected'][0]['properties']
+                                            if not (p['type'] == 'olm.gvk' and p['value']['version'] == 'v1')]
+        product_manifests.render(plan, resources, self.destination)
+        hco = json.loads((self.destination/'02-hyperconverged.json').read_text())
+        self.assertEqual(hco['apiVersion'], 'hco.kubevirt.io/v1beta1')
+        self.assertEqual(hco['spec'], {'enableCommonBootImageImport': False})
+
+    def test_unknown_hco_api_cannot_silently_leave_online_boot_import_enabled(self):
+        plan, resources = self.fixture(['kubevirt-hyperconverged'])
+        for p in plan['selected'][0]['properties']:
+            if p['type'] == 'olm.gvk':
+                p['value']['version'] = 'v2'
+        with self.assertRaisesRegex(ValueError, '引导源字段'):
+            product_manifests.render(plan, resources, self.destination)
+        self.assertFalse(self.destination.exists())
 
     def test_ai_subscription_requires_declared_all_namespace_scope(self):
         plan, resources = self.fixture(['rhods-operator'], target='4.22.22')

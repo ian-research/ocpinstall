@@ -1,0 +1,26 @@
+{
+  "state": "passed",
+  "collectedAtUTC": "2026-11-12T21:19:54.513556+00:00",
+  "shippingProductManifestSha256": "a83799954b57d1f66f0ef169f594368f1e56fad899b4e02c700ebffcc8062d69",
+  "planHash": "583c2d06ed85212db1488cd95bf2c4ffa97cd0c18846e3d9dac659d736baba54",
+  "generatedApiVersion": "hco.kubevirt.io/v1",
+  "checks": [
+    {
+      "apiVersion": "hco.kubevirt.io/v1",
+      "serverDryRunPassed": true,
+      "falseValueRetained": true
+    },
+    {
+      "apiVersion": "hco.kubevirt.io/v1beta1",
+      "serverDryRunPassed": true,
+      "falseValueRetained": true
+    }
+  ],
+  "existingSpecUnchanged": true,
+  "existingGenerationUnchanged": true,
+  "four22CatalogDeclaredHcoAPIs": [
+    "v1",
+    "v1beta1"
+  ],
+  "scope": "actual 5.0 server dry-run only; 4.22 catalog metadata does not prove 4.22 runtime"
+}
