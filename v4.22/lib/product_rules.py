@@ -58,9 +58,17 @@ def expand(catalogs, selections, target):
             if version not in ('3.5.2', '3.5.3'):
                 raise ValueError('AI 运行镜像规则当前覆盖 3.5.2/3.5.3；请选择目录中存在的版本，其他版本需单独核实')
             runtime = json.loads((Path(__file__).resolve().parent.parent / f'config/ai-{version}-cpu-images.json').read_text())
-            images += runtime['images']
+            gateway_path = Path(__file__).resolve().parent.parent / f'config/ocp-{target}-gateway-images.json'
+            if not gateway_path.is_file():
+                raise ValueError(f'AI 网关运行镜像尚未核实 OpenShift {target}；当前固定验收组合为 4.22.22，请先补充该平台补丁版本的网关镜像清单')
+            gateway = json.loads(gateway_path.read_text())
+            if gateway.get('platformVersion') != target or gateway.get('architecture') != 'amd64':
+                raise ValueError('AI 网关镜像清单与目标平台或架构不一致')
+            images += runtime['images'] + gateway['images']
             requirements.append({'product': 'ai', 'version': version, 'scope': 'Dashboard + CPU Workbenches',
                 'runtimeImageSource': runtime['source'], 'supportSource': AI_SUPPORT,
+                'gatewayRuntimeImageSource': gateway['source'], 'gatewayPlatformVersion': target,
+                'gatewayRuntimeImages': gateway['images'],
                 'prerequisites': ['官方常规拓扑要求至少两个 8 CPU/32 GiB 工作节点；控制组件与实际负载另预留资源',
                     'SNO 按官方要求至少 32 CPU/128 GiB；另需默认动态 StorageClass 和真实 IDP 用户',
                     'KServe 需 cert-manager；训练/KubeRay 需 Kueue；Trainer 另需 JobSet',

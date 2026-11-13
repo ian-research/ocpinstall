@@ -76,6 +76,8 @@ class DeliveryTests(unittest.TestCase):
         source = self.root.parent / 'public source'
         contents = {'install-cluster.sh': '#!/bin/bash\n', 'README.md': 'public',
                     'lib/offline.py': '# public code', 'config/versions.sh': '# public profile',
+                    'RHEL10-HELPER.md': 'public Helper guide',
+                    'config/ocp-4.22.22-gateway-images.json': '{"images": []}',
                     'pull-secret.json': 'fixture credential', 'notes.md': 'fixture private note',
                     'config/auth.json': 'fixture credential', 'lib/auth.json': 'fixture credential'}
         for name, content in contents.items():
@@ -85,7 +87,8 @@ class DeliveryTests(unittest.TestCase):
         with patch.object(delivery, 'SOURCE', source):
             delivery.snapshot_scripts(self.root)
         copied = {str(p.relative_to(self.root / 'scripts')) for p in (self.root / 'scripts').rglob('*') if p.is_file()}
-        self.assertEqual(copied, {'install-cluster.sh', 'README.md', 'lib/offline.py', 'config/versions.sh'})
+        self.assertEqual(copied, {'install-cluster.sh', 'README.md', 'lib/offline.py', 'config/versions.sh',
+                                 'RHEL10-HELPER.md', 'config/ocp-4.22.22-gateway-images.json'})
 
     def test_snapshot_rejects_destination_symlink_before_writing(self):
         outside = self.root.parent / 'outside'

@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+import shlex
 import subprocess
 import unittest
 import tempfile
@@ -157,11 +158,28 @@ firewall-cmd() { echo 'unexpected firewall rules' >&2; exit 99; }
         for skip in ('true', 'false'):
             program = ('set -euo pipefail\nlog() { :; }\n'
                        f'SKIP_FIREWALLD={skip}\n'
+                       f'SCRIPT_DIR={shlex.quote(str(ROOT))}\nOCP_HELPER_MAJOR=9\n'
                        'dnf_install() { printf "%s\\n" "$@"; exit 0; }\n')
             result = subprocess.run(['bash', '-c', program + install_function('install_dependencies')
                                      + '\ninstall_dependencies\n'], capture_output=True, text=True, check=True)
             self.assertEqual('firewalld' in result.stdout.splitlines(), skip == 'false')
             self.assertIn('policycoreutils-python-utils', result.stdout.splitlines())
+
+    def test_docker_start_failure_explains_missing_kernel_modules_without_rebooting(self):
+        for module_status in ('0', '1'):
+            program = ('set -euo pipefail\nlog() { :; }\n'
+                       'die() { echo "$*" >&2; exit 1; }\n'
+                       'dnf_install() { :; }\n'
+                       'sudo() { printf "%s\\n" "$*"; return 1; }\n'
+                       f'modprobe() {{ return {module_status}; }}\n'
+                       f'SCRIPT_DIR={shlex.quote(str(ROOT))}\n'
+                       'OCP_HELPER_MAJOR=10\nSKIP_FIREWALLD=true\nYUM_REPO_MODE=bundle\n'
+                       + install_function('install_dependencies') + '\ninstall_dependencies\n')
+            result = subprocess.run(['bash', '-c', program], capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(result.stdout.splitlines(), ['systemctl enable docker --now'])
+            self.assertEqual('kernel-modules-extra' in result.stderr, module_status == '1')
+            self.assertIn('Docker', result.stderr)
 
     def test_scc_only_in_selected_namespace(self):
         text = (ROOT / 'setup-cluster.sh').read_text()

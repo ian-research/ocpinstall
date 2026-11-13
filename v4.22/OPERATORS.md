@@ -83,7 +83,7 @@ bash v4.22/prepare-operators.sh import --non-interactive \
 
 使用与导出端 SHA256 相同的 oc-mirror 二进制。目标 Harbor 项目、仓库证书信任以及集群 pull secret 权限应已配置；导入不自动给集群扩大仓库权限。每个计划使用独立的目标 catalog 名称和标签，避免覆盖之前已导入的过滤目录。
 
-导入后审阅 `images/working-dir/cluster-resources`，再在 RHEL 9 Helper 上运行：
+导入后审阅 `images/working-dir/cluster-resources`，再在匹配的 RHEL 9/10 x86_64 Helper 上运行：
 
 ```bash
 sudo env BUNDLE_DIR='/data/ocp422 operators' \
@@ -138,3 +138,9 @@ AI 的 CPU Workbenches 范围用于限定配置和功能验收，不会删改官
 HCO `v1` 使用 `spec.workloadSources.enableCommonBootImageImport`；`v1beta1` 使用 `spec.enableCommonBootImageImport`。旧的 `spec.featureGates.enableCommonBootImageImport` 已被忽略，不能据此判定已经关闭。5.0 的两种实际 CRD 已核对；4.22 的 beta 字段依据[红帽引导源文档](https://docs.redhat.com/en/documentation/openshift_container_platform/4.22/html/virtualization/storage)。创建 HCO 后再次等待 MCP 收敛，并按 Available/Progressing/Degraded 条件和实际 Deployment 验证；不要求未在 CRD 中定义的 `status.phase`。
 
 应用入口还会逐个检查控制平面节点的四类静态 Pod 及其主容器，避免 Operator Deployment 和旧汇总状态显示健康时继续修改集群。工作节点不要求具备控制平面静态 Pod；API 读取失败仍会停止。
+
+### AI 的托管网关镜像
+
+AI 3.5.2/3.5.3 的 Dashboard 和 Workbenches 还依赖平台托管 Gateway 的 `istio-pilot-rhel9`、`istio-proxyv2-rhel9`。这两个镜像没有出现在 AI CSV 的 `relatedImages` 中。生成器从 `config/ocp-4.22.22-gateway-images.json` 自动补齐固定摘要，并在计划中记录来源；当前只核实 4.22.22，其他平台补丁版本须先增加经过核实的清单。
+
+4.22.22 / AI 3.5.2 的实际验收使用原完整包加这两个镜像的独立可搬迁补充包，完成全新缓存和阻断外网导入后，Dashboard、CPU 工作台及停止/启动后的持久文件读取通过。新版完整计划自动包含它们，但本轮没有重新导出和重装整个新版大包；详见 [验收记录](VALIDATION.md)。

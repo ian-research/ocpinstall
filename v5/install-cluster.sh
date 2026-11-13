@@ -149,7 +149,7 @@ enabled=0
 gpgcheck=1
 gpgkey=$key_urls
 EOF
-        dnf --disablerepo='*' --enablerepo=ocp-delivery -q makecache
+        dnf --disableplugin=amazon-id --disablerepo='*' --enablerepo=ocp-delivery -q makecache
         return
     fi
     if [[ ${YUM_REPO_MODE:-iso} == existing ]]; then
@@ -374,7 +374,15 @@ confirm_config() {
 # 安装依赖
 install_dependencies() {
     log "安装依赖..."
-    local -a packages=(python3-pyyaml policycoreutils-python-utils haproxy bind bind-utils skopeo httpd-tools openssl python3.11 python3-pip jq wget nfs-utils chrony httpd cockpit)
+    local -a profile_command=(python3 "$SCRIPT_DIR/lib/helper_profile.py" install-packages)
+    [[ -z ${OCP_HELPER_MAJOR:-} ]] || profile_command+=(--major "$OCP_HELPER_MAJOR")
+    local package_lines package
+    package_lines=$("${profile_command[@]}") || die '无法确定 Helper 的 RHEL 软件配置'
+    local -a packages=()
+    while IFS= read -r package; do
+        [[ -z $package ]] || packages+=("$package")
+    done <<< "$package_lines"
+    [[ ${#packages[@]} -gt 0 ]] || die 'Helper 软件清单为空'
     if [[ $SKIP_FIREWALLD != true ]]; then packages+=(firewalld); fi
     dnf_install "${packages[@]}"
     if [[ ${YUM_REPO_MODE:-iso} == bundle ]]; then
@@ -389,7 +397,12 @@ install_dependencies() {
     fi
 
     # 启动docker
-    sudo systemctl enable docker --now
+    if ! sudo systemctl enable docker --now; then
+        if command -v modprobe >/dev/null && ! modprobe -n xt_addrtype >/dev/null 2>&1; then
+            die '当前内核缺少 Docker 网络所需 xt_addrtype 模块。请补齐匹配的 kernel-modules-extra；若刚安装了新内核及其模块，请正常重启 Helper 后使用同一离线包重试。'
+        fi
+        die 'Docker 启动失败，请检查 systemctl status docker 和 journalctl -u docker。'
+    fi
 }
 
 # 配置NFS

@@ -2,7 +2,7 @@
 
 更新：2026-11-14。固定目标 5.0.1 / amd64。以下逐项区分实际执行、代码检查和仍待验收；不以下载/导入成功代替组件功能验收。
 
-**本轮整体验收未通过，PR 保持草稿。** 平台安装及基础离线模式下的 RHEL 9 VM 两轮真实启停验证已通过；后续正常重启、资源调整和独立健康复核已完成。ACM/MCE Basic Hub、本地集群注册及真实策略下发也已通过；4.22 整机和 AI 功能仍待验收。最新状态见下方“追加预算后的恢复复核”；较早的故障快照按原时间保留。
+5.0.1 的平台、基础应用、Virtualization 基础 VM 和 ACM/MCE Basic Hub/本地策略验收已通过。独立 4.22.22 环境的 LVMS 和 AI 3.5.2 CPU 工作台也已通过；该结果不构成 AI 5.0 认证。RHEL 10 Helper 的结果独立记录。下方较早故障快照保留原时间，不能作为当前状态。
 
 | 范围 | 结果 |
 |---|---|
@@ -12,9 +12,9 @@
 | Operator 可搬迁导出/导入 | Web Terminal 1.17.2 + DevWorkspace 1.0.0，10 个镜像；全新缓存、不同含空格路径、只转移校验清单内文件、外网阻断的导入通过 |
 | Operator 实际使用 | 两个 CSV 均 Succeeded；创建 DevWorkspace 达到 Running，并成功执行标记命令 |
 | 完整 delivery 打包 | 完整组合导出与换路径整包校验已通过，收集 359 个 Helper RPM；新路径下从平台归档重建规则、阻断外网导入、安装后配置通过，MCP 收敛，原有工作空间仍 Running |
-| 本地回归 | 两版分别 172 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
-| Helper RPM 事务与文件保留 | 新 AWS/RHEL 9.6 环境发现 glibc 语言包反向依赖冲突及 DNF 清理 download-only 目录的问题；缓存隔离修复后，本地 GPG 完整事务预检和整包校验通过。4.22 Helper 已真实安装全部所需软件并进入平台镜像导入，394 个 RPM 的路径及 SHA256 与安装前完全一致；源导出缓存保持隔离。此项不代表 LVMS/AI 功能验收完成 |
-| RHEL 10 Helper | 已列入独立验收范围；仅测试 Helper 服务、工具与离线交接，不重复部署已通过的集群或 Operator；尚未标记通过 |
+| 本地回归 | 两版分别 190 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
+| Helper RPM 事务与文件保留 | 新 AWS/RHEL 9.6 环境发现 glibc 语言包反向依赖冲突及 DNF 清理 download-only 目录的问题；缓存隔离修复后，本地 GPG 完整事务预检和整包校验通过。4.22 Helper 已真实安装全部所需软件并进入平台镜像导入，394 个 RPM 的路径及 SHA256 与安装前完全一致；源导出缓存保持隔离。LVMS/AI 的后续真实功能验收已通过，见下方独立记录 |
+| RHEL 10 Helper | RHEL 10.2 的 4.22 分支 Helper 函数实际验收通过：374 RPM 离线安装及保留、DNS/NTP/HAProxy/HTTP/NFS、SELinux、Harbor、本地镜像和原生 oc-mirror 搬迁导入；5.0.1 工具 ABI 通过。未另跑 5.x Helper 初始化，未重复部署集群；[详细范围](RHEL10-HELPER.md) |
 | 全新隔离 Helper 初始化 | RHEL 9.6 虚拟机完成 359 RPM 本地 GPG 安装、默认 SELinux/firewalld、Docker/Harbor、平台离线导入及 Ignition/handoff 生成；未启动第二套集群节点，物理服务器尚待单独验收 |
 | 授时与缓存针对性回归 | 在隔离 Helper 完成 30 项实测：拒绝 NTP 自引用、上游不可达时失败、显式本地 stratum 10 回应真实 NTP 查询、缓存位于包外；安全策略保持开启 |
 | 本地仓库的组件证书信任 | AWS 实测完成 CA 注入后刷新目录服务、三份 ClusterCatalog Serving；重复执行不修改 CA、不重启组件。合并已有用户 CA、保留代理字段及并发保护另有回归检查。官方 4.22.22/5.0.1 安装器均确认支持 Always 策略 |
@@ -74,7 +74,7 @@ MCE 5.0.0 在本次失败后的卸载中，先撤销部分 API，随后控制器
 - 新基础离线引导源策略已通过严格服务端预检查；本轮因 HCO/webhook 健康前提不满足，未应用到运行集群，也未在该策略下重跑 VM。
 - 共享存储出现过 97% 忙碌度和约 42 ms 平均读写等待。短时采样与 CPU requests 不能单独确定瓶颈；本轮没有调整 EC2/虚拟机规格、磁盘性能、外网隔离或既定结束时间。
 
-去除私密内容的记录：[最终联调状态](tests/evidence/product-acceptance-final-2026-11-13.json)、[单 VM](tests/evidence/virtualization-basic-2026-11-13.json)、[性能采样](tests/evidence/runtime-pressure-2026-11-13.json)。随后已在追加预算和资源调整后完成上述 ACM/MCE 基础复验；4.22 整机和 AI 验收仍待完成。
+去除私密内容的记录：[最终联调状态](tests/evidence/product-acceptance-final-2026-11-13.json)、[单 VM](tests/evidence/virtualization-basic-2026-11-13.json)、[性能采样](tests/evidence/runtime-pressure-2026-11-13.json)。随后已在追加预算和资源调整后完成上述 ACM/MCE 基础复验；4.22 整机和 AI CPU 基础范围后来已通过，见下方独立记录。
 
 ## 实测中的工具问题
 
@@ -96,3 +96,19 @@ MCE 5.0.0 在本次失败后的卸载中，先撤销部分 API，随后控制器
 - [oc-mirror 离线 catalog 导入修复](https://github.com/openshift/oc-mirror/commit/4cfbc254b92f34b456f44ca3540e36d09f79fffa)
 
 已去除凭据的 AWS 实测数据：[offline evidence](tests/evidence/aws-offline-2026-11-13.json)。该记录对应 5.0.1，不能替代 4.22 的整套集群验收。
+
+## 2026-11-14：4.22.22 / LVMS / AI CPU 功能验收
+
+三节点平台安装与配置完成，34 个 ClusterOperator、MCP、51 个控制平面主容器及三个真实 etcd 端点健康。LVMS 4.22.0 的三份节点状态正常，默认动态 StorageClass 的实际消费者 PVC 绑定成功；未发出强制擦盘操作。
+
+AI 3.5.2 的 Dashboard 与 CPU Workbenches Managed，其余组件 Removed。真实 IDP 用户的 Dashboard 身份和 JSON API 认证通过，匿名请求被重定向；默认硬件规格和面向 Dashboard 的 CPU ImageStream 可用。实际 1 CPU/4 GiB 工作台使用 10 GiB LVMS PVC，执行 Python 并写入唯一文件；按产品方式停止、启动后 Pod UID 改变，经过认证的 Jupyter Contents API 再次返回 200 和同一文件，匿名请求仍为 302，TLS 校验始终开启。ROOT 和 dsh 分别做了最终复核。
+
+实测发现平台托管 Gateway 的两个 Service Mesh 镜像不在 AI CSV 声明中，已补入自动准备规则。实际采用原完整包加两个镜像的独立补充包；补充包更名并隔离原缓存后，通过新缓存、阻断外网的原生 oc-mirror 导入和摘要核对。**本轮未重新导出、重装自动补齐后的整个新版大包。**
+
+已验证当前 CPU 内置镜像流标签 2025.2、3.4、3.5 可用；旧标签与 GPU/ROCm 镜像并非全部准备。AI 3.5.3 仅有规划规则覆盖，没有单独安装复验。GPU、KServe、模型服务、分布式训练、llm-d、RAG，4.22 上的 Virtualization/ACM，以及物理服务器仍不在本次功能验收范围。
+
+去除私密信息的 [4.22/LVMS/AI 证据](tests/evidence/ai422-functional-2026-11-14.json) 记录运行结果、实际网络隔离和完整私有证据摘要。历史验收工具的条件字段及 Notebook 路由假设错误均保留在私有记录中；最终结果基于真实 CR、身份、HTTP 响应、不同 Pod UID 和持久文件，未降低功能标准。
+
+## 2026-11-14：RHEL 10 Helper 独立验收
+
+[Helper 实测与恢复方法](RHEL10-HELPER.md) 和 [精简证据](tests/evidence/rhel10-helper-2026-11-14.json) 已更新。全部十项功能检查和实际受限进程退出均通过，独立复核确认 Harbor 各组件健康、374 个 RPM 和全部交付文件未变、原生导入 manifest 字节一致，90 个被测代码文件与当前待发布版本一致。已正常停止测试 Harbor，保留私有证据。物理 firewalld/DVD、5.x 独立 Helper 初始化及 RHEL 10 上的完整集群重装不在本次范围。

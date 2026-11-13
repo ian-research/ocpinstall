@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-11-13T21:10:23.401514+00:00",
+  "platformVersion": "4.22.22",
+  "lvmsVersion": "4.22.0",
+  "aiVersion": "3.5.2",
+  "result": "PASS",
+  "environment": "AWS nested KVM; three compact control-plane nodes; RHEL 9.6 Helper",
+  "sourceBaseCommit": "40a5ba0125a6505051d482363f0860a58ca4b442",
+  "fullPackageReexportedAfterGatewayFix": false,
+  "runtimeComposition": "Existing complete platform/Helper/Operator package plus a standalone, renamed, fresh-cache oc-mirror export/import of the two managed-Gateway operands. The revised planner automatically includes both operands; its full new package was not re-exported/reinstalled during this test.",
+  "platform": {
+    "installComplete": true,
+    "configureComplete": true,
+    "nodesReady": 3,
+    "healthyClusterOperators": 34,
+    "staticMainContainersHealthy": 51,
+    "actualEtcdEndpointsHealthy": 3,
+    "machineConfigPoolsConverged": true,
+    "independentFinalHealthPassed": true
+  },
+  "helper": {
+    "retainedRPMFiles": 394,
+    "allRPMPathsAndSHA256UnchangedAfterInstall": true,
+    "originalExportCacheAbsent": true
+  },
+  "network": {
+    "functionalPhasesRestricted": true,
+    "localRegistryTrustedTLS": true,
+    "externalRegistryConcreteConnectFailure": true,
+    "guestExternalRegistryBlocked": true,
+    "selinuxEnforcing": true,
+    "sccRelaxed": false
+  },
+  "lvms": {
+    "readyNodeStatuses": 3,
+    "provisioner": "topolvm.io",
+    "defaultStorageClass": true,
+    "volumeBindingMode": "WaitForFirstConsumer",
+    "realConsumerPVCBound": true,
+    "forceWipeIssued": false
+  },
+  "ai": {
+    "managedComponents": [
+      "dashboard",
+      "workbenches"
+    ],
+    "realIDPIdentityVerified": true,
+    "authenticatedDashboardAPI": 200,
+    "anonymousDashboardAPI": 302,
+    "tlsVerification": true,
+    "dashboardVisibleCPUImageStreamUsable": true,
+    "defaultHardwareProfilePresent": true,
+    "workbenchCPU": 1,
+    "workbenchMemoryGiB": 4,
+    "persistentVolumeGiB": 10,
+    "persistentVolumeBound": true,
+    "actualPythonExecution": true,
+    "authenticatedJupyterContentsBeforeAndAfterStopStart": 200,
+    "anonymousJupyterContents": 302,
+    "distinctPodUIDs": true,
+    "exactFileMarkerPersistedAcrossSupportedStopStart": true,
+    "independentContentsAPIRecheckPassed": true,
+    "builtinCurrentCPUImageStreamTagsImportReady": [
+      "2025.2",
+      "3.4",
+      "3.5"
+    ]
+  },
+  "gatewaySupplement": {
+    "images": [
+      {
+        "source": "registry.redhat.io/openshift-service-mesh/istio-pilot-rhel9@sha256:0da1ad174d30c838e8195064ea07e01f30e997ad00693afffdc9b4aaeea73e7c",
+        "destinationManifestSHA256Verified": true
+      },
+      {
+        "source": "registry.redhat.io/openshift-service-mesh/istio-proxyv2-rhel9@sha256:c0b1b9415bd7781afb7648b9639b9927030e7e9e68a4f2af2ac35908286b5aaf",
+        "destinationManifestSHA256Verified": true
+      }
+    ],
+    "originalPathAbsent": true,
+    "originalCacheAbsent": true,
+    "newImportCache": true,
+    "trustedTLS": true,
+    "externalConnectBlocked": true
+  },
+  "limitations": [
+    "CPU-only; no GPU, KServe, model serving, distributed training, llm-d or RAG acceptance",
+    "No browser click-through creation claim: real authenticated HTTP APIs and an actual running, stopped, restarted Workbench were verified",
+    "Older/GPU ImageStream tags outside the mirrored scope are not all import-ready",
+    "AI 3.5.3 has planner coverage but no separate functional installation in this run",
+    "4.22 Virtualization/ACM and physical hardware remain unqualified",
+    "Reviewed checkpoint continuation reused the same owned Notebook/PVC; historical private harness failures are preserved separately"
+  ],
+  "privateEvidenceArchiveSHA256": "9b2bbfd94a7c9f07f16f58af915e36a0082063a28002454b8075bb679c3baf74",
+  "privateEvidencePublished": false,
+  "sanitization": "Explicit allowlist: no account/instance/volume IDs, IPs, domain/topology details, credentials, tokens, kubeconfig or passwords"
+}

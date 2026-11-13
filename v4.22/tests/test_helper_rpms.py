@@ -40,6 +40,9 @@ class HelperRPMTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as parent:
             root = self.helper(parent)
             def inspect(command):
+                self.assertIn('--disableplugin=amazon-id', command)
+                self.assertNotIn('--noplugins', command)
+                self.assertNotIn('--nogpgcheck', command)
                 self.assertIn('--setopt=tsflags=test', command)
                 self.assertIn('--setopt=keepcache=1', command)
                 self.assertIn('--disablerepo=*', command)
@@ -105,6 +108,23 @@ class HelperRPMTests(unittest.TestCase):
             with patch.object(delivery, 'run') as run:
                 delivery.preflight_helper_rpms(root)
             run.assert_not_called()
+
+    def test_aws_metadata_plugin_is_skipped_only_for_bundle_install(self):
+        common = Path(delivery.SOURCE) / 'lib/common.sh'
+        program = ('source "$1"; YUM_REPO_MODE=$2; '
+                   'dnf() { printf "%s\\n" "$@"; }; dnf_install python3')
+        for mode in ('bundle', 'existing', 'iso'):
+            with self.subTest(mode=mode):
+                result = subprocess.run(['bash', '-c', program, 'bash', str(common), mode],
+                                        capture_output=True, text=True, check=True)
+                argv = result.stdout.splitlines()
+                self.assertEqual('--disableplugin=amazon-id' in argv, mode == 'bundle')
+                self.assertNotIn('--noplugins', argv)
+                self.assertNotIn('--nogpgcheck', argv)
+                if mode == 'bundle':
+                    self.assertIn('--disablerepo=*', argv)
+                    self.assertIn('--enablerepo=ocp-delivery', argv)
+                    self.assertIn('--setopt=keepcache=1', argv)
 
     def test_legacy_cached_rpm_slice_requires_new_preparation(self):
         with tempfile.TemporaryDirectory() as parent:

@@ -1,0 +1,11 @@
+{
+  "platformVersion": "4.22.22",
+  "architecture": "amd64",
+  "source": "OpenShift 4.22.22 managed Gateway API: observed openshift-ingress/values-openshift-gateway and istio-sidecar-injector-openshift-gateway",
+  "controllerSource": "https://github.com/openshift/cluster-ingress-operator/blob/release-4.22/pkg/operator/controller/gatewayclass/istio_sail_installer.go",
+  "scope": "Managed Gateway API used by AI Dashboard and Workbenches; these operands are not declared by the AI CSV",
+  "images": [
+    "registry.redhat.io/openshift-service-mesh/istio-pilot-rhel9@sha256:0da1ad174d30c838e8195064ea07e01f30e997ad00693afffdc9b4aaeea73e7c",
+    "registry.redhat.io/openshift-service-mesh/istio-proxyv2-rhel9@sha256:c0b1b9415bd7781afb7648b9639b9927030e7e9e68a4f2af2ac35908286b5aaf"
+  ]
+}

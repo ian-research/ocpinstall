@@ -6,7 +6,7 @@
 交付目录/
   platform/       平台镜像、工具、RHCOS 启动 ISO
   operators/      所选 Operator、依赖、过滤目录、镜像归档
-  helper/         RHEL 9 / Docker RPM、签名 key、Harbor 离线包
+  helper/         匹配 RHEL 9/10 / Docker RPM、签名 key、Harbor 离线包
   scripts/        本版本安装、配置及准备脚本的快照
   delivery.json   相对路径和 SHA256 清单
   install.sh      初始化 Helper、导入平台、生成安装资料
@@ -16,7 +16,7 @@
 
 ## 联网准备机
 
-完整 `rpm` 模式使用 **RHEL 9 x86_64**，目标 Helper 的 RHEL 版本须与准备机相同。准备机必须已启用有权访问的 RHEL 软件源，并具备 Python 3.9+、PyYAML、Bash 4+、skopeo、`dnf download`（dnf-plugins-core）及 createrepo_c。需要足够磁盘同时保存缓存、镜像归档和目录镜像；复杂 Operator 组合可能达到数百 GB。源 pull secret 放在交付目录外。
+完整 `rpm` 模式使用 **RHEL 9 或 RHEL 10 x86_64**，目标 Helper 的完整 `VERSION_ID` 和软件基线须与准备机匹配。共享 `lib/helper_profile.py` 决定下载与安装清单：RHEL 9 保留 Python 3.11 依赖，RHEL 10 使用默认 Python 3；缓存会核对 OS、架构及 RPM 缓存隔离标记，不能跨版本复用。详见 [RHEL 10 Helper](RHEL10-HELPER.md)。准备机必须已启用有权访问的 RHEL 软件源，并具备 Python 3.9+、PyYAML、Bash 4+、skopeo、`dnf download`（dnf-plugins-core）及 createrepo_c。需要足够磁盘同时保存缓存、镜像归档和目录镜像；复杂 Operator 组合可能达到数百 GB。源 pull secret 放在交付目录外。
 
 从红帽获取官方 oc-mirror v2 并解压为名为 `oc-mirror` 的可执行文件。完整入口会把此二进制打包到工具目录，确保源端与离线端一致。它不会另行下载一个不同版本的插件。
 
@@ -157,3 +157,9 @@ CA 合并、目录策略和集群版本检查的 API 访问设置超时，失败
 ## Helper 状态冲突的提前检查
 
 完整安装入口先只读检查已知 Helper 状态目录，发现其他版本或路径的状态时，在大镜像归档校验前停止；原安装脚本的保护检查继续保留。两版建议使用独立 Helper。同机串行切换测试时，先正常停止旧集群和 Harbor，保存集群备份、磁盘与主机配置，并将已停用的旧 STATE_ROOT 归档保留，再运行新版本。恢复旧环境时，先停下新环境，再还原旧状态路径和主机配置。
+
+## 离线 Helper 的 AWS 插件与内核恢复
+
+包内 RPM 预检、缓存和安装命令仅跳过 `amazon-id` 插件，避免它在已关闭全部 RHUI 源时仍访问 EC2 元数据。GPG 校验、其他 DNF 插件及联网准备模式保持原设置，不需要放行元数据地址。
+
+若 Docker 报缺少 `xt_addrtype`，先核对运行内核及其 `kernel-modules-extra`。本次 RHEL 10.2 AMI 的离线事务安装了新内核和匹配模块；确认新默认内核具备模块后，正常重启同一 Helper，再使用同一离线包和状态目录续跑即可。脚本遇到启动失败会停止并给出诊断，不会自动重启 Helper，也不会关闭 Docker 网络过滤来绕过错误。物理机上应由管理员先确认维护窗口。

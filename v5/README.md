@@ -12,7 +12,7 @@
 | `apply-operators.sh` | 检查版本与集群状态，仅应用已验证 Operator 包的离线目录/镜像规则；支持服务端预检查 |
 | `prepare-operators.sh` | 交互选择 Operator，解析依赖并独立导出/导入离线包，详见 [OPERATORS.md](OPERATORS.md) |
 
-5.x 文件在独立的 `v5/` 目录，但 Helper 会使用相同的系统服务和端口，**请使用独立 RHEL 9 Helper 主机**。安装脚本检测到旧版 `/opt/ocpinstall` 或 `/opt/harbor/harbor/harbor.yml` 时会退出。不能在同一 Helper 上同时运行两套 DNS、HAProxy 和 Harbor，也不是把现有 4.x 集群原地升级到 5.x 的工具。
+5.x 文件在独立的 `v5/` 目录，但 Helper 会使用相同的系统服务和端口，**请使用独立且匹配版本的 RHEL 9/10 x86_64 Helper 主机**。安装脚本检测到旧版 `/opt/ocpinstall` 或 `/opt/harbor/harbor/harbor.yml` 时会退出。不能在同一 Helper 上同时运行两套 DNS、HAProxy 和 Harbor，也不是把现有 4.x 集群原地升级到 5.x 的工具。
 
 授时默认使用真正可达的内部上游 `NTP_SERVER`，不能填写 Helper 自己。没有上游的完全隔离环境，可显式设置 `NTP_MODE=local` 并省略 `NTP_SERVER`，以 Helper 时钟统一节点；请先核对 Helper 时间。上游模式未同步会停止安装。完整交付路径与重试方法见 [DELIVERY.md](DELIVERY.md)。
 
@@ -21,6 +21,8 @@
 完整 RPM 包还会补齐 glibc 语言包等已装软件的反向依赖，并在出包前、安装前测试仅使用本地源的完整 RPM 事务；缺包或冲突会在修改主机服务前停止。准备机与目标 Helper 应使用匹配的 RHEL 和软件基线，详见 [Helper 软件准备](DELIVERY.md#联网准备机)。
 
 RPM 事务下载使用包外临时缓存，再复制到交付目录，避免 DNF 后续安装清理交付文件；预检还会核对 RPM 文件未被修改或删除。早于此修复的 Helper 软件包需要使用新目录重新准备。
+
+Helper 软件清单按实际 RHEL 9/10 x86_64 选择，准备包与目标 Helper 必须匹配完整 OS 版本和软件基线；RHEL 10 使用默认 Python 3，避免依赖不存在的 Python 3.11 并行包。RHEL 10.2 的 Helper 基础功能及 5.0.1 工具 ABI 已通过实测，范围与内核恢复方法见 [RHEL 10 Helper](RHEL10-HELPER.md)。
 
 Virtualization、ACM/MCE 和 LVMS 的安装阶段清单见 [产品清单的交接](DELIVERY.md#产品清单的交接)。LVMS 只生成固定版本的手动审批订阅，磁盘必须逐节点核对后再配置，不会自动初始化数据盘。当前 AI 支持矩阵未列出 5.0，本版拒绝该组合；AI 的 Dashboard/CPU Workbenches 准备与验收针对独立的 4.22 版本。
 

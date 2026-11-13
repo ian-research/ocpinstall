@@ -40,6 +40,18 @@ class ProductRuleTests(unittest.TestCase):
         self.assertTrue(all('@sha256:' in i for i in images))
         self.assertIn('GPU', requirements[0]['excludedFeatures'])
 
+    def test_ai_includes_both_platform_managed_gateway_operands(self):
+        catalogs = CatalogFixture([('rhods-operator', '3.5.2')])
+        _, images, requirements = product_rules.expand(catalogs, ['redhat/rhods-operator'], '4.22.22')
+        self.assertTrue(any('/istio-pilot-rhel9@sha256:' in image for image in images))
+        self.assertTrue(any('/istio-proxyv2-rhel9@sha256:' in image for image in images))
+        self.assertEqual(requirements[0]['gatewayPlatformVersion'], '4.22.22')
+
+    def test_ai_rejects_unverified_platform_patch_instead_of_reusing_gateway_images(self):
+        catalogs = CatalogFixture([('rhods-operator', '3.5.2')])
+        with self.assertRaisesRegex(ValueError, '网关运行镜像尚未核实'):
+            product_rules.expand(catalogs, ['redhat/rhods-operator'], '4.22.23')
+
     def test_virtualization_5_cannot_be_used_on_422(self):
         catalogs = CatalogFixture([('kubevirt-hyperconverged', '5.0.0')])
         with self.assertRaisesRegex(ValueError, '官方支持组合'):

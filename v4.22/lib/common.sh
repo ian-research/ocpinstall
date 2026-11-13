@@ -22,13 +22,22 @@ validate_domain() {
     done
 }
 
+validate_helper_identity() {
+    local id=${1:-} version=${2:-} arch=${3:-}
+    [[ $id == rhel && $arch == x86_64 ]] || return 1
+    [[ $version =~ ^(9|10)(\.[0-9]+)*$ ]] || return 1
+    export OCP_HELPER_MAJOR=${version%%.*}
+    export OCP_HELPER_VERSION=$version
+}
+
 require_host() {
     [[ ${BASH_VERSINFO[0]} -ge 4 ]] || die '需要 Bash 4 或更新版本'
     [[ $(id -u) == 0 ]] || die '请使用 root 运行'
-    [[ -r /etc/os-release ]] || die '需要 RHEL 9'
+    [[ -r /etc/os-release ]] || die '需要 RHEL 9 或 RHEL 10'
     local ID VERSION_ID
     source /etc/os-release
-    [[ $ID == rhel && ( $VERSION_ID == 9 || $VERSION_ID == 9.* ) ]] || die '当前仅支持 RHEL 9'
+    validate_helper_identity "${ID:-}" "${VERSION_ID:-}" "$(uname -m)" \
+        || die '当前仅支持 RHEL 9/RHEL 10 x86_64'
 }
 
 backup_file() {
@@ -80,7 +89,7 @@ parse_security_options() {
 
 dnf_install() {
     if [[ ${YUM_REPO_MODE:-iso} == bundle ]]; then
-        dnf --setopt=keepcache=1 --disablerepo='*' --enablerepo=ocp-delivery install -y "$@"
+        dnf --disableplugin=amazon-id --setopt=keepcache=1 --disablerepo='*' --enablerepo=ocp-delivery install -y "$@"
     else
         dnf install -y "$@"
     fi

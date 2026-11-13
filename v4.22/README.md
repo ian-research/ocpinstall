@@ -14,6 +14,8 @@
 
 RPM 事务下载使用包外临时缓存，再复制到交付目录，避免 DNF 后续安装清理交付文件；预检还会核对 RPM 文件未被修改或删除。早于此修复的 Helper 软件包需要使用新目录重新准备。
 
+Helper 软件清单按实际 RHEL 9/10 x86_64 选择，准备包与目标 Helper 必须匹配完整 OS 版本和软件基线；RHEL 10 使用默认 Python 3，避免依赖不存在的 Python 3.11 并行包。RHEL 10.2 的 Helper 基础功能及 5.0.1 工具 ABI 已通过实测，范围与内核恢复方法见 [RHEL 10 Helper](RHEL10-HELPER.md)。
+
 ## 交互操作
 
 联网准备机需要 Linux、Python 3.9+、PyYAML 6.0.3、skopeo、Podman/Docker，以及支持目标版本的 `oc`、`oc-mirror v2`。首次解析会编译使用 OLM 同类 semver/CEL 库的工具；没有 Go 时自动下载固定官方 Go 工具链并校验 SHA256。离线导入端只需 Python、oc 和同一份 oc-mirror 二进制，不需要 Go、skopeo 或 Docker。
@@ -32,6 +34,8 @@ bash v4.22/prepare-operators.sh
 自动解析目录声明的依赖和 relatedImages；另对已核实的 ACM 5.0/MCE 5.0、Virtualization 和 AI 3.5.2/3.5.3 基础功能执行业务依赖及支持组合检查，详见 [验证范围](VALIDATION.md)。厂商未声明的外部数据库、授权、存储和运行时镜像仍需根据其文档补充。计划用于新安装，不代替已有 Subscription 的升级路径规划。
 
 安装后配置会生成分阶段的产品清单，见 [产品清单的交接](DELIVERY.md#产品清单的交接)。AI 的 DSC 来自所选固定 bundle 的厂商示例，基础范围只启用 Dashboard 和 CPU Workbenches；已有 DSCI 应复用，初始化参考文件不能覆盖已有 CA。AI 需要真实 IDP 用户和默认动态 StorageClass。若选用 LVMS，请同时选取其 Operator；先用 `00-lvms-subscriptions.json` 安装存储提供者并验证动态 PVC，再安装 AI。磁盘必须逐节点核对后再配置，不会自动初始化数据盘。
+
+4.22.22 / AI 3.5.2 已完成真实 IDP 认证、CPU 工作台、Jupyter 文件读写及停止/启动后的 PVC 数据保留验收。准备规则还补齐 AI CSV 未声明的两个托管 Gateway 运行镜像；当前 AI 规则仅核实到平台 4.22.22，其他补丁版本会停止并要求先核实。镜像搬迁、实际功能与未覆盖范围见 [VALIDATION.md](VALIDATION.md)。
 
 ## 命令行、预检查与下载
 
