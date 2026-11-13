@@ -1,0 +1,102 @@
+{
+  "state": "comparison-complete",
+  "startedAtUTC": "2026-11-13T02:37:24.197343+00:00",
+  "oldSourceSha256": "4a1728be46a0289e1c678fb24d9567fc85828d627d12781568265206c1b45bae",
+  "newSourceSha256": "40bd87bed74f1dae67738281146a52ce215b468dee1db14d1982f50e3884e82d",
+  "mode": "read-only comparison on the same captured API responses",
+  "clusterMutated": false,
+  "resources": [
+    {
+      "resource": "nodes",
+      "namespace": null,
+      "readState": "read",
+      "count": 3,
+      "elapsedSeconds": 0.112
+    },
+    {
+      "resource": "machineconfigpools",
+      "namespace": null,
+      "readState": "read",
+      "count": 2,
+      "elapsedSeconds": 0.083
+    },
+    {
+      "resource": "clusteroperators",
+      "namespace": null,
+      "readState": "read",
+      "count": 34,
+      "elapsedSeconds": 0.106
+    },
+    {
+      "resource": "deployments",
+      "namespace": "openshift-etcd-operator",
+      "readState": "read",
+      "count": 1,
+      "elapsedSeconds": 0.081
+    },
+    {
+      "resource": "deployments",
+      "namespace": "openshift-kube-apiserver-operator",
+      "readState": "read",
+      "count": 1,
+      "elapsedSeconds": 0.088
+    },
+    {
+      "resource": "deployments",
+      "namespace": "openshift-kube-controller-manager-operator",
+      "readState": "read",
+      "count": 1,
+      "elapsedSeconds": 0.09
+    },
+    {
+      "resource": "deployments",
+      "namespace": "openshift-kube-scheduler-operator",
+      "readState": "read",
+      "count": 1,
+      "elapsedSeconds": 0.095
+    },
+    {
+      "resource": "pods",
+      "namespace": "openshift-etcd",
+      "readState": "read",
+      "count": 9,
+      "elapsedSeconds": 0.11,
+      "staticMirrorCount": 3,
+      "unreadyStaticMirrors": []
+    },
+    {
+      "resource": "pods",
+      "namespace": "openshift-kube-apiserver",
+      "readState": "read",
+      "count": 9,
+      "elapsedSeconds": 0.098,
+      "staticMirrorCount": 3,
+      "unreadyStaticMirrors": []
+    },
+    {
+      "resource": "pods",
+      "namespace": "openshift-kube-controller-manager",
+      "readState": "read",
+      "count": 6,
+      "elapsedSeconds": 0.092,
+      "staticMirrorCount": 3,
+      "unreadyStaticMirrors": []
+    },
+    {
+      "resource": "pods",
+      "namespace": "openshift-kube-scheduler",
+      "readState": "read",
+      "count": 6,
+      "elapsedSeconds": 0.09,
+      "staticMirrorCount": 3,
+      "unreadyStaticMirrors": []
+    }
+  ],
+  "previousGate": {
+    "result": "passed"
+  },
+  "newGate": {
+    "result": "passed"
+  },
+  "finishedAtUTC": "2026-11-13T02:37:25.243502+00:00"
+}

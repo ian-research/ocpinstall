@@ -129,7 +129,7 @@ ACM/MCE 清单默认 High；小型验证可在配置前设置 `ACM_AVAILABILITY=
 
 ## 集群尚未稳定时
 
-配置入口和独立 Operator 应用入口会在写入集群前检查节点、MCP、ClusterOperator 和四个核心控制平面 Operator Deployment。仅看 ClusterVersion Available 或节点 Ready 不足以继续安装：控制器退出时，旧状态可能仍显示正常；节点在更新期间也可能 Ready 但不可调度。检查有超时，失败会列出阻塞资源，不自动重复写入。
+配置入口和独立 Operator 应用入口会在写入集群前检查节点、MCP、ClusterOperator、四个核心控制平面 Operator Deployment，以及每个控制平面节点上的 etcd、API Server、Controller Manager、Scheduler 静态 Pod。静态 Pod 必须存在且唯一、未处于删除中，所有主容器均 Running 且 Ready；普通安装任务或 guard Pod 不能代替静态 Pod。仅看 ClusterVersion Available 或节点 Ready 不足以继续安装：控制器退出时，旧状态可能仍显示正常；节点在更新期间也可能 Ready 但不可调度。检查有超时，失败会列出阻塞资源，不自动重复写入。
 
 先确认故障原因、恢复管理组件并等节点更新完成，再重新运行同一入口。Virtualization 安装后可能触发额外的节点配置更新，应待该轮 MCP 收敛后再检查实际容量和组件功能。脚本不会降低控制平面维护保护规则、强制驱逐 Pod 或重启节点来掩盖阻塞；宽松安全开关也不包含这些操作。
 

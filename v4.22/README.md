@@ -94,7 +94,7 @@ bash v4.22/apply-operators.sh \
   --kubeconfig /secure/kubeconfig
 ```
 
-脚本先核对集群是 4.22，检查节点可调度、MCP 收敛、ClusterOperator 和四个核心控制平面 Operator Deployment 的实际就绪状态，并校验离线包，再应用独立命名的 CatalogSource、ClusterCatalog、IDMS/ITMS，并禁用默认在线目录。只改变资源 metadata，保留 oc-mirror 生成的 image 与镜像映射。不会配置 Helper 的 SELinux、防火墙、SCC、存储或管理员账号。
+脚本先核对集群是 4.22，检查节点可调度、MCP 收敛、ClusterOperator 和四个核心控制平面 Operator Deployment，以及每个控制平面节点上四类静态 Pod 与主容器的实际就绪状态，并校验离线包，再应用独立命名的 CatalogSource、ClusterCatalog、IDMS/ITMS，并禁用默认在线目录。只改变资源 metadata，保留 oc-mirror 生成的 image 与镜像映射。不会配置 Helper 的 SELinux、防火墙、SCC、存储或管理员账号。
 
 等待 MachineConfigPool 完成更新、CatalogSource 为 READY 后，在 Console 中选择离线目录和计划中的 channel/version。首次建议手动审批 InstallPlan，核对依赖包，再验证 CSV Succeeded 和实际 CR 的运行。仅下载或导入成功不等于所有 Operator 功能已验证。
 

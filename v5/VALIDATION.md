@@ -12,7 +12,7 @@
 | Operator 可搬迁导出/导入 | Web Terminal 1.17.2 + DevWorkspace 1.0.0，10 个镜像；全新缓存、不同含空格路径、只转移校验清单内文件、外网阻断的导入通过 |
 | Operator 实际使用 | 两个 CSV 均 Succeeded；创建 DevWorkspace 达到 Running，并成功执行标记命令 |
 | 完整 delivery 打包 | 完整组合导出与换路径整包校验已通过，收集 359 个 Helper RPM；新路径下从平台归档重建规则、阻断外网导入、安装后配置通过，MCP 收敛，原有工作空间仍 Running |
-| 本地回归 | 两版分别 153 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
+| 本地回归 | 两版分别 157 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
 | 全新隔离 Helper 初始化 | RHEL 9.6 虚拟机完成 359 RPM 本地 GPG 安装、默认 SELinux/firewalld、Docker/Harbor、平台离线导入及 Ignition/handoff 生成；未启动第二套集群节点，物理服务器尚待单独验收 |
 | 授时与缓存针对性回归 | 在隔离 Helper 完成 30 项实测：拒绝 NTP 自引用、上游不可达时失败、显式本地 stratum 10 回应真实 NTP 查询、缓存位于包外；安全策略保持开启 |
 | 本地仓库的组件证书信任 | AWS 实测完成 CA 注入后刷新目录服务、三份 ClusterCatalog Serving；重复执行不修改 CA、不重启组件。合并已有用户 CA、保留代理字段及并发保护另有回归检查。官方 4.22.22/5.0.1 安装器均确认支持 Always 策略 |
@@ -47,11 +47,14 @@ Virtualization 触发的 MCP 更新中，三个控制平面 Operator 异常，�
 
 ## 追加预算后的恢复复核
 
-2026-11-13 02:12 UTC 的只读复核：三个节点 Ready、MCP master 3/3 收敛，四个核心 Operator Deployment 就绪。控制平面 kube-controller-manager 的部分静态 Pod 仍反复退出，Console Operator 也报告 API 读取超时；HCO 及多个业务控制器存在选主续租/API 超时，DWO 状态间歇波动。不能因一轮 Deployment 或 `/readyz` 检查成功就判定整体健康。测试创建的 `local-cluster` 注册已不存在，MCE 本体仍在正常卸载流程中；没有移除 finalizer。
+截至 2026-11-13 02:39 UTC，恢复复验仍在进行，尚未完成全部产品验收。
 
-CloudWatch 最近 30 分钟的平均磁盘吞吐约 123 MiB/s，接近现有 125 MiB/s 上限；随后 5 秒主机样本已下降至约 8 MiB/s。两者的采样窗口不同，尚不能认定存储是唯一原因。已提出仅调整原磁盘吞吐的方案，尚未修改磁盘或节点规格。RHEL 9 基础离线策略已获选择，但 HCO/webhook 尚未恢复，实际切换与复验仍待完成。
+- AWS 已于 02:20 UTC 接受现有磁盘吞吐从 125 提高至 500 MiB/s 的调整，仍处于后台优化阶段；容量 1 TiB、3000 IOPS、EC2 和三台节点规格均未变。后续实际吞吐超过原上限，仍出现过短时积压；这些数据不能证明所有故障只由存储引起。
+- 02:28 UTC，使用当前交付生成器应用 RHEL 9 基础离线策略，HCO 代数从 2 到 3，关闭公共引导镜像自动导入；其他 spec 和注解保持不变。随后默认 DataImportCron 列表为空，HCO 已观察到代数 3 并恢复健康。实际 VM 的重复启停和来宾系统复验仍在进行，不能提前标为通过。
+- 测试创建的 `local-cluster` 路径返回 NotFound；MCE 本体在 02:32 UTC 仍有正常卸载 finalizer，没有强制清理。ACM Hub/Policy 尚未执行。
+- 曾出现 CO 和核心 Operator Deployment 显示健康、实际 KCM 容器却在退出的情况。两版门禁现已增加每个控制平面节点的四类静态 Pod 和全部主容器检查，拒绝缺失、重复、删除中、未就绪或非 Running 容器。回归覆盖陈旧健康状态、缺失主节点静态 Pod、误用安装任务及工作节点范围；[真实只读快照](tests/evidence/static-pod-gate-live-2026-11-13.json)中 12 个静态 Pod 均就绪，新旧门禁在同一份响应上均通过。该快照证明健康状态可以通过新检查，不能代替持续稳定性或复杂组件验收。
 
-本次另补齐后置配置普通 `oc` 请求的 30 秒超时，并保留部署等待的独立期限。真实 RHEL 9/5.0 客户端连接本机延迟服务，在约 30.06 秒后按预期非零退出；同一包装函数对集群 `/readyz` 的只读检查成功。该验证没有修改集群，见 [请求超时实测](tests/evidence/setup-api-timeout-2026-11-13.json)。4.22 使用同样实现，但该记录不代表 4.22 集群运行验收。
+后置配置普通 `oc` 请求的 30 秒超时另经真实 RHEL 9/5.0 客户端验证：连接本机延迟服务约 30.06 秒后非零退出，同一包装函数读取集群 `/readyz` 成功；见 [请求超时实测](tests/evidence/setup-api-timeout-2026-11-13.json)。上述 5.0 记录不代表 4.22 集群实机验收。
 
 ## 本轮复杂组件联调结论
 

@@ -10,6 +10,10 @@ CORE_OPERATOR_NAMESPACES = (
     'openshift-etcd-operator', 'openshift-kube-apiserver-operator',
     'openshift-kube-controller-manager-operator', 'openshift-kube-scheduler-operator',
 )
+STATIC_POD_NAMESPACES = (
+    'openshift-etcd', 'openshift-kube-apiserver',
+    'openshift-kube-controller-manager', 'openshift-kube-scheduler',
+)
 
 
 def read(resource, env, namespace=None):
@@ -25,6 +29,32 @@ def conditions(item):
     return {c['type']: c['status'] for c in item.get('status', {}).get('conditions', [])}
 
 
+def static_pod_failures(pods, control_nodes, namespace):
+    mirrors = {}
+    for pod in pods:
+        annotations = pod['metadata'].get('annotations', {})
+        if (annotations.get('kubernetes.io/config.source') == 'file'
+                and annotations.get('kubernetes.io/config.mirror')):
+            mirrors.setdefault(pod.get('spec', {}).get('nodeName'), []).append(pod)
+    failures = []
+    for node in sorted(control_nodes):
+        candidates = mirrors.get(node, [])
+        if len(candidates) != 1:
+            failures.append(namespace + '/' + node + ':static-pod:missing-or-duplicate')
+            continue
+        pod = candidates[0]
+        status = pod.get('status', {})
+        expected = {c['name'] for c in pod.get('spec', {}).get('containers', [])}
+        actual = {c['name']: c for c in status.get('containerStatuses', [])}
+        if (pod['metadata'].get('deletionTimestamp') or status.get('phase') != 'Running'
+                or conditions(pod).get('Ready') != 'True' or not expected
+                or actual.keys() != expected
+                or any(not c.get('ready') or 'running' not in c.get('state', {})
+                       for c in actual.values())):
+            failures.append(namespace + '/' + pod['metadata']['name'])
+    return failures
+
+
 def require_ready(env):
     # ClusterVersion/ClusterOperator conditions can remain stale when their
     # controllers crash. Check actual core Deployment availability as well.
@@ -32,6 +62,11 @@ def require_ready(env):
     nodes = read('nodes', env)
     if not nodes:
         failures.append('nodes:empty')
+    control_nodes = {item['metadata']['name'] for item in nodes
+                     if any(role in item['metadata'].get('labels', {}) for role in
+                            ('node-role.kubernetes.io/master', 'node-role.kubernetes.io/control-plane'))}
+    if not control_nodes:
+        failures.append('control-plane:nodes:empty')
     for item in nodes:
         state = conditions(item)
         config = item['metadata'].get('annotations', {})
@@ -69,6 +104,10 @@ def require_ready(env):
                     or any(status.get(key, 0) != replicas for key in
                            ('updatedReplicas', 'readyReplicas', 'availableReplicas'))):
                 failures.append(namespace + '/' + item['metadata']['name'])
+    # A healthy operator Deployment does not establish that the static control
+    # plane it manages is running. CO conditions can lag these container failures.
+    for namespace in STATIC_POD_NAMESPACES:
+        failures.extend(static_pod_failures(read('pods', env, namespace), control_nodes, namespace))
     if failures:
         raise ValueError('集群尚未稳定，未修改集群。请先恢复管理组件、等待节点和 MCP 更新完成：'
                          + ', '.join(failures))

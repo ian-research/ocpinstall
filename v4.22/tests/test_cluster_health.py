@@ -17,6 +17,7 @@ def item(name, **states):
 class ClusterHealthTests(unittest.TestCase):
     def setUp(self):
         self.nodes = [item('master1', Ready='True')]
+        self.nodes[0]['metadata']['labels'] = {'node-role.kubernetes.io/master': ''}
         self.nodes[0]['metadata']['annotations'] = {
             'machineconfiguration.openshift.io/state': 'Done',
             'machineconfiguration.openshift.io/currentConfig': 'rendered-current',
@@ -26,15 +27,60 @@ class ClusterHealthTests(unittest.TestCase):
         self.deployment = {'metadata': {'name': 'operator', 'generation': 5},
                            'spec': {'replicas': 1}, 'status': {'observedGeneration': 5,
                            'updatedReplicas': 1, 'readyReplicas': 1, 'availableReplicas': 1}}
+        pod = item('static-master1', Ready='True')
+        pod['metadata']['annotations'] = {'kubernetes.io/config.source': 'file',
+                                           'kubernetes.io/config.mirror': 'fixture-mirror'}
+        pod['spec'] = {'nodeName': 'master1', 'containers': [{'name': 'controller'}]}
+        pod['status'].update(phase='Running', containerStatuses=[{
+            'name': 'controller', 'ready': True, 'state': {'running': {}}}])
+        self.static_pods = {namespace: [copy.deepcopy(pod)] for namespace in cluster_health.STATIC_POD_NAMESPACES}
 
     def inspect(self):
         return patch.object(cluster_health, 'read', side_effect=[self.nodes, self.pools, self.operators]
-                            + [[copy.deepcopy(self.deployment)] for _ in cluster_health.CORE_OPERATOR_NAMESPACES])
+                            + [[copy.deepcopy(self.deployment)] for _ in cluster_health.CORE_OPERATOR_NAMESPACES]
+                            + [copy.deepcopy(self.static_pods[namespace]) for namespace in cluster_health.STATIC_POD_NAMESPACES])
 
     def test_healthy_runtime_passes_using_read_only_queries(self):
         with self.inspect() as read:
             cluster_health.require_ready({'KUBECONFIG': '/private/admin'})
-        self.assertEqual(read.call_count, 7)
+        self.assertEqual(read.call_count, 11)
+
+    def test_stale_healthy_co_and_operator_cannot_hide_running_static_pod_crash(self):
+        for failure in ('crashloop', 'unready', 'missing-status', 'deleting'):
+            with self.subTest(failure=failure):
+                self.setUp()
+                pod = self.static_pods['openshift-kube-controller-manager'][0]
+                if failure == 'crashloop':
+                    pod['status']['containerStatuses'][0]['state'] = {'waiting': {'reason': 'CrashLoopBackOff'}}
+                elif failure == 'unready':
+                    pod['status']['containerStatuses'][0]['ready'] = False
+                elif failure == 'missing-status':
+                    pod['status']['containerStatuses'] = []
+                else:
+                    pod['metadata']['deletionTimestamp'] = '2026-11-13T00:00:00Z'
+                with self.inspect(), self.assertRaisesRegex(ValueError, 'openshift-kube-controller-manager/static-master1'):
+                    cluster_health.require_ready({})
+
+    def test_each_control_node_requires_a_static_pod_in_each_core_namespace(self):
+        second = copy.deepcopy(self.nodes[0])
+        second['metadata']['name'] = 'master2'
+        second['metadata']['labels'] = {'node-role.kubernetes.io/control-plane': ''}
+        self.nodes.append(second)
+        with self.inspect(), self.assertRaisesRegex(ValueError, 'master2:static-pod:missing'):
+            cluster_health.require_ready({})
+
+    def test_workers_do_not_require_control_plane_static_pods(self):
+        worker = copy.deepcopy(self.nodes[0])
+        worker['metadata']['name'] = 'worker1'
+        worker['metadata']['labels'] = {'node-role.kubernetes.io/worker': ''}
+        self.nodes.append(worker)
+        with self.inspect():
+            cluster_health.require_ready({})
+
+    def test_healthy_installer_pod_cannot_substitute_for_missing_static_mirror(self):
+        self.static_pods['openshift-etcd'][0]['metadata']['annotations'] = {}
+        with self.inspect(), self.assertRaisesRegex(ValueError, 'openshift-etcd/master1:static-pod:missing'):
+            cluster_health.require_ready({})
 
     def test_stale_healthy_operator_conditions_do_not_hide_crashed_controller(self):
         self.deployment['status']['readyReplicas'] = 0
