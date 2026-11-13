@@ -20,6 +20,7 @@ import offline
 import operator_profile
 
 SOURCE = Path(__file__).resolve().parent.parent
+KNOWN_HELPER_STATES = ('/opt/ocpinstall', '/opt/ocp5', '/opt/ocp422', '/opt/harbor/harbor/harbor.yml')
 PACKAGES = ['glibc-langpack-zh', 'python3', 'python3-pyyaml',
             'policycoreutils-python-utils', 'haproxy', 'bind', 'bind-utils',
             'skopeo', 'httpd-tools', 'openssl', 'python3.11', 'python3-pip',
@@ -374,8 +375,19 @@ def export(args, root, cache):
           f'  bash "{root}/configure.sh"\n配置阶段会先等待节点安装完成。')
 
 
+def preflight_helper_state(state):
+    # Keep the native installer's guard; detect conflicts before hashing large archives.
+    for name in KNOWN_HELPER_STATES:
+        known = Path(name)
+        if known != state and known.exists():
+            raise ValueError(f'发现其他版本或路径的 Helper 状态：{known}。请使用独立 Helper；尚未校验大归档或修改系统。')
+
+
 def execute(args, root):
     root = root.resolve()
+    if args.action == 'install':
+        prefix = operator_profile.resource_prefix(operator_profile.release())
+        preflight_helper_state(Path(getattr(args, 'state_root', None) or '/opt/' + prefix).expanduser().resolve())
     record = verify(root)  # All validation precedes host or cluster changes.
     prefix = operator_profile.resource_prefix(record['version'])
     state = Path(args.state_root or '/opt/' + prefix).expanduser().resolve()

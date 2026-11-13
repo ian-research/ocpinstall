@@ -12,13 +12,14 @@
 | 共享引擎在 5.0.1 的 Operator 可搬迁导出/导入 | Web Terminal 1.17.2 + DevWorkspace 1.0.0，10 个镜像；全新缓存、不同含空格路径、只转移校验清单内文件、外网阻断的导入通过 |
 | 5.0.1 的 Operator 实际使用 | 两个 CSV 均 Succeeded；创建 DevWorkspace 达到 Running，并成功执行标记命令 |
 | 共享引擎在 5.0.1 的完整 delivery 打包 | 完整组合导出与换路径整包校验已通过，收集 359 个 Helper RPM；新路径下从平台归档重建规则、阻断外网导入、安装后配置通过，MCP 收敛，原有工作空间仍 Running |
-| 本地回归 | 两版分别 157 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
+| 本地回归 | 两版分别 159 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
 | 共享 Helper 初始化流程在 5.0.1 | RHEL 9.6 虚拟机完成 359 RPM 本地 GPG 安装、默认 SELinux/firewalld、Docker/Harbor、平台离线导入及 Ignition/handoff 生成；未启动第二套集群节点，物理服务器尚待单独验收 |
 | 共享授时/缓存函数在 5.0.1 的回归 | 在隔离 Helper 完成 30 项实测：拒绝 NTP 自引用、上游不可达时失败、显式本地 stratum 10 回应真实 NTP 查询、缓存位于包外；安全策略保持开启 |
 | 共享组件信任函数在 5.0.1 的回归 | AWS 实测完成 CA 注入后刷新目录服务、三份 ClusterCatalog Serving；重复执行不修改 CA、不重启组件。合并已有用户 CA、保留代理字段及并发保护另有回归检查。官方 4.22.22/5.0.1 安装器均确认支持 Always 策略 |
 | 共享目录策略在 5.0.1 的回归 | 真实代码将三个官方在线默认 ClusterCatalog 设为 Unavailable，三份自定义离线目录的 spec 和 Serving 状态保持正常；重复运行不再变更已关闭的目录 |
 | Virtualization / ACM | 5.0 的 Virtualization 和 ACM/MCE 均已完成独立归档、换路径校验和阻断外网导入；5.0 基础离线模式的 RHEL 9 VM 两轮实际启停、来宾系统检查及清理已通过，5.0 的 MCE/ACM Basic Hub、本地集群及实际策略下发复验也已通过；4.22 对应组件尚未完成实机验收 |
 | OpenShift AI | 当前官方支持矩阵列出 4.22，未列出 5.0；5.x 准备脚本明确拒绝该组合 |
+| 4.22 完整 AI 离线包 | 已完成 4.22.22 平台、Helper 软件、AI 3.5.2 与 LVMS 4.22.0 的完整导出封装，并在实际更名后通过整包校验；AI 计划包含 145 个镜像引用。此项不等同于集群或 AI 运行验收 |
 
 ## 复杂组件的范围
 
@@ -28,7 +29,7 @@
 - **ACM 5.0**：补选 MCE 5.0，不能依赖空的 OLM catalog dependency。创建 MultiClusterHub 时要把 `installer.open-cluster-management.io/mce-subscription-spec` 的 `source` 指向实际离线 CatalogSource。基础 Hub 验收不等于备份、Submariner、GitOps 或多托管集群场景验收。
 - **AI 3.5.2/3.5.3 / 4.22**：目前规则范围是 Dashboard 和 CPU Workbenches，额外收录红帽固定提交中的 CPU/Python 3.12 Workbench 镜像。需要默认动态 StorageClass、真实 IDP 用户以及至少两个 8 CPU/32 GiB 可调度节点。GPU、KServe、训练、llm-d、RAG 不包含在此基础范围；应按功能另选 cert-manager、Kueue、JobSet、Connectivity Link、LWS 等，并准备对象存储、模型数据及其他运行镜像。
 
-AI 3.5.2 的只读容量审计包含 145 个镜像引用；完整多架构引用中去重压缩层约 294 GiB（不含归档、缓存和 Harbor 的额外空间）。该数字是元数据审计，未下载镜像或在 4.22 上安装 AI；当前单台测试机空间不足以按保留余量的方案完成全量导入，需另行安排资源与测试窗口。
+AI 3.5.2 的只读容量审计包含 145 个镜像引用；完整多架构引用中去重压缩层约 294 GiB（不含归档、缓存和 Harbor 的额外空间）。该数字首先来自元数据审计；随后已完成包含 AI 3.5.2 的完整导出封装和换路径校验。4.22 集群、实际 Operator 导入及 AI 功能仍在验收，不能据此标为运行通过。
 
 按现有组合进行准备时，规则会拒绝不在当前核实范围内的版本，不静默借用其他平台 catalog。
 

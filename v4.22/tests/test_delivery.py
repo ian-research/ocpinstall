@@ -41,6 +41,28 @@ class DeliveryTests(unittest.TestCase):
         delivery.snapshot_scripts(self.root)
         delivery.seal(self.root, False)
 
+    def test_foreign_helper_fails_before_large_archive_verification(self):
+        foreign = self.root.parent / 'previous helper'
+        foreign.mkdir()
+        marker = foreign / 'preserved-data'; marker.write_text('original')
+        target = self.root.parent / 'new helper'
+        with patch.object(delivery, 'KNOWN_HELPER_STATES', (str(foreign),)), patch.object(delivery, 'verify') as verify:
+            with self.assertRaisesRegex(ValueError, 'Helper 状态'):
+                delivery.execute(SimpleNamespace(action='install', state_root=str(target)), self.root)
+            verify.assert_not_called()
+        self.assertEqual(marker.read_text(), 'original')
+        self.assertFalse(target.exists())
+
+    def test_same_helper_state_is_allowed_and_configure_keeps_normal_verification(self):
+        current = self.root.parent / 'current helper'
+        current.mkdir()
+        with patch.object(delivery, 'KNOWN_HELPER_STATES', (str(current),)):
+            delivery.preflight_helper_state(current)
+            with patch.object(delivery, 'verify', side_effect=ValueError('normal integrity check')) as verify:
+                with self.assertRaisesRegex(ValueError, 'normal integrity check'):
+                    delivery.execute(SimpleNamespace(action='configure', state_root='/different/helper'), self.root)
+                verify.assert_called_once()
+
     def test_moved_bundle_is_independent_of_original_path(self):
         self.fixture()
         moved = Path(self.temp.name) / 'different offline destination'

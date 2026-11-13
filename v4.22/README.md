@@ -8,6 +8,8 @@
 
 授时默认使用真正可达的内部上游 `NTP_SERVER`，不能填写 Helper 自己。没有上游的完全隔离环境，可显式设置 `NTP_MODE=local` 并省略 `NTP_SERVER`，以 Helper 时钟统一节点；请先核对 Helper 时间。上游模式未同步会停止安装。完整交付路径与重试方法见 [DELIVERY.md](DELIVERY.md)。
 
+完整安装入口会提前检查 Helper 状态冲突，再校验大镜像归档；同机串行切换测试的准备步骤见 [完整交付流程](DELIVERY.md#helper-状态冲突的提前检查)。
+
 ## 交互操作
 
 联网准备机需要 Linux、Python 3.9+、PyYAML 6.0.3、skopeo、Podman/Docker，以及支持目标版本的 `oc`、`oc-mirror v2`。首次解析会编译使用 OLM 同类 semver/CEL 库的工具；没有 Go 时自动下载固定官方 Go 工具链并校验 SHA256。离线导入端只需 Python、oc 和同一份 oc-mirror 二进制，不需要 Go、skopeo 或 Docker。
