@@ -28,6 +28,19 @@ class ProductManifestTests(unittest.TestCase):
         for package in packages:
             namespace, scope = product_manifests.PRODUCTS[package]
             properties = [{'type': 'olm.csv.metadata', 'value': {'installModes': [{'type': scope, 'supported': True}]}}]
+            if package == 'rhods-operator':
+                for group, kind in [('datasciencecluster.opendatahub.io', 'DataScienceCluster'), ('dscinitialization.opendatahub.io', 'DSCInitialization')]:
+                    properties += [{'type': 'olm.gvk', 'value': {'group': group, 'kind': kind, 'version': v}} for v in ('v1', 'v2')]
+                examples = [
+                    {'apiVersion': 'datasciencecluster.opendatahub.io/v2', 'kind': 'DataScienceCluster',
+                     'spec': {'components': {'dashboard': {'managementState': 'Managed'},
+                         'workbenches': {'managementState': 'Managed'},
+                         'kserve': {'managementState': 'Managed', 'nim': {'managementState': 'Managed'}},
+                         'futureFeature': {'managementState': 'Managed'}}}},
+                    {'apiVersion': 'dscinitialization.opendatahub.io/v2', 'kind': 'DSCInitialization',
+                     'spec': {'applicationsNamespace': 'redhat-ods-applications',
+                              'trustedCABundle': {'managementState': 'Managed', 'customCABundle': ''}}}]
+                properties[0]['value']['annotations'] = {'alm-examples': json.dumps(examples)}
             if package in gvks:
                 group, kind = gvks[package]
                 properties += [{'type': 'olm.gvk', 'value': {'group': group, 'kind': kind, 'version': v}} for v in ('v1beta1', 'v1')]
@@ -95,7 +108,37 @@ class ProductManifestTests(unittest.TestCase):
         subscriptions = json.loads((self.destination / '01-subscriptions.json').read_text())['items']
         group = next(r for r in subscriptions if r['kind'] == 'OperatorGroup')
         self.assertEqual(group['spec'], {})
-        self.assertEqual(list(self.destination.glob('02-*')), [])
+        component = json.loads((self.destination / '02-ai-cpu-workbenches.json').read_text())
+        self.assertEqual(component['apiVersion'], 'datasciencecluster.opendatahub.io/v2')
+        states = component['spec']['components']
+        self.assertEqual({name for name, value in states.items() if value['managementState'] == 'Managed'}, {'dashboard', 'workbenches'})
+        self.assertEqual(states['kserve']['nim']['managementState'], 'Removed')
+        self.assertEqual(states['futureFeature']['managementState'], 'Removed')
+        reference = json.loads((self.destination / 'reference/ai-initialization.json').read_text())
+        self.assertEqual(reference['apiVersion'], 'dscinitialization.opendatahub.io/v2')
+        top_level = [json.loads(path.read_text()) for path in self.destination.glob('*.json')]
+        self.assertFalse(any(item.get('kind') == 'DSCInitialization' for item in top_level))
+        original = json.loads(plan['selected'][0]['properties'][0]['value']['annotations']['alm-examples'])
+        self.assertEqual(original[0]['spec']['components']['kserve']['nim']['managementState'], 'Managed')
+        self.assertIn('不要 apply 初始化参考文件', (self.destination / 'README.md').read_text())
+
+    def test_ai_cannot_generate_platform5_or_unknown_version_components(self):
+        for target, version in [('5.0.1', '3.5.2'), ('4.22.22', '3.6.0')]:
+            with self.subTest(target=target, version=version):
+                plan, resources = self.fixture(['rhods-operator'], target=target)
+                plan['selected'][0]['version'] = version
+                with self.assertRaisesRegex(ValueError, 'AI 组件清单'):
+                    product_manifests.render(plan, resources, self.destination)
+                self.assertFalse(self.destination.exists())
+
+    def test_ai_missing_vendor_example_or_api_match_never_writes_partial_subscriptions(self):
+        for raw in ('', '{}', '[]'):
+            with self.subTest(raw=raw):
+                plan, resources = self.fixture(['rhods-operator'], target='4.22.22')
+                plan['selected'][0]['properties'][0]['value']['annotations']['alm-examples'] = raw
+                with self.assertRaises(ValueError):
+                    product_manifests.render(plan, resources, self.destination)
+                self.assertFalse(self.destination.exists())
 
     def test_unsupported_scope_fails_before_writing_templates(self):
         plan, resources = self.fixture(['kubevirt-hyperconverged'])
@@ -103,6 +146,32 @@ class ProductManifestTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, '作用域'):
             product_manifests.render(plan, resources, self.destination)
         self.assertFalse(self.destination.exists())
+
+    def test_lvms_subscription_never_selects_or_initializes_storage_devices(self):
+        plan, resources = self.fixture(['lvms-operator'])
+        product_manifests.render(plan, resources, self.destination)
+        subscriptions = json.loads((self.destination / '01-subscriptions.json').read_text())['items']
+        group = next(r for r in subscriptions if r['kind'] == 'OperatorGroup')
+        subscription = next(r for r in subscriptions if r['kind'] == 'Subscription')
+        self.assertEqual(group['metadata']['namespace'], 'openshift-lvm-storage')
+        self.assertEqual(group['spec']['targetNamespaces'], ['openshift-lvm-storage'])
+        self.assertEqual(subscription['spec']['source'], 'offline-redhat')
+        self.assertEqual(subscription['spec']['startingCSV'], plan['selected'][0]['bundle'])
+        self.assertEqual(subscription['spec']['installPlanApproval'], 'Manual')
+        self.assertEqual({p.name for p in self.destination.glob('*.json')}, {'01-subscriptions.json'})
+        self.assertIn('不会自动创建 LVMCluster', (self.destination / 'README.md').read_text())
+
+    def test_ai_storage_stage_can_install_provider_before_ai_subscription(self):
+        plan, resources = self.fixture(['rhods-operator', 'lvms-operator'], target='4.22.22')
+        product_manifests.render(plan, resources, self.destination)
+        storage = json.loads((self.destination / '00-lvms-subscriptions.json').read_text())['items']
+        self.assertEqual({i['kind'] for i in storage}, {'Namespace', 'OperatorGroup', 'Subscription'})
+        self.assertEqual([i['spec']['name'] for i in storage if i['kind'] == 'Subscription'], ['lvms-operator'])
+        self.assertTrue(all(i['metadata'].get('namespace', i['metadata']['name']) == 'openshift-lvm-storage' for i in storage))
+        all_items = json.loads((self.destination / '01-subscriptions.json').read_text())['items']
+        self.assertEqual({i['spec']['name'] for i in all_items if i['kind'] == 'Subscription'}, {'rhods-operator', 'lvms-operator'})
+        instructions = (self.destination / 'README.md').read_text()
+        self.assertLess(instructions.index('00-lvms-subscriptions.json'), instructions.index('1. 审阅并应用'))
 
     def test_missing_mce_is_never_hidden_by_template_generation(self):
         plan, resources = self.fixture(['advanced-cluster-management'])

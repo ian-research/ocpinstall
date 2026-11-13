@@ -894,9 +894,9 @@ keepgoing () {
     echo "安装文件已生成。使用匹配安装器的 RHCOS Live ISO 启动节点：${RHCOS_ISO:-请运行 coreos print-stream-json 查询并准备}"
     echo "请在 12 小时内使用 Ignition；在 Live ISO 中先设置网络、DNS 和正确的目标磁盘。"
     cat "$STATE_ROOT/node-install-commands.txt"
-    echo "在 Helper 上执行：openshift-install wait-for bootstrap-complete --dir=$INSTALL_DIR"
-    echo "完成后运行 bash $SCRIPT_DIR/install-cluster.sh --remove-bootstrap，从两个后端移除 bootstrap。"
-    echo "核对 CSR 后审批，最后执行 openshift-install wait-for install-complete --dir=$INSTALL_DIR"
+    printf '在 Helper 上执行：openshift-install wait-for bootstrap-complete --dir=%q\n' "$INSTALL_DIR"
+    printf '完成后运行 bash %q --remove-bootstrap，从两个后端移除 bootstrap。\n' "$SCRIPT_DIR/install-cluster.sh"
+    printf '核对 CSR 后审批，最后执行 openshift-install wait-for install-complete --dir=%q\n' "$INSTALL_DIR"
     echo "私有凭据目录：$INSTALL_DIR/auth；安装完成后停止分发 HTTP Ignition。"
 }
 

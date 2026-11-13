@@ -61,7 +61,8 @@ def expand(catalogs, selections, target):
             images += runtime['images']
             requirements.append({'product': 'ai', 'version': version, 'scope': 'Dashboard + CPU Workbenches',
                 'runtimeImageSource': runtime['source'], 'supportSource': AI_SUPPORT,
-                'prerequisites': ['至少两个 8 CPU/32 GiB 可调度节点、默认动态 StorageClass、真实 IDP 用户',
+                'prerequisites': ['官方常规拓扑要求至少两个 8 CPU/32 GiB 工作节点；控制组件与实际负载另预留资源',
+                    'SNO 按官方要求至少 32 CPU/128 GiB；另需默认动态 StorageClass 和真实 IDP 用户',
                     'KServe 需 cert-manager；训练/KubeRay 需 Kueue；Trainer 另需 JobSet',
                     'llm-d 需 Connectivity Link 和 LWS；GPU、对象存储、模型数据需按实际功能另外准备'],
                 'excludedFeatures': ['GPU', 'KServe/model serving', 'distributed training', 'llm-d', 'RAG']})

@@ -94,6 +94,8 @@ def verify(bundle, version=None):
         path = (bundle / name).resolve()
         if bundle not in path.parents:
             fail('校验清单包含目录外路径')
+        if name.startswith('images/') and name.endswith('.tar') and path.is_file():
+            print(f'正在校验镜像归档 {name} ({path.stat().st_size / 1024**3:.1f} GiB)', flush=True)
         if not path.is_file() or digest(path) != expected:
             fail(f'文件缺失或 SHA256 校验失败: {name}')
         if name.startswith('images/') and name.endswith('.tar'):

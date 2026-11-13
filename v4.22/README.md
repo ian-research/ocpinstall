@@ -27,6 +27,8 @@ bash v4.22/prepare-operators.sh
 
 自动解析目录声明的依赖和 relatedImages；另对已核实的 ACM 5.0/MCE 5.0、Virtualization 和 AI 3.5.2/3.5.3 基础功能执行业务依赖及支持组合检查，详见 [验证范围](VALIDATION.md)。厂商未声明的外部数据库、授权、存储和运行时镜像仍需根据其文档补充。计划用于新安装，不代替已有 Subscription 的升级路径规划。
 
+安装后配置会生成分阶段的产品清单，见 [产品清单的交接](DELIVERY.md#产品清单的交接)。AI 的 DSC 来自所选固定 bundle 的厂商示例，基础范围只启用 Dashboard 和 CPU Workbenches；已有 DSCI 应复用，初始化参考文件不能覆盖已有 CA。AI 需要真实 IDP 用户和默认动态 StorageClass。若选用 LVMS，请同时选取其 Operator；先用 `00-lvms-subscriptions.json` 安装存储提供者并验证动态 PVC，再安装 AI。磁盘必须逐节点核对后再配置，不会自动初始化数据盘。
+
 ## 命令行、预检查与下载
 
 ```bash

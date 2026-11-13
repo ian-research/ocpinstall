@@ -96,6 +96,8 @@ AWS 明确由外部规则管理防火墙时可在安装和配置命令末尾增�
 - 固定版本和选包计划；切换版本、Helper 模式或选包组合请使用新目录。
 - 脚本快照只收录指定入口、公共代码及版本配置，不收录代码目录中临时放置的 pull secret、额外 JSON 或私人笔记；重试会刷新旧快照。
 - 下载临时文件通过校验才替换正式文件；成功收集的 Helper 资产按清单复用。
+- 大镜像归档校验逐个显示文件名和容量，便于区分校验与实际镜像导入阶段。
+- 安装结束时输出的后续手动命令对目录做 Bash 转义，自定义路径含空格或引号时仍可复制执行。
 - 平台和 Operator 采用独立、完整导出；Operator 归档额外校验 bundle、relatedImages、过滤目录标签及镜像层是否齐全。
 - 首次输入错误（例如凭据路径填错）可修正后使用原目录重试；自动失败记录不会把空目录误判为混有其他文件。
 - 失败重试移除旧成功标记。仅下载完成并通过整包校验才生成 `delivery.json`；阶段见 `delivery-state.json`，该状态文件不能代替校验。
@@ -105,15 +107,20 @@ AWS 明确由外部规则管理防火墙时可在安装和配置命令末尾增�
 
 ## 产品清单的交接
 
-选中 Virtualization、ACM/MCE 或 AI 时，安装后配置还会在 Operator 包的 `product-manifests/` 中生成安装阶段清单：
+选中 Virtualization、ACM/MCE、AI 或 LVMS 时，安装后配置还会在 Operator 包的 `product-manifests/` 中生成安装阶段清单：
 
 - `01-subscriptions.json`：按目录声明的安装作用域生成 Namespace、OperatorGroup 和固定版本 Subscription，首次采用手动审批。
+- `00-lvms-subscriptions.json`：同时选择 AI 和 LVMS 时额外生成，只包含 LVMS 的订阅资源。若尚无默认动态存储，先安装 LVMS、核对空白数据盘并创建 LVMCluster，验证动态 PVC 绑定后，再安装 AI。
 - `02-hyperconverged.json`、`02-multiclusterengine.json`：使用该 bundle 实际声明的稳定 API，等待 CSV Succeeded 后应用。
 - `03-multiclusterhub.json`：MCE 订阅源指向本次实际离线 CatalogSource，包含计划中的 channel/CSV。
+- `02-ai-cpu-workbenches.json`：4.22 / AI 3.5.2、3.5.3 从所选固定 bundle 的厂商示例生成 DSC v2，仅启用 Dashboard 和 Workbenches，其余组件及嵌套可选功能设为 Removed。
+- `reference/ai-initialization.json`：DSCI 初始化参考，只有不存在 `default-dsci` 时才使用 `oc create`；已有对象应复用，避免覆盖 CA 和监控配置。参考文件放在子目录，不混入顶层组件清单。
 
 应用 HyperConverged 后还可能触发额外的节点配置更新；应再次等待 MCP Updated、所有节点恢复可调度及产品 Available，再启动虚拟机或判断容量不足。本次 5.0 实测出现了这一过程。
 
-ACM/MCE 清单默认 High；小型验证可在配置前设置 `ACM_AVAILABILITY=Basic`。先等待 MCP 和目录就绪，审阅并应用订阅、批准计划内 CSV，再按目录内 README 应用业务 CR。它们不会混入自动应用的镜像规则文件。AI 目前生成 Operator 订阅；DSCI/DSC、默认动态存储、IDP 和 CPU Workbench 的整体验收仍需在 4.22 上完成。
+ACM/MCE 清单默认 High；小型验证可在配置前设置 `ACM_AVAILABILITY=Basic`。先等待 MCP 和目录就绪，审阅并应用订阅、批准计划内 CSV，再按目录内 README 应用业务 CR。它们不会混入自动应用的镜像规则文件。AI 还需要默认动态存储和真实 IDP 用户；生成清单不等于整体验收，4.22 上的实际功能验收状态见 VALIDATION.md。
+
+LVMS 只生成固定 CSV 的手动审批订阅，不自动选择或初始化磁盘。先逐节点核对空白数据盘，再依据实际 CRD 创建 LVMCluster；明确指定 `deviceSelector.paths`，保持 `deviceSelector.forceWipeDevicesAndDestroyAllData=false`，等待 LVMCluster、CSI 和动态 PVC 健康。已有默认 StorageClass 时应先核对，再决定是否调整。已有 Operator、OperatorGroup 或 DSC 时，不能直接覆盖其配置。
 
 MCE 应检查实际 `Available=True`、组件和 Deployment 就绪；本轮 5.0 实测同时保留 `Progressing=True/ComponentsDeployed`，不要仅等待该字段变成 False。Hub 应检查 `Running`、`Complete=True`，再验证受管集群 Joined/Available 和实际策略生效。Basic 模式不代替数据库持久化配置；Search 使用临时存储时，重建 Pod 可能丢失索引。已有同名 Operator 或 OperatorGroup 时先核对并复用，不重复应用新安装清单。
 
