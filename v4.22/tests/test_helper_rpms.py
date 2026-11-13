@@ -29,6 +29,7 @@ class HelperRPMTests(unittest.TestCase):
     def helper(self, parent):
         root = Path(parent) / 'offline helper with spaces'
         (root / 'rpms').mkdir(parents=True)
+        (root / 'rpms/fixture.rpm').write_bytes(b'fixture rpm')
         (root / 'keys').mkdir()
         (root / 'keys/RPM-GPG-KEY-fixture').write_text('fixture public key')
         (root / 'requirements.json').write_text(json.dumps({
@@ -40,6 +41,7 @@ class HelperRPMTests(unittest.TestCase):
             root = self.helper(parent)
             def inspect(command):
                 self.assertIn('--setopt=tsflags=test', command)
+                self.assertIn('--setopt=keepcache=1', command)
                 self.assertIn('--disablerepo=*', command)
                 self.assertIn('--enablerepo=ocpinstall-helper-preflight', command)
                 directory = next(x.split('=', 2)[2] for x in command if x.startswith('--setopt=reposdir='))
@@ -51,6 +53,42 @@ class HelperRPMTests(unittest.TestCase):
             with patch.object(delivery, 'run', side_effect=inspect) as run:
                 delivery.preflight_helper_rpms(root)
             run.assert_called_once()
+
+    def test_downloadonly_cache_cleanup_cannot_remove_delivered_packages(self):
+        with tempfile.TemporaryDirectory() as parent:
+            root = self.helper(parent)
+            cache = Path(parent) / 'private cache'; cache.mkdir()
+            downloads = []
+            def download(command):
+                folder = Path(next(x.split('=', 1)[1] for x in command if x.startswith('--downloaddir=')))
+                self.assertNotEqual(folder, root / 'rpms')
+                self.assertIn(cache, folder.parents)
+                (folder / 'reverse-dependency.rpm').write_bytes(b'reverse dependency fixture')
+                downloads.append(folder)
+            with patch.object(delivery, 'run', side_effect=download):
+                delivery.download_helper_transaction(Path(parent), root / 'rpms', cache, ['fixture'])
+            self.assertFalse(downloads[0].exists())
+            self.assertEqual((root / 'rpms/reverse-dependency.rpm').read_bytes(), b'reverse dependency fixture')
+            self.assertEqual((root / 'rpms/fixture.rpm').read_bytes(), b'fixture rpm')
+
+    def test_successful_transaction_cannot_silently_delete_payloads(self):
+        with tempfile.TemporaryDirectory() as parent:
+            root = self.helper(parent)
+            with patch.object(delivery, 'run', side_effect=lambda command: (root / 'rpms/fixture.rpm').unlink()):
+                with self.assertRaisesRegex(ValueError, '修改了交付文件'):
+                    delivery.preflight_helper_rpms(root)
+
+    def test_conflicting_same_name_download_is_rejected(self):
+        with tempfile.TemporaryDirectory() as parent:
+            root = self.helper(parent)
+            cache = Path(parent) / 'cache'; cache.mkdir()
+            def download(command):
+                folder = Path(next(x.split('=', 1)[1] for x in command if x.startswith('--downloaddir=')))
+                (folder / 'fixture.rpm').write_bytes(b'different package with same name')
+            with patch.object(delivery, 'run', side_effect=download):
+                with self.assertRaisesRegex(ValueError, '同名 Helper RPM'):
+                    delivery.download_helper_transaction(Path(parent), root / 'rpms', cache, ['fixture'])
+            self.assertEqual((root / 'rpms/fixture.rpm').read_bytes(), b'fixture rpm')
 
     def test_transaction_failure_is_not_ignored_or_retried_with_weaker_flags(self):
         with tempfile.TemporaryDirectory() as parent:
@@ -66,6 +104,19 @@ class HelperRPMTests(unittest.TestCase):
             (root / 'requirements.json').write_text(json.dumps({'mode': 'existing'}))
             with patch.object(delivery, 'run') as run:
                 delivery.preflight_helper_rpms(root)
+            run.assert_not_called()
+
+    def test_legacy_cached_rpm_slice_requires_new_preparation(self):
+        with tempfile.TemporaryDirectory() as parent:
+            root = Path(parent)
+            helper = root / 'helper'; helper.mkdir()
+            requirements = helper / 'requirements.json'
+            requirements.write_text(json.dumps({'mode': 'rpm', 'packages': delivery.PACKAGES}))
+            (helper / 'checksums.json').write_text(json.dumps({
+                'requirements.json': delivery.offline.digest(requirements)}))
+            with patch.object(delivery, 'run') as run:
+                with self.assertRaisesRegex(ValueError, '缓存隔离修复'):
+                    delivery.prepare_helper(SimpleNamespace(harbor_sha256=None), root, root / 'cache')
             run.assert_not_called()
 
 

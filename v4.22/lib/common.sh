@@ -80,7 +80,7 @@ parse_security_options() {
 
 dnf_install() {
     if [[ ${YUM_REPO_MODE:-iso} == bundle ]]; then
-        dnf --disablerepo='*' --enablerepo=ocp-delivery install -y "$@"
+        dnf --setopt=keepcache=1 --disablerepo='*' --enablerepo=ocp-delivery install -y "$@"
     else
         dnf install -y "$@"
     fi

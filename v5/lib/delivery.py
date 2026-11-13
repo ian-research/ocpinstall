@@ -42,6 +42,26 @@ def helper_packages():
     return result
 
 
+def download_helper_transaction(repos, repository, cache, packages):
+    # DNF marks --downloadonly's destination as disposable until the next real
+    # transaction. Never register the portable repository as that destination.
+    with tempfile.TemporaryDirectory(prefix='helper-rpm-transaction-', dir=cache) as temporary:
+        work = Path(temporary)
+        downloads = work / 'downloads'
+        downloads.mkdir()
+        run(['dnf', '--setopt=reposdir=' + str(repos),
+             '--setopt=cachedir=' + str(work / 'cache'),
+             '--setopt=persistdir=' + str(work / 'persist'),
+             'install', '-y', '--downloadonly', '--downloaddir=' + str(downloads), *packages])
+        for package in downloads.rglob('*.rpm'):
+            if package.is_symlink() or not package.is_file():
+                raise ValueError('事务下载目录中的 RPM 文件类型无效')
+            target = repository / package.name
+            if target.exists() and offline.digest(target) != offline.digest(package):
+                raise ValueError('同名 Helper RPM 内容不一致，请使用新交付目录')
+            shutil.copy2(package, target)
+
+
 def preflight_helper_rpms(helper):
     """Test the complete local RPM transaction without installing packages."""
     requirements = json.loads((helper / 'requirements.json').read_text())
@@ -55,6 +75,9 @@ def preflight_helper_rpms(helper):
     keys = sorted(p.resolve().as_uri() for p in (helper / 'keys').iterdir() if p.is_file())
     if not keys:
         raise ValueError('Helper RPM 签名 key 缺失')
+    payloads = {p.name: offline.digest(p) for p in (helper / 'rpms').glob('*.rpm')}
+    if not payloads:
+        raise ValueError('Helper 本地源没有 RPM 文件')
     # A private reposdir prevents fallback to RHUI, subscription or Docker.
     with tempfile.TemporaryDirectory(prefix='ocp-helper-rpm-check-') as temporary:
         repo = Path(temporary) / 'helper.repo'
@@ -62,9 +85,15 @@ def preflight_helper_rpms(helper):
                         'baseurl=' + (helper / 'rpms').resolve().as_uri() + '\n'
                         'enabled=1\ngpgcheck=1\ngpgkey=' + ' '.join(keys) + '\n')
         print('预检本地 Helper RPM 完整事务；不会安装软件包。', flush=True)
-        run(['dnf', '--setopt=reposdir=' + temporary, '--disablerepo=*',
+        run(['dnf', '--setopt=reposdir=' + temporary,
+             '--setopt=cachedir=' + str(Path(temporary) / 'cache'),
+             '--setopt=persistdir=' + str(Path(temporary) / 'persist'),
+             '--setopt=keepcache=1', '--disablerepo=*',
              '--enablerepo=ocpinstall-helper-preflight', '--setopt=tsflags=test',
              'install', '-y', *packages])
+    after = {p.name: offline.digest(p) for p in (helper / 'rpms').glob('*.rpm')}
+    if after != payloads:
+        raise ValueError('RPM 事务预检修改了交付文件，拒绝封包或安装')
 
 
 def ask(label, default=None):
@@ -171,6 +200,8 @@ def prepare_helper(args, root, cache):
         requirements = json.loads((helper / 'requirements.json').read_text())
         if requirements.get('mode') == 'rpm' and not set(PACKAGES) <= set(requirements.get('packages', [])):
             raise ValueError('已有 Helper RPM 清单缺少当前依赖，请使用新交付目录重新准备')
+        if requirements.get('mode') == 'rpm' and requirements.get('rpmCollection') != 'isolated-transaction-cache-v1':
+            raise ValueError('已有 Helper RPM 早于缓存隔离修复，请使用新交付目录重新准备')
         return
     # RHEL RHUI/entitlement stays on the preparation host; only RPMs and public keys travel.
     if args.helper_mode == 'existing':
@@ -198,8 +229,7 @@ def prepare_helper(args, root, cache):
         # Also resolve a real transaction against this preparation baseline.
         # Download-only includes installed reverse dependencies that must move
         # with newer libraries; no packages are installed or erased here.
-        run(['dnf', '--setopt=reposdir=' + str(repos), 'install', '-y',
-             '--downloadonly', '--downloaddir=' + str(repository), *packages])
+        download_helper_transaction(repos, repository, cache, packages)
         run(['createrepo_c', repository])
         keys = helper / 'keys'
         keys.mkdir(exist_ok=True)
@@ -210,7 +240,8 @@ def prepare_helper(args, root, cache):
         fetch('https://download.docker.com/linux/rhel/gpg', keys / 'RPM-GPG-KEY-docker')
         # Signature validation is performed again by dnf on the target Helper.
         offline.save_json(helper / 'requirements.json', {'mode': 'rpm', 'packages': packages,
-            'rhelVersion': release['VERSION_ID'].strip('"')})
+            'rhelVersion': release['VERSION_ID'].strip('"'),
+            'rpmCollection': 'isolated-transaction-cache-v1'})
         preflight_helper_rpms(helper)
     if args.harbor_archive:
         source = Path(args.harbor_archive).expanduser().resolve()

@@ -12,6 +12,8 @@
 
 完整 RPM 包还会补齐 glibc 语言包等已装软件的反向依赖，并在出包前、安装前测试仅使用本地源的完整 RPM 事务；缺包或冲突会在修改主机服务前停止。准备机与目标 Helper 应使用匹配的 RHEL 和软件基线，详见 [Helper 软件准备](DELIVERY.md#联网准备机)。
 
+RPM 事务下载使用包外临时缓存，再复制到交付目录，避免 DNF 后续安装清理交付文件；预检还会核对 RPM 文件未被修改或删除。早于此修复的 Helper 软件包需要使用新目录重新准备。
+
 ## 交互操作
 
 联网准备机需要 Linux、Python 3.9+、PyYAML 6.0.3、skopeo、Podman/Docker，以及支持目标版本的 `oc`、`oc-mirror v2`。首次解析会编译使用 OLM 同类 semver/CEL 库的工具；没有 Go 时自动下载固定官方 Go 工具链并校验 SHA256。离线导入端只需 Python、oc 和同一份 oc-mirror 二进制，不需要 Go、skopeo 或 Docker。

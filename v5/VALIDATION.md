@@ -12,8 +12,8 @@
 | Operator 可搬迁导出/导入 | Web Terminal 1.17.2 + DevWorkspace 1.0.0，10 个镜像；全新缓存、不同含空格路径、只转移校验清单内文件、外网阻断的导入通过 |
 | Operator 实际使用 | 两个 CSV 均 Succeeded；创建 DevWorkspace 达到 Running，并成功执行标记命令 |
 | 完整 delivery 打包 | 完整组合导出与换路径整包校验已通过，收集 359 个 Helper RPM；新路径下从平台归档重建规则、阻断外网导入、安装后配置通过，MCP 收敛，原有工作空间仍 Running |
-| 本地回归 | 两版分别 168 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
-| Helper RPM 事务预检 | 新 AWS/RHEL 9.6 环境发现英语语言包与 RHUI 较新 glibc 的反向依赖冲突；修复后仅启用离线源的完整事务测试通过，前后已装软件包清单一致。修正后的整包校验已通过，Helper 安装续跑仍在验收 |
+| 本地回归 | 两版分别 172 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
+| Helper RPM 事务预检 | 新 AWS/RHEL 9.6 环境发现英语语言包与 RHUI 较新 glibc 的反向依赖冲突；修复后仅启用离线源的完整事务测试通过，前后已装软件包清单一致。语言包已实际安装；续跑发现 DNF 会清理 download-only 目录，新增缓存隔离和交付文件保留检查，正在实机复验 |
 | RHEL 10 Helper | 已列入独立验收范围；仅测试 Helper 服务、工具与离线交接，不重复部署已通过的集群或 Operator；尚未标记通过 |
 | 全新隔离 Helper 初始化 | RHEL 9.6 虚拟机完成 359 RPM 本地 GPG 安装、默认 SELinux/firewalld、Docker/Harbor、平台离线导入及 Ignition/handoff 生成；未启动第二套集群节点，物理服务器尚待单独验收 |
 | 授时与缓存针对性回归 | 在隔离 Helper 完成 30 项实测：拒绝 NTP 自引用、上游不可达时失败、显式本地 stratum 10 回应真实 NTP 查询、缓存位于包外；安全策略保持开启 |

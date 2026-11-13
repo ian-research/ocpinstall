@@ -47,7 +47,7 @@ bash v5/prepare-operators.sh delivery export \
   --harbor-sha256 实际核实的64位SHA256
 ```
 
-RHEL/Docker 软件先通过 `dnf download --resolve --alldeps` 收集完整依赖，再对准备机执行 `dnf install --downloadonly`，补齐升级已装基础库时需要同步更新的反向依赖。英语、中文及准备机已装的其他 glibc 语言包一并收录，避免新旧 glibc 的严格版本依赖冲突。
+RHEL/Docker 软件先通过 `dnf download --resolve --alldeps` 收集完整依赖，再对准备机执行 `dnf install --downloadonly`，补齐升级已装基础库时需要同步更新的反向依赖。事务下载使用独立临时缓存，完成后复制 RPM 到交付目录；交付目录不会被登记为 DNF 可清理缓存。英语、中文及准备机已装的其他 glibc 语言包一并收录，避免新旧 glibc 的严格版本依赖冲突。
 
 出包前和目标安装前均通过独立的本地软件源执行 `tsflags=test` 完整事务检查，保留 RPM 签名验证；不会安装或删除软件包，DNF 仍可能写入缓存或导入公开的签名 key。目标预检在修改主机服务配置前运行，缺包或冲突会直接终止；目标存在不同的自定义软件或语言包时，应按该基线重新准备。实际安装只启用包内软件源。订阅配置、RHUI 私钥及源仓库登录信息留在准备机的缓存或原位置，不装入交付包。
 
