@@ -115,6 +115,8 @@ AWS 明确由外部规则管理防火墙时可在安装和配置命令末尾增�
 
 ACM/MCE 清单默认 High；小型验证可在配置前设置 `ACM_AVAILABILITY=Basic`。先等待 MCP 和目录就绪，审阅并应用订阅、批准计划内 CSV，再按目录内 README 应用业务 CR。它们不会混入自动应用的镜像规则文件。AI 目前生成 Operator 订阅；DSCI/DSC、默认动态存储、IDP 和 CPU Workbench 的整体验收仍需在 4.22 上完成。
 
+MCE 应检查实际 `Available=True`、组件和 Deployment 就绪；本轮 5.0 实测同时保留 `Progressing=True/ComponentsDeployed`，不要仅等待该字段变成 False。Hub 应检查 `Running`、`Complete=True`，再验证受管集群 Joined/Available 和实际策略生效。Basic 模式不代替数据库持久化配置；Search 使用临时存储时，重建 Pod 可能丢失索引。已有同名 Operator 或 OperatorGroup 时先核对并复用，不重复应用新安装清单。
+
 ## 节点容量也属于交付前提
 
 本次 5.0.1 三节点基础平台在每节点 4 CPU/16 GiB 上安装成功；随后部署 Virtualization、MCE 与 ACM 时，Virtualization 自动触发额外的 MachineConfigPool 更新，节点轮流暂时不可调度，其间出现 CPU/内存请求不足。容量结论需等 MCP 更新完成、全部节点恢复可调度后再判断；不能把滚动更新时的等待直接认定为稳态容量不足。基础平台规格也不代表复杂组件的容量保证。
