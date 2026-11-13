@@ -21,11 +21,50 @@ import operator_profile
 
 SOURCE = Path(__file__).resolve().parent.parent
 KNOWN_HELPER_STATES = ('/opt/ocpinstall', '/opt/ocp5', '/opt/ocp422', '/opt/harbor/harbor/harbor.yml')
-PACKAGES = ['glibc-langpack-zh', 'python3', 'python3-pyyaml',
+PACKAGES = ['glibc-langpack-zh', 'glibc-langpack-en', 'python3', 'python3-pyyaml',
             'policycoreutils-python-utils', 'haproxy', 'bind', 'bind-utils',
             'skopeo', 'httpd-tools', 'openssl', 'python3.11', 'python3-pip',
             'jq', 'wget', 'nfs-utils', 'chrony', 'httpd', 'cockpit', 'firewalld',
             'docker-ce', 'docker-ce-cli', 'containerd.io', 'docker-compose-plugin']
+
+
+def helper_packages():
+    # Language packs require the exact glibc-common EVR. --alldeps resolves
+    # forward dependencies, but cannot include installed reverse dependencies.
+    result = list(PACKAGES)
+    installed = run(['rpm', '-qa', '--qf', '%{NAME}\\n', 'glibc-langpack-*'],
+                    capture_output=True, text=True).stdout.splitlines()
+    for name in sorted(set(installed)):
+        if not re.fullmatch(r'glibc-langpack-[A-Za-z0-9_-]+', name):
+            raise ValueError('无法识别准备机上的 glibc 语言包名称')
+        if name not in result:
+            result.append(name)
+    return result
+
+
+def preflight_helper_rpms(helper):
+    """Test the complete local RPM transaction without installing packages."""
+    requirements = json.loads((helper / 'requirements.json').read_text())
+    if requirements.get('mode') != 'rpm':
+        return
+    packages = requirements.get('packages')
+    if not isinstance(packages, list) or not packages or any(
+            not isinstance(p, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9+_.-]*', p)
+            for p in packages):
+        raise ValueError('Helper RPM 软件清单无效')
+    keys = sorted(p.resolve().as_uri() for p in (helper / 'keys').iterdir() if p.is_file())
+    if not keys:
+        raise ValueError('Helper RPM 签名 key 缺失')
+    # A private reposdir prevents fallback to RHUI, subscription or Docker.
+    with tempfile.TemporaryDirectory(prefix='ocp-helper-rpm-check-') as temporary:
+        repo = Path(temporary) / 'helper.repo'
+        repo.write_text('[ocpinstall-helper-preflight]\nname=Offline Helper transaction check\n'
+                        'baseurl=' + (helper / 'rpms').resolve().as_uri() + '\n'
+                        'enabled=1\ngpgcheck=1\ngpgkey=' + ' '.join(keys) + '\n')
+        print('预检本地 Helper RPM 完整事务；不会安装软件包。', flush=True)
+        run(['dnf', '--setopt=reposdir=' + temporary, '--disablerepo=*',
+             '--enablerepo=ocpinstall-helper-preflight', '--setopt=tsflags=test',
+             'install', '-y', *packages])
 
 
 def ask(label, default=None):
@@ -129,6 +168,9 @@ def prepare_helper(args, root, cache):
                 raise ValueError('已准备的 Helper 软件被修改，请使用新目录重新准备')
         if args.harbor_sha256 and offline.digest(helper / 'harbor-offline-installer.tgz') != args.harbor_sha256:
             raise ValueError('已有不同 Harbor 安装包，请使用新交付目录')
+        requirements = json.loads((helper / 'requirements.json').read_text())
+        if requirements.get('mode') == 'rpm' and not set(PACKAGES) <= set(requirements.get('packages', [])):
+            raise ValueError('已有 Helper RPM 清单缺少当前依赖，请使用新交付目录重新准备')
         return
     # RHEL RHUI/entitlement stays on the preparation host; only RPMs and public keys travel.
     if args.helper_mode == 'existing':
@@ -150,8 +192,14 @@ def prepare_helper(args, root, cache):
         fetch('https://download.docker.com/linux/rhel/docker-ce.repo', repos / 'docker-ce.repo')
         repository = helper / 'rpms'
         repository.mkdir(exist_ok=True)
+        packages = helper_packages()
         run(['dnf', '--setopt=reposdir=' + str(repos), 'download', '--resolve', '--alldeps',
-             '--destdir', repository, *PACKAGES])
+             '--destdir', repository, *packages])
+        # Also resolve a real transaction against this preparation baseline.
+        # Download-only includes installed reverse dependencies that must move
+        # with newer libraries; no packages are installed or erased here.
+        run(['dnf', '--setopt=reposdir=' + str(repos), 'install', '-y',
+             '--downloadonly', '--downloaddir=' + str(repository), *packages])
         run(['createrepo_c', repository])
         keys = helper / 'keys'
         keys.mkdir(exist_ok=True)
@@ -161,8 +209,9 @@ def prepare_helper(args, root, cache):
             raise ValueError('找不到 RHEL 官方 RPM GPG key')
         fetch('https://download.docker.com/linux/rhel/gpg', keys / 'RPM-GPG-KEY-docker')
         # Signature validation is performed again by dnf on the target Helper.
-        offline.save_json(helper / 'requirements.json', {'mode': 'rpm', 'packages': PACKAGES,
+        offline.save_json(helper / 'requirements.json', {'mode': 'rpm', 'packages': packages,
             'rhelVersion': release['VERSION_ID'].strip('"')})
+        preflight_helper_rpms(helper)
     if args.harbor_archive:
         source = Path(args.harbor_archive).expanduser().resolve()
         if not args.harbor_sha256 or offline.digest(source) != args.harbor_sha256:
@@ -403,6 +452,7 @@ def execute(args, root):
             actual = dict(line.split('=', 1) for line in Path('/etc/os-release').read_text().splitlines() if '=' in line)
             if actual.get('ID', '').strip('"') != 'rhel' or actual.get('VERSION_ID', '').strip('"') != requirements['rhelVersion']:
                 raise ValueError('Helper 的 RHEL 版本必须与 RPM 准备机一致；请为目标版本重新准备')
+            preflight_helper_rpms(root / 'helper')
         run(['bash', root / 'scripts/install-cluster.sh', '--repo-mode',
              'bundle' if record['helperMode'] == 'rpm' else 'existing', *args.script_args], env=env)
         return

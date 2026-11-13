@@ -209,7 +209,7 @@ EOF
 # 添加中文支持
 add_chinese_support() {
     log "添加中文支持..."
-    dnf_install glibc-langpack-zh python3
+    dnf_install glibc-langpack-zh glibc-langpack-en python3
 }
 
 # 默认配置实际需要的 SELinux 端口标签和防火墙规则。

@@ -47,7 +47,9 @@ bash v4.22/prepare-operators.sh delivery export \
   --harbor-sha256 实际核实的64位SHA256
 ```
 
-RHEL/Docker 软件及其依赖通过 `dnf download --resolve --alldeps` 收集，生成本地软件源。目标安装时只启用该离线源，保留 RPM 签名检查。订阅配置、RHUI 私钥及源仓库登录信息留在准备机的缓存或原位置，不装入交付包。
+RHEL/Docker 软件先通过 `dnf download --resolve --alldeps` 收集完整依赖，再对准备机执行 `dnf install --downloadonly`，补齐升级已装基础库时需要同步更新的反向依赖。英语、中文及准备机已装的其他 glibc 语言包一并收录，避免新旧 glibc 的严格版本依赖冲突。
+
+出包前和目标安装前均通过独立的本地软件源执行 `tsflags=test` 完整事务检查，保留 RPM 签名验证；不会安装或删除软件包，DNF 仍可能写入缓存或导入公开的签名 key。目标预检在修改主机服务配置前运行，缺包或冲突会直接终止；目标存在不同的自定义软件或语言包时，应按该基线重新准备。实际安装只启用包内软件源。订阅配置、RHUI 私钥及源仓库登录信息留在准备机的缓存或原位置，不装入交付包。
 
 AWS 测试可明确选择 `--helper-mode existing`：使用目标机已有的 YUM/RHUI 和 Docker，不收集 Helper RPM。**此模式只保证 OpenShift/Operator 镜像离线，不代表 Helper 初始化完全离线。**物理隔离环境使用默认 `rpm` 模式，或继续使用独立安装入口的 RHEL DVD 模式。
 
