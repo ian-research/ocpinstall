@@ -9,6 +9,12 @@ if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
     require_host
 fi
 export PATH="$BIN_DIR:$PATH"
+# Bound ordinary API calls; rollout status has its own explicit watch deadline.
+oc() {
+    local request_timeout=30s
+    if [[ ${1:-} == rollout && ${2:-} == status ]]; then request_timeout=0; fi
+    command oc --request-timeout="$request_timeout" "$@"
+}
 trap 'printf "错误: 第 %s 行执行失败，请检查输出后重试。\n" "$LINENO" >&2' ERR
 ADMIN_TMP_FILE=
 trap '[[ -z ${ADMIN_TMP_FILE:-} ]] || rm -f -- "$ADMIN_TMP_FILE"' EXIT

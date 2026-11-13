@@ -140,3 +140,5 @@ ACM/MCE 清单默认 High；小型验证可在配置前设置 `ACM_AVAILABILITY=
 HCO `v1` 使用 `spec.workloadSources.enableCommonBootImageImport`；`v1beta1` 使用 `spec.enableCommonBootImageImport`。旧的 `spec.featureGates.enableCommonBootImageImport` 已被忽略，不能据此判定已经关闭。5.0 的两种实际 CRD 已核对；4.22 的 beta 字段依据[红帽引导源文档](https://docs.redhat.com/en/documentation/openshift_container_platform/4.22/html/virtualization/storage)。创建 HCO 后再次等待 MCP 收敛，并按 Available/Progressing/Degraded 条件和实际 Deployment 验证；不要求未在 CRD 中定义的 `status.phase`。
 
 CA 合并、目录策略和集群版本检查的 API 访问设置超时，失败停止而不生成成功结果。CA 组件刷新仅在实际 rollout 成功后记录完成摘要；如果证书写入后中断，修复 API 连通性后重试会继续未完成的刷新，不把证书相同误判为配置已全部完成。
+
+后置配置中普通 `oc` 请求也设置 30 秒请求超时，API 无响应时返回失败；NFS provisioner 的部署等待保留独立的 180 秒期限。请求超时不表示服务端一定没有接受写入，重试前应先核对实际资源；管理员初始化遇到已创建的凭据仍会停止，不重置账号。

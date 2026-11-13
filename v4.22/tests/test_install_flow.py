@@ -14,6 +14,25 @@ def function(name):
 
 
 class InstallFlowTests(unittest.TestCase):
+    def test_setup_bounds_api_requests_without_shortening_rollout_watch(self):
+        text = (ROOT / 'setup-cluster.sh').read_text()
+        start = text.index('oc() {')
+        wrapper = text[start:text.index('\n}', start) + 2]
+        with tempfile.TemporaryDirectory() as directory:
+            binary = Path(directory) / 'oc'
+            binary.write_text('#!/bin/sh\nprintf "%s\\n" "$@"\nexit "${FIXTURE_OC_EXIT:-0}"\n')
+            binary.chmod(0o700)
+            env = dict(os.environ, PATH=directory + os.pathsep + os.environ['PATH'])
+            for arguments, expected in [('get nodes', '30s'), ('rollout status deployment/example --timeout=180s', '0')]:
+                result = subprocess.run(['bash', '-c', wrapper + '\noc ' + arguments],
+                                        env=env, check=True, capture_output=True, text=True)
+                self.assertEqual(result.stdout.splitlines()[0], '--request-timeout=' + expected)
+                if expected == '0':
+                    self.assertIn('--timeout=180s', result.stdout)
+            failed = subprocess.run(['bash', '-c', wrapper + '\noc get nodes'],
+                                    env=dict(env, FIXTURE_OC_EXIT='1'), capture_output=True, text=True)
+            self.assertEqual(failed.returncode, 1)
+
     def test_invalid_second_operator_bundle_cannot_change_cluster_policy(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

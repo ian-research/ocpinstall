@@ -222,7 +222,7 @@ shellcheck --external-sources --severity=warning v5/*.sh v5/lib/*.sh v5/config/*
 python3 -m unittest discover -s v5/tests -v
 ```
 
-测试使用隔离临时目录和模拟命令，覆盖镜像配置/导出导入、工具校验、真实映射解析、安装资料生成、NTP、调度设置、HTTP 副本校验、Bootstrap 后端移除及 SCC 范围。尚未在真实 RHEL 9 和 OpenShift 5.0.1 环境执行完整安装；目录镜像、社区 provisioner、Registry 存储和旧版 Harbor/Docker 依赖仍需实测。
+本地回归使用隔离临时目录和模拟命令，覆盖镜像配置/导出导入、工具校验、映射解析、安装资料生成、NTP、调度设置、HTTP 副本校验及 SCC 范围。另已在 AWS 的 RHEL 9 Helper 与三台 RHCOS 虚拟机上完成 5.0.1 离线安装、基础功能及 RHEL 9 VM 验证，并在全新隔离 Helper 上验证离线初始化。ACM/MCE 联调尚未通过，不能把平台安装或 CSV 成功等同于完整产品可用。各项实测结果、当前故障和未覆盖范围统一记录在 [VALIDATION.md](VALIDATION.md)；物理服务器和完整生产场景仍需单独验收。
 
 ## 参考
 
