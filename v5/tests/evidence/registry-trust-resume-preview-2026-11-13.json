@@ -1,0 +1,25 @@
+{
+  "state": "passed-read-only-preview",
+  "collectedAtUTC": "2026-11-12T22:02:46.122526+00:00",
+  "sourceSha256": "5942298c0487154d2473e9df5ba9f651518fbd8eba334ea264d9d3c961f06205",
+  "caBundleSha256": "c0eaa2ba49e6ee4de2e61f8976489a12a0582d71696e6a7b6e9e830b8d8e63ef",
+  "certificateCount": 1,
+  "checks": [
+    {
+      "namespace": "openshift-catalogd",
+      "deployment": "catalogd-controller-manager",
+      "serverMarkerValidation": true,
+      "existingSpecUnchanged": true,
+      "existingAnnotationUnchanged": true
+    },
+    {
+      "namespace": "openshift-operator-controller",
+      "deployment": "operator-controller-controller-manager",
+      "serverMarkerValidation": true,
+      "existingSpecUnchanged": true,
+      "existingAnnotationUnchanged": true
+    }
+  ],
+  "runtimeRestartExecuted": false,
+  "scope": "actual CA merge preview and completion-marker server validation; interruption/resume behavior verified separately by regression tests"
+}

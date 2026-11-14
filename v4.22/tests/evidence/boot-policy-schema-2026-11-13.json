@@ -1,0 +1,20 @@
+{
+  "state": "metadata-checked",
+  "four22CatalogDeclaredHcoAPIs": [
+    "v1",
+    "v1beta1"
+  ],
+  "fiveServerChecks": [
+    {
+      "apiVersion": "hco.kubevirt.io/v1",
+      "serverDryRunPassed": true,
+      "falseValueRetained": true
+    },
+    {
+      "apiVersion": "hco.kubevirt.io/v1beta1",
+      "serverDryRunPassed": true,
+      "falseValueRetained": true
+    }
+  ],
+  "scope": "4.22 catalog metadata and 5.0 server validation; no 4.22 runtime test"
+}

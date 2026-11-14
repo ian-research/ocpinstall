@@ -1,0 +1,620 @@
+{
+  "collectedAtUTC": "2026-11-12T21:00:12.658567+00:00",
+  "records": {
+    "verify-performance-results.json": {
+      "state": "passed",
+      "elapsedSeconds": 43.467,
+      "imageArchiveHashPasses": {
+        "platform/images/mirror_000001.tar": 1,
+        "platform/images/mirror_000002.tar": 1,
+        "operators/images/mirror_000001.tar": 1
+      },
+      "verifierSha256": "c30f70570f0027c81fc6ce3befb58f6f5f2e67d90b9d0aee9444c9be05eede5f",
+      "deliveryFileSha256": "5155ab8df16128db0af3d3c90a69d6245c8dff83a3d45e74f6de0e98ff8edfdd"
+    },
+    "422-tools-results.json": {
+      "state": "passed",
+      "version": "4.22.22",
+      "client": "Client Version: 4.22.22",
+      "kubectl": "Client Version: v1.35.2",
+      "installer": "/opt/ocp5-operator-test/422-tools-bin/openshift-install 4.22.22",
+      "officialKubectlHardlinkPreserved": true,
+      "allToolsExecutable": true
+    },
+    "portable-results.json": {
+      "state": "passed",
+      "stage": "offline-import",
+      "export": "passed",
+      "offlineImport": "passed",
+      "externalConnectionBlocked": true,
+      "harborHealth": "healthy",
+      "archiveBytes": 2726148096,
+      "toolSha256": "b9a0702a25ad86fa2d4b0d2dc1a5c6dfb68b7cd4d7e9d287b8663a828b0656c3"
+    },
+    "installation-results.json": {
+      "state": "passed",
+      "stage": "complete",
+      "catalogReady": true,
+      "approvedCSVs": [
+        "devworkspace-operator.v1.0.0",
+        "web-terminal.v1.17.2"
+      ],
+      "csvSucceeded": [
+        "devworkspace-operator.v1.0.0",
+        "web-terminal.v1.17.2"
+      ],
+      "operand": "DevWorkspace Running + exec passed",
+      "catalogSource": "ocp5-fcaffcaf2de1-5435fade7a"
+    },
+    "delivery-handoff-final-results.json": {
+      "state": "passed",
+      "stage": "complete",
+      "version": "5.0.1",
+      "verifyEntry": "passed",
+      "transferredFileCount": 458,
+      "helperRPMCount": 359,
+      "sourceWorkingDirTransferred": false,
+      "existingClusterOverwriteBlocked": true,
+      "externalConnectionBlocked": true,
+      "configureEntry": "passed",
+      "mcp": "converged",
+      "existingOperand": "Running",
+      "deliveryFileSha256": "5155ab8df16128db0af3d3c90a69d6245c8dff83a3d45e74f6de0e98ff8edfdd"
+    },
+    "helper-qa-results.json": {
+      "result": "passed_with_findings",
+      "stage": "complete",
+      "stageStatus": {
+        "cluster_nodes": "not_created_intentional",
+        "delivery_copy_verify": "passed",
+        "handoff": "passed",
+        "ignition": "passed",
+        "install_rpm_default_security": "passed",
+        "isolation_no_nat_dhcp_or_internet": "passed",
+        "ntp_sync": "finding_not_synchronised",
+        "platform_image_import": "passed",
+        "qa_pull_robot": "passed",
+        "vm_boot_rhel96": "passed",
+        "wait_for_configure": "not_run_intentional",
+        "yum_docker_harbor_dns_haproxy_nfs_http": "passed"
+      },
+      "delivery": {
+        "version": "5.0.1",
+        "helperMode": "rpm",
+        "fileCount": 457,
+        "totalWithManifest": 458,
+        "deliveryJsonSha256": "5155ab8df16128db0af3d3c90a69d6245c8dff83a3d45e74f6de0e98ff8edfdd",
+        "vmManifestSha256": "5155ab8df16128db0af3d3c90a69d6245c8dff83a3d45e74f6de0e98ff8edfdd",
+        "hostVerifyPassed": true,
+        "vmVerifyPassed": true,
+        "testedCodeHashes": {
+          "configure.sh": {
+            "actual": "cd83e97faa10b322da007dd058c018a333b5f06cda1647516e404c998de2c215",
+            "expected": "cd83e97faa10b322da007dd058c018a333b5f06cda1647516e404c998de2c215"
+          },
+          "delivery-plan.json": {
+            "actual": "3ce26f562e16a151a621a55d89ef0ba7113583da077bb13885464be231d0b88b",
+            "expected": "3ce26f562e16a151a621a55d89ef0ba7113583da077bb13885464be231d0b88b"
+          },
+          "helper/requirements.json": {
+            "actual": "db9a86fa7ece84313524543a1fe0a6623d6187316e1a8d1470c999435864dd4c",
+            "expected": "db9a86fa7ece84313524543a1fe0a6623d6187316e1a8d1470c999435864dd4c"
+          },
+          "install.sh": {
+            "actual": "3461f5d76cbca2d3158275aa16e5abb01a9f85e1da1413223b3f1a44f39f27f2",
+            "expected": "3461f5d76cbca2d3158275aa16e5abb01a9f85e1da1413223b3f1a44f39f27f2"
+          },
+          "scripts/config/versions.sh": {
+            "actual": "87229ade02d0d0aba7f45e9f9434d7826fbcc733aa3464986b148369cef43829",
+            "expected": "87229ade02d0d0aba7f45e9f9434d7826fbcc733aa3464986b148369cef43829"
+          },
+          "scripts/install-cluster.sh": {
+            "actual": "7be91a200f60da3cc680019bc069e9a9311f9743c139d2d2becf29fb4706ef34",
+            "expected": "7be91a200f60da3cc680019bc069e9a9311f9743c139d2d2becf29fb4706ef34"
+          },
+          "scripts/lib/artifacts.py": {
+            "actual": "f43ff16f00e7cba3253147eb045398b309d5e61a330366c4192ecdaf7a9d8caf",
+            "expected": "f43ff16f00e7cba3253147eb045398b309d5e61a330366c4192ecdaf7a9d8caf"
+          },
+          "scripts/lib/common.sh": {
+            "actual": "37f5905b1383bb0bfb1ddfead43cd480c60e8e1ea1ef2c43950fb21d5ace919a",
+            "expected": "37f5905b1383bb0bfb1ddfead43cd480c60e8e1ea1ef2c43950fb21d5ace919a"
+          },
+          "scripts/lib/delivery.py": {
+            "actual": "85e03c4900711e396944081e6518e918102eafa4c16cb17a681245fa58bbf633",
+            "expected": "85e03c4900711e396944081e6518e918102eafa4c16cb17a681245fa58bbf633"
+          },
+          "scripts/lib/offline.py": {
+            "actual": "ac9b40dfa42b378cb5eb4c465ee666e2d1f4e2a0c4ca19636f33d1d1b77aff89",
+            "expected": "ac9b40dfa42b378cb5eb4c465ee666e2d1f4e2a0c4ca19636f33d1d1b77aff89"
+          },
+          "scripts/setup-cluster.sh": {
+            "actual": "766d93805315f757dbd07a5bc5727d1d035e045f60c6fc2520694d18394154c0",
+            "expected": "766d93805315f757dbd07a5bc5727d1d035e045f60c6fc2520694d18394154c0"
+          },
+          "verify.sh": {
+            "actual": "ca438f09a849de32bd0e5b270e2a67fc0c0cabc614a56e2d715921576bf75a88",
+            "expected": "ca438f09a849de32bd0e5b270e2a67fc0c0cabc614a56e2d715921576bf75a88"
+          }
+        },
+        "testedCodeHashesAllMatch": true
+      },
+      "install": {
+        "clusterNodesBooted": false,
+        "clusterNodesCreated": false,
+        "configureExecuted": false,
+        "waitForExecuted": false,
+        "installConfigMode": {
+          "exists": true,
+          "gid": 0,
+          "group": "root",
+          "mode": "0o600",
+          "path": "/opt/ocp5/install-config.yaml",
+          "size": 3431,
+          "uid": 0,
+          "user": "root"
+        }
+      },
+      "security": {
+        "selinux": "Enforcing",
+        "firewalld": "running",
+        "masquerade": false,
+        "rpmGpgcheck": true
+      },
+      "cleanup": {
+        "evidenceCopiedOut": true,
+        "vmState": "shut off",
+        "existingConsoleHttpStatus": 200,
+        "existingMastersStillRunning": true,
+        "existingNodesReady": true,
+        "hostDiskFreeGiB": 494.24
+      }
+    },
+    "product-transfer-final-results.json": {
+      "state": "passed",
+      "stage": "complete",
+      "products": {
+        "product-5-virt": {
+          "state": "passed",
+          "stage": "offline-import-complete",
+          "archiveBytes": 18543960576,
+          "externalConnectionBlocked": true
+        },
+        "product-5-acm": {
+          "state": "passed",
+          "stage": "offline-import-complete",
+          "archiveBytes": 32318697472,
+          "externalConnectionBlocked": true
+        }
+      }
+    },
+    "422-operator-results.json": {
+      "state": "passed",
+      "stage": "complete",
+      "version": "4.22.22",
+      "planHash": "a0c39278fb23511e3f570e939e7f87bd52ec778e5c542a583fc17373d7216529",
+      "sourceWorkingDirTransferred": false,
+      "externalConnectionBlocked": true,
+      "wrongClusterApplyBlocked": true
+    },
+    "ai-image-size-audit.json": {
+      "state": "passed",
+      "imageCount": 145,
+      "targetVersion": "4.22.22",
+      "operatorVersion": "3.5.2",
+      "uniqueLayerCount": 1274,
+      "compressedAllPlatformsBytes": 315852933951,
+      "conservativeThreeCopyBytes": 969033638333,
+      "fitsWith150GiBFloor": false,
+      "freeDiskBytes": 465745465344
+    },
+    "helper-robustness-results.json": {
+      "overall": "PASS",
+      "checks": [
+        {
+          "id": "source_archive_sha256",
+          "status": "PASS"
+        },
+        {
+          "id": "source_tree_extracted",
+          "status": "PASS"
+        },
+        {
+          "id": "source_bundle_isolation",
+          "status": "PASS"
+        },
+        {
+          "id": "preflight_state",
+          "status": "PASS"
+        },
+        {
+          "id": "configure_chrony_extracted",
+          "status": "PASS"
+        },
+        {
+          "id": "artifacts_upstream_self_reference_rejected",
+          "status": "PASS"
+        },
+        {
+          "id": "artifacts_invalid_mode_rejected",
+          "status": "PASS"
+        },
+        {
+          "id": "artifacts_helper_outside_network_rejected",
+          "status": "PASS"
+        },
+        {
+          "id": "artifacts_invalid_cidr_rejected",
+          "status": "PASS"
+        },
+        {
+          "id": "artifacts_local_with_server_rejected",
+          "status": "PASS"
+        },
+        {
+          "id": "artifacts_local_config_valid",
+          "status": "PASS"
+        },
+        {
+          "id": "configure_chrony_self_reference_no_rewrite",
+          "status": "PASS"
+        },
+        {
+          "id": "configure_chrony_local_applied",
+          "status": "PASS"
+        },
+        {
+          "id": "chrony_local_stratum_10",
+          "status": "PASS"
+        },
+        {
+          "id": "chrony_no_upstream_self_reference",
+          "status": "PASS"
+        },
+        {
+          "id": "chrony_ntp_query_served",
+          "status": "PASS"
+        },
+        {
+          "id": "configure_chrony_upstream_unreachable_nonzero",
+          "status": "PASS"
+        },
+        {
+          "id": "configure_chrony_local_restored",
+          "status": "PASS"
+        },
+        {
+          "id": "chrony_local_stratum_10_restored",
+          "status": "PASS"
+        },
+        {
+          "id": "chrony_ntp_query_restored",
+          "status": "PASS"
+        },
+        {
+          "id": "selinux_enforcing_after",
+          "status": "PASS"
+        },
+        {
+          "id": "firewalld_active_after",
+          "status": "PASS"
+        },
+        {
+          "id": "chronyd_active_after",
+          "status": "PASS"
+        },
+        {
+          "id": "no_external_default_route",
+          "status": "PASS"
+        },
+        {
+          "id": "final_chrony_config_local_only",
+          "status": "PASS"
+        },
+        {
+          "id": "preserved_opt_ocp5",
+          "status": "PASS"
+        },
+        {
+          "id": "backup_policy",
+          "status": "PASS"
+        },
+        {
+          "id": "platform_import_capture_only",
+          "status": "PASS"
+        },
+        {
+          "id": "platform_import_cache_outside_bundle",
+          "status": "PASS"
+        },
+        {
+          "id": "platform_import_no_new_job",
+          "status": "PASS"
+        }
+      ],
+      "testedSourceHashes": {
+        "archive_sha256": "51e3809a97808946e338bfb6d976e21012554e85cec9d9dd58338efb4b7fc544",
+        "tree_sha256": "881b580042f9c5e2b7ef4c9dfc20764557efddea421fe52bb27f10bc141c1743",
+        "artifacts_py_sha256": "987768d507517e31f4aaeb6ad020a2a4cea6b8483a3eb4810ec0c19aa1f55440",
+        "install_cluster_sh_sha256": "ea02b4640fdf0289bda8c9a9946da2e680d2696449b27a2d0b22f3779b26a4fc",
+        "configure_chrony_function_sha256": "ed589b98f3f208c1067464f35f0b58242badadde7e04bdadced388357af1a577"
+      },
+      "security": {
+        "selinux": "Enforcing",
+        "firewalld": "active",
+        "chronyd": "active",
+        "no_external_default_route": true,
+        "chrony_stratum": 10,
+        "chrony_local_stratum": true,
+        "chrony_config_has_server_directive": false,
+        "chrony_config_upstream_self_reference": false,
+        "chrony_config_allow_nfs_cidr": true,
+        "ntp_query_ok": true,
+        "ntp_query_method": "chronyd -Q -t 30 (client-only, clock control disabled)"
+      },
+      "platformImport": {
+        "capture_only": true,
+        "command_executed": false,
+        "cache_outside_bundle": true
+      },
+      "cleanup": {
+        "status": "complete",
+        "qa_vm_shutdown": true,
+        "qa_vm_final_state": "shut off",
+        "temporary_keys_removed": true,
+        "original_keys_preserved": true
+      },
+      "externalNTPQuery": {
+        "query_rc": 0,
+        "clock_adjusted": false,
+        "result": "NTP response served at stratum 10; client reported offset -0.603061 seconds (ignored)"
+      }
+    },
+    "registry-trust-results.json": {
+      "state": "passed",
+      "stage": "complete",
+      "sourceSha256": "07bd17ac3c0f8c46221446dcb94feb7f551b57ec041ade16cfca07dfc933501f",
+      "injectedIntoComponents": {
+        "openshift-catalogd": true,
+        "openshift-operator-controller": true
+      },
+      "clusterCatalogServing": {
+        "ocp5-583c2d06ed85-1895f52643": true,
+        "ocp5-a36c57c2d366-a16d020bb5": true,
+        "ocp5-fcaffcaf2de1-8a7f1d33c6": true
+      },
+      "rolloutRequested": true,
+      "installerPolicySupport": {
+        "5.0.1": true,
+        "4.22.22": true
+      },
+      "firstRun": {
+        "configMap": "ocpinstall-registry-ca",
+        "previousCertificateCount": 0,
+        "certificateCount": 1,
+        "bundleChanged": true,
+        "proxyReferenceChanged": true
+      },
+      "secondRun": {
+        "configMap": "ocpinstall-registry-ca",
+        "previousCertificateCount": 1,
+        "certificateCount": 1,
+        "bundleChanged": false,
+        "proxyReferenceChanged": false
+      }
+    },
+    "registry-trust-shipping-results.json": {
+      "state": "passed",
+      "stage": "complete",
+      "sourceSha256": "f5069647e9a06c7d8353a934968bbbfa1244de2c33a33cfd286c20b4fd139a99",
+      "clusterCatalogServing": {
+        "ocp5-583c2d06ed85-1895f52643": true,
+        "ocp5-a36c57c2d366-a16d020bb5": true,
+        "ocp5-fcaffcaf2de1-8a7f1d33c6": true
+      },
+      "installerPolicySupport": {
+        "5.0.1": true,
+        "4.22.22": true
+      },
+      "caMergeIdempotent": true,
+      "reloadedComponents": [
+        "openshift-catalogd/catalogd-controller-manager",
+        "openshift-operator-controller/operator-controller-controller-manager"
+      ],
+      "idempotentReload": []
+    },
+    "catalog-policy-results.json": {
+      "state": "passed",
+      "stage": "complete",
+      "sourceSha256": "629a9d2c35299bd4fb69b72fe1e37949468ee7df2e1fdb8723fb1cf021562a10",
+      "customOfflineSpecsPreserved": true,
+      "defaultCatalogRetryIdempotent": true,
+      "disabledDefaults": {
+        "openshift-certified-operators": "Unavailable",
+        "openshift-community-operators": "Unavailable",
+        "openshift-redhat-operators": "Unavailable"
+      },
+      "customOfflineCatalogServing": {
+        "ocp5-583c2d06ed85-1895f52643": true,
+        "ocp5-a36c57c2d366-a16d020bb5": true,
+        "ocp5-fcaffcaf2de1-8a7f1d33c6": true
+      }
+    },
+    "product-plan-results.json": {
+      "state": "passed",
+      "results": [
+        {
+          "name": "5-virt",
+          "planHash": "583c2d06ed85212db1488cd95bf2c4ffa97cd0c18846e3d9dac659d736baba54",
+          "packages": [
+            {
+              "name": "kubevirt-hyperconverged",
+              "version": "5.0.0",
+              "relatedImageCount": 69
+            }
+          ],
+          "additionalImageCount": 1
+        },
+        {
+          "name": "5-acm",
+          "planHash": "a36c57c2d36651685ce8bb128b4a1b64d141b3101524cbe586b40e23a33a64a9",
+          "packages": [
+            {
+              "name": "advanced-cluster-management",
+              "version": "5.0.0",
+              "relatedImageCount": 51
+            },
+            {
+              "name": "multicluster-engine",
+              "version": "5.0.0",
+              "relatedImageCount": 45
+            }
+          ],
+          "additionalImageCount": 0
+        },
+        {
+          "name": "422-components",
+          "planHash": "1746970aae1b0c50a2959e3fd031c51456526c09eb4c5ef255d47e5347cc15bd",
+          "packages": [
+            {
+              "name": "advanced-cluster-management",
+              "version": "5.0.0",
+              "relatedImageCount": 51
+            },
+            {
+              "name": "multicluster-engine",
+              "version": "5.0.0",
+              "relatedImageCount": 45
+            },
+            {
+              "name": "kubevirt-hyperconverged",
+              "version": "4.22.16",
+              "relatedImageCount": 69
+            },
+            {
+              "name": "rhods-operator",
+              "version": "3.5.2",
+              "relatedImageCount": 150
+            }
+          ],
+          "additionalImageCount": 9
+        }
+      ]
+    },
+    "cluster": {
+      "version": "5.0.1",
+      "conditions": {
+        "RetrievedUpdates": "False",
+        "ImplicitlyEnabledCapabilities": "False",
+        "ReleaseAccepted": "True",
+        "Available": "True",
+        "Failing": "False",
+        "Progressing": "False"
+      },
+      "nodeCount": 3,
+      "readyNodeCount": 3
+    },
+    "hostSELinux": "Enforcing",
+    "publicConsoleHTTP": 200,
+    "cluster-health-gate-results.json": {
+      "sourceSha256": "4a1728be46a0289e1c678fb24d9567fc85828d627d12781568265206c1b45bae",
+      "collectedAtUTC": "2026-11-12T21:00:12.658567+00:00",
+      "mode": "read-only-actual-runtime",
+      "state": "passed"
+    },
+    "core-recovery-observation": {
+      "collectedAtUTC": "2026-11-12T20:59:24.770638+00:00",
+      "machineConfigPools": [
+        {
+          "name": "master",
+          "conditions": {
+            "PinnedImageSetsDegraded": "False",
+            "RenderDegraded": "False",
+            "NodeDegraded": "False",
+            "Degraded": "False",
+            "Updated": "True",
+            "Updating": "False"
+          },
+          "updated": 3,
+          "total": 3
+        },
+        {
+          "name": "worker",
+          "conditions": {
+            "PinnedImageSetsDegraded": "False",
+            "Updating": "False",
+            "NodeDegraded": "False",
+            "Degraded": "False",
+            "RenderDegraded": "False",
+            "Updated": "True"
+          },
+          "updated": 0,
+          "total": 0
+        }
+      ],
+      "readyNodeCount": 3,
+      "schedulableNodeCount": 3,
+      "guardPDBs": [
+        {
+          "name": "etcd-guard-pdb",
+          "namespace": "openshift-etcd",
+          "minAvailable": 2,
+          "currentHealthy": 3,
+          "allowed": 1
+        },
+        {
+          "name": "kube-apiserver-guard-pdb",
+          "namespace": "openshift-kube-apiserver",
+          "minAvailable": 2,
+          "currentHealthy": 3,
+          "allowed": 1
+        },
+        {
+          "name": "kube-controller-manager-guard-pdb",
+          "namespace": "openshift-kube-controller-manager",
+          "minAvailable": 2,
+          "currentHealthy": 3,
+          "allowed": 1
+        }
+      ],
+      "coreOperatorDeployments": [
+        {
+          "namespace": "openshift-etcd-operator",
+          "name": "etcd-operator",
+          "expected": 1,
+          "ready": 1,
+          "available": 1
+        },
+        {
+          "namespace": "openshift-kube-apiserver-operator",
+          "name": "kube-apiserver-operator",
+          "expected": 1,
+          "ready": 1,
+          "available": 1
+        },
+        {
+          "namespace": "openshift-kube-controller-manager-operator",
+          "name": "kube-controller-manager-operator",
+          "expected": 1,
+          "ready": 1,
+          "available": 1
+        },
+        {
+          "namespace": "openshift-kube-scheduler-operator",
+          "name": "openshift-kube-scheduler-operator",
+          "expected": 1,
+          "ready": 1,
+          "available": 1
+        }
+      ],
+      "temporaryPDBChangeDuringAcceptance": {
+        "originalMinAvailable": 2,
+        "temporarilyLoweredTo": 1,
+        "allRestoredTo": 2,
+        "includedInShippingScripts": false
+      },
+      "functionalAcceptance": "pending",
+      "tokenReadFailureRootCause": "not-yet-confirmed"
+    }
+  }
+}

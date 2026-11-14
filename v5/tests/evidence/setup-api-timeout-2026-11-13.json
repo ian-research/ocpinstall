@@ -1,0 +1,15 @@
+{
+  "state": "passed",
+  "checkedAtUTC": "2026-11-13T02:16:59.996082+00:00",
+  "wrapperSha256": "a436ac58e28cea1d27fe33449497a0aa35a60eeb377e58ff595fbe9f52969676",
+  "stalledLocalHTTP": {
+    "requestTimeoutSeconds": 30,
+    "elapsedSeconds": 30.06,
+    "nonzeroExit": true,
+    "deadlineReported": true,
+    "usesClusterCredentials": false
+  },
+  "liveClusterReadyzPassed": true,
+  "clusterMutated": false,
+  "testServerBoundToLoopbackOnly": true
+}

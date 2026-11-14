@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "result": "PASS",
+  "reviewedAtUTC": "2026-11-13T21:55:24.462036+00:00",
+  "os": {
+    "arch": "x86_64",
+    "id": "rhel",
+    "major": "10",
+    "profile": "rhel10",
+    "version": "10.2"
+  },
+  "dnfVersion": "4.20.0",
+  "installedSoftware": [
+    "python3-3.12.16-2.el10_3.x86_64",
+    "python3-pyyaml-6.0.1-19.el10.x86_64",
+    "python3-pip-23.3.2-11.el10_2.noarch",
+    "haproxy-3.0.5-7.el10.x86_64",
+    "bind-9.18.33-30.el10_3.1.x86_64",
+    "skopeo-1.24.0-3.el10_3.x86_64",
+    "docker-ce-29.9.3-1.el10.x86_64",
+    "docker-ce-cli-29.9.3-1.el10.x86_64",
+    "containerd.io-2.4.2-4.el10.x86_64",
+    "docker-compose-plugin-5.7.1-1.el10.x86_64"
+  ],
+  "systemPyYAML": "6.0.1",
+  "actualServicesBranch": "v4.22 (shared Helper functions, release 4.22.22); no cluster installation",
+  "v5Scope": "Official 5.0.1 tool ABI on the updated RHEL10 host, plus shared-source regression; no independent 5.0 Helper initialization",
+  "rpm": {
+    "retainedPayloadFiles": 374,
+    "originalPathsAndSHA256Unchanged": true,
+    "fullLocalGPGTransactionTestPassed": true,
+    "realLocalRepoInstallPassed": true,
+    "otherDNFPluginsRetainedForLocalTransactions": true,
+    "awsMetadataPluginSkippedOnlyForLocalTransactions": true,
+    "privateTransactionCacheIsolation": true
+  },
+  "services": {
+    "selinuxEnforcing": true,
+    "dnsForwardReverseWildcard": true,
+    "ntpStratum": 10,
+    "ntpQueriedFromAllowedNodeNamespace": true,
+    "haproxySyntheticPorts": [
+      6443,
+      22623,
+      443,
+      80
+    ],
+    "haproxyTLSVerified": true,
+    "haproxyStats": true,
+    "httpPublicDummyIgnition": 200,
+    "httpPrivatePathRejected": true,
+    "nfsActualV4MountWriteRead": true,
+    "nfsNormallyUnmounted": true,
+    "dockerCgroupV2": true,
+    "HarborVersion": "2.12.2",
+    "HarborAllComponentsHealthy": true,
+    "HarborProjectCreated": true,
+    "HarborLocalImagePushPull": true,
+    "OCIEmptyLayoutManifestConfigAndLayersPreserved": true
+  },
+  "tools": {
+    "releases": [
+      "4.22.22",
+      "5.0.1"
+    ],
+    "ocKubectlHardlink0755": true,
+    "fileELFx86_64": true,
+    "lddNoMissingLibraries": true,
+    "actualVersionsAndMirrorHelpExitZero": true,
+    "artifactBuildTarget": "rhel9",
+    "validatedOn": "rhel10.2",
+    "rhel10NativeArtifactClaim": false
+  },
+  "nativeMirrorIO": {
+    "images": 1,
+    "source": "goharbor/nginx-photon:v2.12.2 from the verified Harbor offline installer; no external pull",
+    "exportRelocationFreshCacheImportPassed": true,
+    "originalExportAndCachePathsAbsent": true,
+    "actualNamespaceScopedITMSParsed": true,
+    "importedManifestByteIdentical": true,
+    "imageDigest": "sha256:fa220da8e978089deaf804f53ed8caf7659826d0482f613a76c5f4104a559e16",
+    "allLayerDescriptorsMatch": true,
+    "TLSVerified": true,
+    "platformOrOperatorsMirrored": false
+  },
+  "network": {
+    "testUnitsDenyExternalEgress": true,
+    "allowedDestinations": "loopback, isolated fixture segment and exact local Harbor endpoint only",
+    "dockerDaemonAllowedOnlyExactOwnedLocalPeers": true,
+    "localHarborTrustedTLSHTTP": "401",
+    "externalPinnedIPConnectExit": 28,
+    "externalHTTP": "000",
+    "sameExternalTargetUnconfinedControlHTTP": "401",
+    "newPublicHelperPortsOpened": false
+  },
+  "kernelRecovery": {
+    "runningBefore": "6.12.0-211.67.1.el10_2.x86_64",
+    "runningAfter": "6.12.0-264.16.1.el10_3.x86_64",
+    "originalKernelMissingXtAddrtype": true,
+    "installedDefaultKernelHasModule": true,
+    "sameHelperNormallyRebooted": true,
+    "sameOfflinePackageResumed": true,
+    "productAutomaticallyReboots": false,
+    "diagnosticAdded": true
+  },
+  "independentReview": {
+    "canonicalProductCodeFilesVerified": 90,
+    "allActualPhasesExitZero": true,
+    "allTenFunctionalChecksPass": true,
+    "sourceHashManifestVerified": true
+  },
+  "boundary": {
+    "clusterState": "not-generated",
+    "operatorState": "not-touched",
+    "kvmOrVMs": "none",
+    "firewalld": "skipped-explicit, AWS approved",
+    "physicalDVDISOTested": false,
+    "fullPlatformPayloadOrLargeOperatorPackageRetestedOnRHEL10": false,
+    "performanceQualification": false
+  },
+  "localGuardRegression": {
+    "tests": 28,
+    "passed": true,
+    "runtimeDriverSHA256": "fd1513c8bc6ea758e4c62ec8809cbe9ac43945ab831a6e60dadeb734642d09a8"
+  },
+  "privateEvidenceArchiveSHA256": "fe6ac4d7872105f7a4a57fef554a6f8733173a307e861649d78485711ac83bf6",
+  "normalHarborStopAfterAcceptance": true,
+  "privateEvidencePublished": false,
+  "sanitization": "Explicit allowlist: no AWS resource/account IDs, IPs, domain/topology, credentials or private keys"
+}

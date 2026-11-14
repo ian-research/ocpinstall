@@ -1,0 +1,59 @@
+{
+  "state": "normal-test-instance-cleanup-verified",
+  "platformVersion": "5.0.1",
+  "operatorVersion": "5.0.0",
+  "scope": "recovery of the test MCE instance; does not establish MCE initialization, ACM Hub or policy functionality",
+  "officialRegistrationSourceCommit": "ec745b6c194ce437e7e82baa3f1225af53f16924",
+  "restoredDefinitions": [
+    {
+      "name": "managedclusters.cluster.open-cluster-management.io",
+      "sourceSha256": "143d2c1c5e036053cab974682264728bab4cb077326f06fc4011cfc91fab8d06"
+    },
+    {
+      "name": "managedclusteraddons.addon.open-cluster-management.io",
+      "sourceSha256": "3b9370727c0a932f703a9bade04b4a1786c8cdb69f517743813371e7ddc6024e"
+    },
+    {
+      "name": "managedclustersetbindings.cluster.open-cluster-management.io",
+      "sourceSha256": "b6820bb204cbb892e9bae1bd7912284836c70e0645ea6046e8235d53902e28c1"
+    },
+    {
+      "name": "placements.cluster.open-cluster-management.io",
+      "sourceSha256": "14ca11be0d273a3179c118e364cf260461a599757f4cfaa4b65635eb93210f64"
+    },
+    {
+      "name": "placementdecisions.cluster.open-cluster-management.io",
+      "sourceSha256": "a0d8cf0001e13d58b85063466940b3308d4990f1f74a0e4f9002fe15f227a694"
+    }
+  ],
+  "temporaryDeletingControllerScale": {
+    "original": 3,
+    "paused": 0,
+    "restored": 3,
+    "automaticResumeGuard": true
+  },
+  "publicCASource": "retained-original-registration-webhook-common-ca",
+  "systemSetsCleanedByOriginalController": true,
+  "agentPatchedFinalizers": false,
+  "corePDBsModified": false,
+  "vendorBinaryModified": false,
+  "repairStartedAtUTC": "2026-11-13T03:25:27.900705+00:00",
+  "controllerRestoredAtUTC": "2026-11-13T03:28:05.171443+00:00",
+  "independentVerification": {
+    "checkedAtUTC": "2026-11-13T03:39:11.926229+00:00",
+    "mode": "read-only",
+    "resources": {
+      "mce": {
+        "readState": "object-not-found"
+      },
+      "clusterManager": {
+        "readState": "object-not-found"
+      },
+      "hubNamespace": {
+        "readState": "object-not-found"
+      }
+    },
+    "temporaryControllerResumeConfirmed": true,
+    "normalInstanceRemovalVerified": true
+  }
+}

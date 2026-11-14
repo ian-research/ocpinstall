@@ -1,0 +1,28 @@
+{
+  "state": "passed-basic-vm",
+  "collectedAtUTC": "2026-11-12T21:29:14.855959+00:00",
+  "platformVersion": "5.0.1",
+  "virtualMachine": {
+    "name": "offline-rhel9-smoke",
+    "namespace": "offline-virtualization-smoke",
+    "cpu": 1,
+    "memory": "2Gi",
+    "image": "registry.redhat.io/rhel9/rhel-guest-image@sha256:18019682bc8c7ca8e682a86d3df473eceae2543f32b319bd15aa20f83deeff12",
+    "node": "master3.poc.ocp5.test"
+  },
+  "guestOSInfo": {
+    "id": "rhel",
+    "name": "Red Hat Enterprise Linux",
+    "prettyName": "Red Hat Enterprise Linux 9.9 (Plow)",
+    "version": "9.9 (Plow)",
+    "versionId": "9.9",
+    "kernelRelease": "5.14.0-741.20.1.el9_9.x86_64",
+    "machine": "x86_64"
+  },
+  "guestAgentEvidence": true,
+  "serialEvidence": false,
+  "stoppedAfterEvidence": true,
+  "scope": "single temporary container-disk VM; no persistent storage or migration acceptance",
+  "masterVMSizesChanged": false,
+  "initialPlacementFinding": "master1 lacked requested-memory headroom; test VM moved to master3 with capacity; product replica counts retained"
+}

@@ -1,0 +1,10 @@
+{
+  "state": "passed",
+  "collectedAtUTC": "2026-11-12T21:06:13.028904+00:00",
+  "scope": "local HTTPS fixture; actual curl; simulated transient 503 then existing-project 409",
+  "functionSha256": "27c9fa8ebaebcc97a04cbcc75ff0291da5ebf64a39c3a8a2ea5cfc1f0437b5a8",
+  "bothVersionsHaveIdenticalFunction": true,
+  "requests": 2,
+  "authValid": true,
+  "projectPayloadValid": true
+}
