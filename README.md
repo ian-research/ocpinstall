@@ -1,48 +1,19 @@
-# 按 OpenShift 版本选择入口
-
-| 平台 | 完整离线准备、安装和配置 | Operator 说明 | 实测范围 |
-|---|---|---|---|
-| 4.22.22 | [4.22 完整流程](v4.22/DELIVERY.md) | [4.22 Operator](v4.22/OPERATORS.md) | [4.22 验证记录](v4.22/VALIDATION.md) |
-| 5.0.1 | [5.x 完整流程](v5/DELIVERY.md) | [5.x Operator](v5/OPERATORS.md) | [5.x 验证记录](v5/VALIDATION.md) |
-
-新版本分别保存在 `v4.22/` 和 `v5/`，不覆盖旧版脚本。运行对应目录的 `prepare-operators.sh`，首层选择完整交付或仅 Operator；完整包生成 `verify.sh`、`install.sh`、`configure.sh` 三个入口。完成下载不代表所有组件已获运行验收，请先查看相应验证记录。
-
-下面保留原有根目录脚本的历史说明；新部署请从上表选择对应版本。
-
----
-
 # ocpinstall
-Use bash scripts for quick and easy install openshift
 
-该脚本会配置镜像仓库，DNS域名解析，Haproxy，chronyd，openshift ignition启动文件
+按目标 OpenShift 版本选择对应目录；各版本的脚本及说明独立保存。
 
-在使用该脚本前，您需要首先离线下载openshift安装包，离线下载方式参考
-https://mp.weixin.qq.com/s/tptiCSCIa9JJj3aMDpUJow
-将脚本内的imagesetconfigurtaion.yaml部分替换为离线下载openshift包时使用的yaml，确保两边内容一致。
-<img width="858" alt="image" src="https://github.com/user-attachments/assets/9f2faaa9-bb0c-42b2-8856-1a93c036b871" />
+| 平台 | 安装与配置说明 | Operator 说明 | 验证范围 |
+|---|---|---|---|
+| 4.18.10（历史版） | [4.18 原始脚本与说明](v4.18/README.md) | 沿用原有配置脚本 | 历史归档，保留原脚本 |
+| 4.22.22 | [4.22 完整离线流程](v4.22/DELIVERY.md)、[README](v4.22/README.md) | [4.22 Operator](v4.22/OPERATORS.md) | [4.22 验证记录](v4.22/VALIDATION.md) |
+| 5.0.1 | [5.x 完整离线流程](v5/DELIVERY.md)、[README](v5/README.md) | [5.x Operator](v5/OPERATORS.md) | [5.x 验证记录](v5/VALIDATION.md) |
 
-脚本需运行在rhel9操作系统之上，请先最小化安装rhel9，确保opt目录有至少200G以上可用空间，mnt目录有100G以上可用空间。
+```text
+v4.18/  原有 4.18.10 安装、配置脚本和历史说明
+v4.22/  4.22.22 离线准备、安装和配置
+v5/     5.0.1 离线准备、安装和配置
+```
 
-将rhel9的iso挂载到服务器中，脚本将会把/dev/sr0挂载到/mnt/iso目录下，并配置本地yum repo
+4.18 的两个 `x-*.sh` 脚本已归档至 `v4.18/`，名称和内容保持原样，使用方式见该目录 README。
 
-脚本将通过hostname -i命令获取首个ip作为后续的配置使用的ip，因此在运行脚本时，请确保仅有一个ip
-
-事先准备的离线包包括，请都存放在opt目录下：
-  
-  ["离线镜像包"]="/opt/mirror_000001.tar" 参考https://mp.weixin.qq.com/s/tptiCSCIa9JJj3aMDpUJow
-  
-  ["Harbor安装包"]="/opt/harbor-offline-installer-v2.12.2.tgz" 下载地址 https://github.com/goharbor/harbor/releases
-  
-  ["oc-mirror包"]="/opt/oc-mirror.rhel9.tar.gz" 下载地址 https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.18.10/
-  
-  ["openshift-client包"]="/opt/openshift-client-linux-4.18.10.tar.gz"  下载地址 https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.18.10/
-  
-  ["openshift-install包"]="/opt/openshift-install-linux-4.18.10.tar.gz" 下载地址 https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.18.10/
-  
-  ["docker-ce安装包"]="/opt/docker-ce.tar.gz"  包内容包括 containerd.io-1.7.27-3.1.el9.x86_64.rpm docker-ce-28.0.4-1.el9.x86_64.rpm docker-ce-rootless-extras-28.0.4-1.el9.x86_64.rpm docker-buildx-plugin-0.22.0-1.el9.x86_64.rpm docker-ce-cli-28.0.4-1.el9.x86_64.rpm docker-compose-plugin-2.34.0-1.el9.x86_64.rpm 请自行打包并上传到对应的路径
-
-脚本运行之后会检查对应的离线文件是否存在，如果不存在则会报错退出
-
-脚本会交互询问openshift集群所使用的域名，harbor的域名，密码，bootsrap的IP，master节点的IP，并将对应的地址配置到DNS服务中。
-
-等待脚本运行结束，使用rhcos.iso启动bootstrap节点，master节点，根据脚本提示执行后续命令完成安装。
+4.22 和 5.x 运行对应目录的 `prepare-operators.sh`，首层选择完整交付或仅 Operator；完整包生成 `verify.sh`、`install.sh`、`configure.sh` 三个入口。完成下载不代表所有组件均已获运行验收，请查看相应版本的验证记录。
