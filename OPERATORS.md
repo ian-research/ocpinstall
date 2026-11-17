@@ -1,5 +1,7 @@
 # Operator 离线脚本版本导航
 
+4.18 历史脚本已单独归档至 [`v4.18/`](v4.18/README.md)，沿用原有安装和配置方式。以下交互离线入口适用于 4.22 和 5.x。
+
 | OpenShift 版本 | 交互入口 | 使用说明 | 导入后的集群配置 |
 |---|---|---|---|
 | 4.22 | `bash v4.22/prepare-operators.sh` | [4.22 README](v4.22/README.md) | `v4.22/setup-cluster.sh`（独立包也可 `apply-operators.sh`） |
@@ -11,4 +13,4 @@
 
 **离线包可移动到另一台机器的不同路径，顶层目录也可改名；包内目录结构需完整保留。** 导入时指定新 `--bundle`，不需要源端缓存。请带上 `catalogs/`、`images/` 和全部 JSON 清单，不只复制 tar。凭据放在包外，导入端使用同一份 oc-mirror 二进制。
 
-完整包模式同时收集平台、工具、RHCOS ISO、Helper 软件和 Operator，并生成可搬迁的安装/配置入口：见 [4.22 完整流程](v4.22/DELIVERY.md)、[5.x 完整流程](v5/DELIVERY.md)。实际验收范围分别见各目录 `VALIDATION.md`；4.22 尚未完成实机验收，5.0 的成功不能替代它。
+完整包模式同时收集平台、工具、RHCOS ISO、Helper 软件和 Operator，并生成可搬迁的安装/配置入口：见 [4.22 完整流程](v4.22/DELIVERY.md)、[5.x 完整流程](v5/DELIVERY.md)。实际验收范围分别见 [4.22 验证记录](v4.22/VALIDATION.md) 和 [5.x 验证记录](v5/VALIDATION.md)，各版本和组件按实际记录区分。
