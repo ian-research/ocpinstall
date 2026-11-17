@@ -1,0 +1,16 @@
+{
+  "source": "https://raw.githubusercontent.com/red-hat-data-services/rhoai-disconnected-install-helper/9d5a7fcde1061de090ddc0b2c3b58086698ef4b1/rhoai-3.5.3-imagesetconfig.yaml",
+  "version": "3.5.3",
+  "scope": "NVIDIA CUDA Workbenches / Python 3.12; not a full AI feature mirror",
+  "images": [
+    "registry.redhat.io/rhoai/odh-th06-cuda130-torch210-py312-rhel9@sha256:c18bb50a0082f9258afeb95cf9d8bbc6af7a48e712a7587073f2b281ca2200b8",
+    "registry.redhat.io/rhoai/odh-workbench-jupyter-minimal-cuda-py312-rhel9@sha256:8bacb849ae17424c4b613ed50089ae24b7ea69e92cdb4f558f561d2031e153b9",
+    "registry.redhat.io/rhoai/odh-workbench-jupyter-minimal-cuda-py312-rhel9@sha256:bd15088088dd6258da62e6658fa66790036acc6bb9af43bdcc240b389ef52f47",
+    "registry.redhat.io/rhoai/odh-workbench-jupyter-pytorch-cuda-py312-rhel9@sha256:6ccdf5e6cf1cbd46c5f844738889e671130c513de6bd64a48029fd4d177c0a82",
+    "registry.redhat.io/rhoai/odh-workbench-jupyter-pytorch-cuda-py312-rhel9@sha256:a73219bf01b74d62d7a096652274da08b5101d7911ba1d50319d663b63746ddc",
+    "registry.redhat.io/rhoai/odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-rhel9@sha256:3e8f45e17ec6d8ad6150835d8566a611de83fde0a45c56ce09efa02b1074c480",
+    "registry.redhat.io/rhoai/odh-workbench-jupyter-pytorch-llmcompressor-cuda-py312-rhel9@sha256:3fe23bc6e7689dc4d825a1d44f05d226009caebcf9602ec1ec7529f855af067b",
+    "registry.redhat.io/rhoai/odh-workbench-jupyter-tensorflow-cuda-py312-rhel9@sha256:8036dd68f3c12b17cd6fe5cd2a37462541328b49e1d8fa086e2c114dc5f2e11c",
+    "registry.redhat.io/rhoai/odh-workbench-jupyter-tensorflow-cuda-py312-rhel9@sha256:9180767bd0ff3bae9827c1e584036cdfb442467252328b8b89058b2b907f996a"
+  ]
+}

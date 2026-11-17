@@ -1,6 +1,6 @@
 # 验证范围与交付状态
 
-更新：2026-11-14。本目录固定目标 4.22.22 / amd64。4.22.22 的安装、配置与 LVMS/AI CPU 基础功能已分别取得实际运行证明。以下逐项区分实际执行、代码检查和仍待验收；不以下载/导入成功代替组件功能验收。
+更新：2026-11-17。本目录固定目标 4.22.22 / amd64，为优先交付目标。4.22.22 的安装、配置与 LVMS/AI CPU 基础功能已分别取得实际运行证明。以下逐项区分实际执行、代码检查和仍待验收；不以下载/导入成功代替组件功能验收。
 
 | 范围 | 结果 |
 |---|---|
@@ -12,7 +12,7 @@
 | 共享引擎在 5.0.1 的 Operator 可搬迁导出/导入 | Web Terminal 1.17.2 + DevWorkspace 1.0.0，10 个镜像；全新缓存、不同含空格路径、只转移校验清单内文件、外网阻断的导入通过 |
 | 5.0.1 的 Operator 实际使用 | 两个 CSV 均 Succeeded；创建 DevWorkspace 达到 Running，并成功执行标记命令 |
 | 共享引擎在 5.0.1 的完整 delivery 打包 | 完整组合导出与换路径整包校验已通过，收集 359 个 Helper RPM；新路径下从平台归档重建规则、阻断外网导入、安装后配置通过，MCP 收敛，原有工作空间仍 Running |
-| 本地回归 | 两版分别 190 项 Python 检查通过；Bash 语法与 ShellCheck warning 级别检查通过 |
+| 本地回归 | 2026-11-17 两版各 224 项 Python 检查通过，依赖解析测试全部执行、无跳过；Bash 语法、ShellCheck warning 和 Python 未定义名称检查通过 |
 | Helper RPM 事务与文件保留 | 新 AWS/RHEL 9.6 环境发现 glibc 语言包反向依赖冲突及 DNF 清理 download-only 目录的问题；缓存隔离修复后，本地 GPG 完整事务预检和整包校验通过。4.22 Helper 已真实安装全部所需软件并进入平台镜像导入，394 个 RPM 的路径及 SHA256 与安装前完全一致；源导出缓存保持隔离。LVMS/AI 的后续真实功能验收已通过，见下方独立记录 |
 | RHEL 10 Helper | RHEL 10.2 的 4.22 分支 Helper 函数实际验收通过：374 RPM 离线安装及保留、DNS/NTP/HAProxy/HTTP/NFS、SELinux、Harbor、本地镜像和原生 oc-mirror 搬迁导入；5.0.1 工具 ABI 通过。未另跑 5.x Helper 初始化，未重复部署集群；[详细范围](RHEL10-HELPER.md) |
 | 共享 Helper 初始化流程在 5.0.1 | RHEL 9.6 虚拟机完成 359 RPM 本地 GPG 安装、默认 SELinux/firewalld、Docker/Harbor、平台离线导入及 Ignition/handoff 生成；未启动第二套集群节点，物理服务器尚待单独验收 |
@@ -84,3 +84,20 @@ AI 3.5.2 的 Dashboard 与 CPU Workbenches Managed，其余组件 Removed。真�
 ## 2026-11-14：RHEL 10 Helper 独立验收
 
 [Helper 实测与恢复方法](RHEL10-HELPER.md) 和 [精简证据](tests/evidence/rhel10-helper-2026-11-14.json) 已更新。全部十项功能检查和实际受限进程退出均通过，独立复核确认 Harbor 各组件健康、374 个 RPM 和全部交付文件未变、原生导入 manifest 字节一致，90 个被测代码文件与当前待发布版本一致。已正常停止测试 Harbor，保留私有证据。物理 firewalld/DVD、5.x 独立 Helper 初始化及 RHEL 10 上的完整集群重装不在本次范围。
+
+
+## 2026-11-17：离线依赖与 x86_64 下载准备核对
+
+最终联合计划包含 **23 个 Operator、370 个去重镜像引用**：AI 3.5.2、NVIDIA GPU Operator 26.7.2、NFD 4.22.0，Virtualization 4.22.16、MTV 2.12.10、完整 ODF 4.22.7-rhodf 配套组和 LSO，以及 NHC/SNR、OpenTelemetry、Web Terminal/DevWorkspace。另包含五种系统 containerDisk，自动补齐 CUDA 工作台、Gateway 与目标 DTK。
+
+**368 个引用通过 linux/amd64 检查，2 个仅其他架构的引用按要求跳过，失败为 0。** 两条跳过项分别为 ARM 专用的 Virtualization 关联镜像和仅 s390x/ppc64le 的 AI vLLM 关联镜像；厂商 CSV/relatedImages 保持完整，未伪造 x86 检查结果。
+
+检查从真实官方 catalog 的已校验元数据层开始，执行生产依赖解析、精确版本 ImageSetConfiguration 生成、归档镜像引用枚举和厂商示例交接生成。系统镜像使用真实 HTTPS Registry API 读取 manifest/config，通过生产摘要和 amd64 选择校验；本机未运行原生 skopeo。逐引用校验源 manifest/config 摘要，HEAD 检查所选 amd64 manifest 的每个镜像层；未下载这些工作负载/驱动镜像的完整层。原生 `oc adm release info` 另确认目标平台包含 CNO、Multus 和 DTK。
+
+新交互支持系统镜像多选和 tag/digest、自定义路径、ODF 可选 LSO，以及 AI NVIDIA 组的 yes/no。新 AI 计划默认准备 GPU 配套；原有 CPU 包不会原地升级为 GPU 包。NHC 默认补齐 SNR，Web Terminal 的 DevWorkspace 由目录依赖递归补齐。实际导入后生成系统镜像本地地址报告，重试不会沿用失败导入前的旧报告，dry-run 不伪造报告。
+
+两版各 224 项回归全部执行并通过，包含跨目录/CEL 解析、旧计划兼容、完整交付参数转发、真实目标映射、缺包/错版本/未知平台补丁拒绝，以及 GPU 参考清单的功能范围。脚本/配置默认版本和 4.18 历史目录保持独立。
+
+**本轮未为新组合运行全量原生 oc-mirror 导出/导入，未新增 AWS 资源、重装集群或做 GPU、MTV、ODF 运行验收。** 归档真正下载后仍须通过完整 descriptor/config/layer 检查。历史平台、CPU AI 和 VM 的功能证据保留其原范围，不能代替新增 GPU 路径的验收。
+
+[逐镜像核对证据](tests/evidence/offline-dependencies-2026-11-17.json) 包含实际目录/元数据层摘要、选包版本、计划指纹、平台内置镜像、所选 amd64 manifest 及逐项检查结果、生产代码 SHA256。[完整依赖梳理](DEPENDENCIES.md) 列出必需项、按功能选配项和版本限制。

@@ -17,6 +17,7 @@ import http.client
 import tempfile
 
 import helper_profile
+import guest_images
 import offline
 import operator_profile
 
@@ -276,9 +277,10 @@ def snapshot_scripts(root):
         raise ValueError('scripts 快照路径必须是本包内的普通目录')
     entrypoints = {'install-cluster.sh', 'setup-cluster.sh', 'prepare-offline.sh',
                    'prepare-operators.sh', 'apply-operators.sh',
-                   'README.md', 'DELIVERY.md', 'OPERATORS.md', 'VALIDATION.md', 'RHEL10-HELPER.md'}
+                   'README.md', 'DELIVERY.md', 'OPERATORS.md', 'DEPENDENCIES.md', 'VALIDATION.md', 'RHEL10-HELPER.md'}
     configuration = {'versions.sh', 'ai-3.5.2-cpu-images.json', 'ai-3.5.3-cpu-images.json',
-                     'ocp-4.22.22-gateway-images.json'}
+                     'ai-3.5.2-nvidia-images.json', 'ai-3.5.3-nvidia-images.json',
+                     'ocp-4.22.22-gpu-images.json', 'ocp-4.22.22-gateway-images.json'}
     candidates = [SOURCE / name for name in entrypoints]
     candidates += [SOURCE / 'config' / name for name in configuration]
     candidates += list((SOURCE / 'lib').glob('*.py')) + list((SOURCE / 'lib').glob('*.sh'))
@@ -392,6 +394,18 @@ def export(args, root, cache):
     intent = {'version': operator_profile.release(), 'helperMode': args.helper_mode,
               'operators': not args.platform_only, 'select': args.select, 'catalog': args.catalog,
               'image': args.image, 'archiveSize': args.archive_size}
+    for key, value in (('guestImages', getattr(args, 'guest_image', [])),
+                       ('guestImageRefs', getattr(args, 'guest_image_ref', []))):
+        if value:
+            intent[key] = value
+    if getattr(args, 'odf_local_storage', None) is not None:
+        intent['odfLocalStorage'] = args.odf_local_storage
+    if getattr(args, 'ai_nvidia', None) is not None:
+        intent['aiNvidia'] = args.ai_nvidia
+    if args.platform_only and (getattr(args, 'guest_image', []) or getattr(args, 'guest_image_ref', [])
+                              or getattr(args, 'odf_local_storage', None) is not None
+                              or getattr(args, 'ai_nvidia', None) is not None):
+        raise ValueError('系统镜像、ODF 和 AI 选项需要完整包包含 Operator，不能与 --platform-only 混用')
     path = root / 'delivery-plan.json'
     if not path.exists() and any(p.name not in ('.delivery.lock', 'delivery-state.json') for p in root.iterdir()):
         raise ValueError('首次准备请选择空目录，避免将既有文件或凭据混入交付包')
@@ -409,6 +423,14 @@ def export(args, root, cache):
         operator_command += ['--catalog', option]
     for option in args.select:
         operator_command += ['--select', option]
+    for option in getattr(args, 'guest_image', []):
+        operator_command += ['--guest-image', option]
+    for option in getattr(args, 'guest_image_ref', []):
+        operator_command += ['--guest-image-ref', option]
+    if getattr(args, 'odf_local_storage', None) is not None:
+        operator_command += ['--odf-local-storage' if args.odf_local_storage else '--no-odf-local-storage']
+    if getattr(args, 'ai_nvidia', None) is not None:
+        operator_command += ['--ai-nvidia' if args.ai_nvidia else '--no-ai-nvidia']
     if not args.platform_only:
         stage('operator-plan')
         command = operator_command[:2] + ['plan'] + operator_command[2:]
@@ -524,6 +546,9 @@ def main():
     parser.add_argument('--catalog', action='append', default=[])
     parser.add_argument('--select', action='append', default=[])
     parser.add_argument('--image', action='append', default=[])
+    guest_images.add_arguments(parser)
+    parser.add_argument('--ai-nvidia', action=argparse.BooleanOptionalAction, default=None)
+    parser.add_argument('--odf-local-storage', action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument('--archive-size', type=int, default=20)
     parser.add_argument('--state-root')
     parser.add_argument('--kubeconfig')

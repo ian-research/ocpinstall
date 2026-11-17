@@ -1,8 +1,12 @@
-# OpenShift 5 离线三节点安装
+# OpenShift 5 离线三节点安装（预览）
 
 **完整离线准备入口：** `bash v5/prepare-operators.sh`，选择“准备完整离线包”。包含 OpenShift 本体、工具、RHCOS、Helper 软件和 Operator；搬迁后依次运行 `verify.sh`、`install.sh`、`configure.sh`。详见 [完整交付流程](DELIVERY.md) 和 [实测范围](VALIDATION.md)。
 
 本目录从项目原有 4.x 脚本派生，目标为 **OpenShift 5.0.1 / amd64**，采用裸金属 UPI、三个 Master、零 Worker。4.x 的入口、配置和说明保持原样。版本固定在 `config/versions.sh`，不会自动跟随 stable 更新。
+
+优先交付目标为独立的 [4.22 版](../v4.22/README.md)。本版预览支持 OCP-V 5.0、MTV 5.0 的下载计划，并提供与 4.22 相同的 RHEL/Fedora/CentOS Stream containerDisk 选择。Operator 使用各自真实版本，不强制改成 5.0。当前目录中的 ODF 4.22 声明 `maxOpenShiftVersion=4.23`，不兼容 OCP 5.0；AI 也尚无已核实支持组合。这些限制会明确报出，见 [Operator 说明](OPERATORS.md#ocp-vmtvodf-下载组合)。本轮不新增组件安装测试。
+
+5.0 certified 目录目前也没有 NVIDIA GPU Operator；不能直接借用 4.22 GPU 组。NHC/SNR、Web Terminal、OpenTelemetry 等常用包与平台 Multus 的核对范围见 [依赖梳理](DEPENDENCIES.md)。
 
 | 入口 | 用途 |
 | --- | --- |

@@ -1,0 +1,1311 @@
+{
+  "schema": "ocpinstall/offline-dependency-review/v1",
+  "checkedOn": "2026-11-17",
+  "targetVersion": "5.0.1",
+  "architecture": "linux/amd64",
+  "scope": "Dependency closure, image configuration and registry readability; no installation acceptance",
+  "catalogs": [
+    {
+      "alias": "redhat",
+      "source": "registry.redhat.io/redhat/redhat-operator-index@sha256:5372d22667e8f14ad3af74477cb5308c3045e2b4c88e52793670510e1c5934b3",
+      "pinned": "registry.redhat.io/redhat/redhat-operator-index@sha256:5372d22667e8f14ad3af74477cb5308c3045e2b4c88e52793670510e1c5934b3",
+      "metadataLayerDigest": "sha256:f546f475c2fac9889cf0e2d650d9f4ec46a000e414c0308040515b158833d4ed",
+      "metadataFiles": 342,
+      "metadataFileListSHA256": "4811640e84366f862a5ae1d8ef65727a82657b3c516afe5db9a26109fc534b6d"
+    }
+  ],
+  "planHash": "2c18a9c082bfdb3539a0034511375a92c740dce1f1e3d7df70d4481b9bb4e206",
+  "requestedRoots": [
+    "redhat/local-storage-operator",
+    "redhat/mtv-operator",
+    "redhat/node-healthcheck-operator",
+    "redhat/opentelemetry-product",
+    "redhat/self-node-remediation",
+    "redhat/web-terminal",
+    "redhat/kubevirt-hyperconverged"
+  ],
+  "selectedPackages": [
+    {
+      "catalog": "redhat",
+      "package": "node-healthcheck-operator",
+      "channel": "stable",
+      "version": "5.8.0",
+      "bundle": "node-healthcheck-operator.v5.8.0",
+      "image": "registry.redhat.io/workload-availability/node-healthcheck-operator-bundle@sha256:95d4dff3ff77ec14e1c227d0012625c93fa06d4bfdc460c89bb2e74ebfafbb21",
+      "relatedImages": 4,
+      "declaredDependenciesSatisfied": true
+    },
+    {
+      "catalog": "redhat",
+      "package": "self-node-remediation",
+      "channel": "stable",
+      "version": "5.8.0",
+      "bundle": "self-node-remediation.v5.8.0",
+      "image": "registry.redhat.io/workload-availability/self-node-remediation-operator-bundle@sha256:94856dec8ef203bc886807235ede572147feb371a1745719a0d978dd4bbf988c",
+      "relatedImages": 2,
+      "declaredDependenciesSatisfied": true
+    },
+    {
+      "catalog": "redhat",
+      "package": "kubevirt-hyperconverged",
+      "channel": "stable",
+      "version": "5.0.0",
+      "bundle": "kubevirt-hyperconverged-operator.v5.0.0",
+      "image": "registry.redhat.io/container-native-virtualization/hco-bundle-registry-rhel9@sha256:0bc550e13de8ec98b97d8f57474621779715dc15b80a32c955844b63faf021fd",
+      "relatedImages": 69,
+      "declaredDependenciesSatisfied": true
+    },
+    {
+      "catalog": "redhat",
+      "package": "mtv-operator",
+      "channel": "release-v5.0",
+      "version": "5.0.0",
+      "bundle": "mtv-operator.v5.0.0",
+      "image": "registry.redhat.io/migration-toolkit-virtualization/mtv-operator-bundle@sha256:69c722fc321d7016b82dfe10487497e1be56306863670febd1c35fc36b0bc396",
+      "relatedImages": 21,
+      "declaredDependenciesSatisfied": true
+    },
+    {
+      "catalog": "redhat",
+      "package": "local-storage-operator",
+      "channel": "stable",
+      "version": "5.0.0-202611030132",
+      "bundle": "local-storage-operator.v5.0.0-202611030132",
+      "image": "registry.redhat.io/openshift5/ose-local-storage-operator-bundle@sha256:6fbbeccc5a3b788f12f6d4cd7fdd84f72029681f73cc9215713347294a898af1",
+      "relatedImages": 5,
+      "declaredDependenciesSatisfied": true
+    },
+    {
+      "catalog": "redhat",
+      "package": "web-terminal",
+      "channel": "fast",
+      "version": "1.17.2",
+      "bundle": "web-terminal.v1.17.2",
+      "image": "registry.redhat.io/web-terminal/web-terminal-operator-bundle@sha256:ba115046327065f2e34fc660e7f68f2418fecea4a07dd7e0c15ec995e4680664",
+      "relatedImages": 5,
+      "declaredDependenciesSatisfied": true
+    },
+    {
+      "catalog": "redhat",
+      "package": "devworkspace-operator",
+      "channel": "fast",
+      "version": "1.0.0",
+      "bundle": "devworkspace-operator.v1.0.0",
+      "image": "registry.redhat.io/devworkspace/devworkspace-operator-bundle@sha256:67b5841444cdbf9e469381c079222cdf10e869db80c7c6650370d060cff9b47d",
+      "relatedImages": 6,
+      "declaredDependenciesSatisfied": true
+    },
+    {
+      "catalog": "redhat",
+      "package": "opentelemetry-product",
+      "channel": "stable",
+      "version": "0.158.0-202611041238",
+      "bundle": "opentelemetry-operator.v0.158.0-202611041238",
+      "image": "registry.redhat.io/rhosdt/opentelemetry-operator-bundle@sha256:7867473d6b4ef90f868180421e0bf489c7d86031b8c7a3948592298625aa394c",
+      "relatedImages": 4,
+      "declaredDependenciesSatisfied": true
+    }
+  ],
+  "guestImages": [
+    {
+      "name": "centos-stream10",
+      "source": "quay.io/containerdisks/centos-stream:10",
+      "image": "quay.io/containerdisks/centos-stream@sha256:ab203e18a11dfd05508a84a3c6bd2a8e7971842b27f8dc8ff940550e5d4afdad",
+      "architecture": "amd64",
+      "type": "containerDisk",
+      "compressedBytes": 1038056887
+    },
+    {
+      "name": "centos-stream9",
+      "source": "quay.io/containerdisks/centos-stream:9",
+      "image": "quay.io/containerdisks/centos-stream@sha256:fee0bcb68009dbcf7d48fe0a702ceddb3a7ef12f8047c912baa7b81caa065908",
+      "architecture": "amd64",
+      "type": "containerDisk",
+      "compressedBytes": 1270392148
+    },
+    {
+      "name": "fedora",
+      "source": "quay.io/containerdisks/fedora:latest",
+      "image": "quay.io/containerdisks/fedora@sha256:3c9d3f5c2fac28126f333377c78a46a6de74ce75a93025d42a4c5cdcf09108da",
+      "architecture": "amd64",
+      "type": "containerDisk",
+      "compressedBytes": 604620324
+    },
+    {
+      "name": "rhel10",
+      "source": "registry.redhat.io/rhel10/rhel-guest-image:latest",
+      "image": "registry.redhat.io/rhel10/rhel-guest-image@sha256:bb7217cb637bf5ed40fc5f15c1e3e12220ada83d51827e1d3a30462323b0dc90",
+      "architecture": "amd64",
+      "type": "containerDisk",
+      "compressedBytes": 1071881998
+    },
+    {
+      "name": "rhel9",
+      "source": "registry.redhat.io/rhel9/rhel-guest-image:latest",
+      "image": "registry.redhat.io/rhel9/rhel-guest-image@sha256:62266fa71041d3eb87f5b12e5860029380c786caedf5b11c541539fd12f74148",
+      "architecture": "amd64",
+      "type": "containerDisk",
+      "compressedBytes": 1290935248
+    }
+  ],
+  "additionalImages": [
+    "quay.io/containerdisks/centos-stream@sha256:ab203e18a11dfd05508a84a3c6bd2a8e7971842b27f8dc8ff940550e5d4afdad",
+    "quay.io/containerdisks/centos-stream@sha256:fee0bcb68009dbcf7d48fe0a702ceddb3a7ef12f8047c912baa7b81caa065908",
+    "quay.io/containerdisks/fedora@sha256:3c9d3f5c2fac28126f333377c78a46a6de74ce75a93025d42a4c5cdcf09108da",
+    "registry.redhat.io/rhel10/rhel-guest-image@sha256:bb7217cb637bf5ed40fc5f15c1e3e12220ada83d51827e1d3a30462323b0dc90",
+    "registry.redhat.io/rhel9/rhel-guest-image@sha256:62266fa71041d3eb87f5b12e5860029380c786caedf5b11c541539fd12f74148"
+  ],
+  "imageReferencesSHA256": "415247b4c12475858832852ec866419489fa5d03f65a9ebad0ef72b65b3d65d8",
+  "registryAudit": {
+    "imageReferences": 119,
+    "passedAMD64": 119,
+    "skippedNonAMD64": 0,
+    "failed": 0,
+    "method": "TLS-verified source manifest/config GET with SHA256 checks, then every selected amd64 leaf layer HEAD; no full layer payload downloads",
+    "vendorRelatedImagesPreserved": true
+  },
+  "platformPayload": {
+    "source": "quay.io/openshift-release-dev/ocp-release@sha256:a43b861d912fad275f7c1c76cae38c2b5a33f4f1245807b376fe59707d3ef98a",
+    "nativeOcReleaseInfo": true,
+    "mirroredWithPlatformRatherThanOLM": {
+      "cluster-network-operator": "quay.io/openshift-release-dev/ocp-v5.0-art-dev@sha256:fbe6701dc0965c2d0387d86d55aa74e042a326f9be6e06e19e59a86afea99e7d",
+      "driver-toolkit": "quay.io/openshift-release-dev/ocp-v5.0-art-dev@sha256:b3df8e0b24c1baf58a3e17a72b66839f67de07230e6ea281459305b5e153734b",
+      "multus-admission-controller": "quay.io/openshift-release-dev/ocp-v5.0-art-dev@sha256:7ad99889454844250765a95018fde7161dbbb10b0d1b1333d9c5a66a9650cc15",
+      "multus-cni": "quay.io/openshift-release-dev/ocp-v5.0-art-dev@sha256:0fde3451e035276805ffffe552af81ebe082274ff00f75e82cf307881677bdb8",
+      "multus-cni-microshift": "quay.io/openshift-release-dev/ocp-v5.0-art-dev@sha256:0996b0209340aaa19b0bd72cde95a8de4dbe26d92bba634b701aa4f239cc20b0",
+      "multus-networkpolicy": "quay.io/openshift-release-dev/ocp-v5.0-art-dev@sha256:db9100c4d422f811f328fcf3c5e61767ccc89301ce6da20372725c2283e8cce4",
+      "multus-route-override-cni": "quay.io/openshift-release-dev/ocp-v5.0-art-dev@sha256:1c1bb6bc4ce641ec98fd1d604403767358320b5bd4ddbd050e2dad82ed49c0de",
+      "multus-whereabouts-ipam-cni": "quay.io/openshift-release-dev/ocp-v5.0-art-dev@sha256:4661ef01403d132ea499c51f9ac24f38cfc8b7d95273a40f70686b07e5b1b692"
+    }
+  },
+  "handoff": {
+    "renderedFromRealPinnedBundleExamples": true,
+    "appliedToCluster": false
+  },
+  "localRegression": {
+    "testsPerVersion": 224,
+    "skipped": 0,
+    "result": "passed",
+    "python": "3.14",
+    "PyYAML": "6.0.3",
+    "Go": "1.27.4",
+    "bashSyntax": "passed",
+    "shellcheckWarningLevel": "passed",
+    "pythonUndefinedNames": "passed"
+  },
+  "productionCodeSHA256": {
+    "lib/apply_operators.py": "3d766a316d2a8b12dab0adbdb85ff6bc94609d42654bd802df50a0f6af24816c",
+    "lib/artifacts.py": "15323f8b4cf193558ec30782d7ca5f49d7823c94893638e107cbc2cae0b313a3",
+    "lib/catalog_policy.py": "cf7d7dc72f92af8dd56695686682dfd13d0959651e5ba3d71f5d6611c7e7fc7e",
+    "lib/cluster_health.py": "40bd87bed74f1dae67738281146a52ce215b468dee1db14d1982f50e3884e82d",
+    "lib/delivery.py": "76b692db0776ceabc93ed92214048ec42ece9fbd1668a322104079d1f0e4521c",
+    "lib/guest_images.py": "8dbfdb13c45eff31c9291e7ac7f071fca7d48da8d72f577bc296bb5bd0bb8029",
+    "lib/helper_profile.py": "9cccbbf135a5a42209ac1adff5ec788265ce5c917272177addbd9805fefab3c2",
+    "lib/offline.py": "6996408550ddeb40c4b2ef79b68884bc13a1c243afcb08e0d81ca5056579f81c",
+    "lib/operator_archive.py": "853a126db9d6b7fe963b64596ce4a9d9370ea5dbef0f95f9bace7f07b070a801",
+    "lib/operator_oci.py": "c2cb67cc8a3e55cf9122de5f686ce871969faf09a2b2640e75e5d9ca54c540a1",
+    "lib/operator_profile.py": "6af68ac1ce2d26914a1f7ed5726eafda17db034d10033fe15cfdfcf5353e6db8",
+    "lib/operator_resolver.py": "ca067ad8eb9392878fe2062e83c11e285b30cb389c21c8a4123e1dd8eb2c5a76",
+    "lib/operator_resources.py": "be19ef57766e3a37e08ac3c260942a90c42661d9ad6874ae0e1f698478db21fa",
+    "lib/operator_semantics.py": "f83caac2ba1d8af40cec1c67f962345de792e9bcdc4efa1c1203111434c5be8b",
+    "lib/operators.py": "7fd8cc354f17585991bdd963b4c349443dce2d1e4a64d1e27cde013b8d815159",
+    "lib/product_manifests.py": "9f47bb90e12466bf59f7a55e59ece33d9d469eb03d3ff4090c493aad4d02b3c4",
+    "lib/product_rules.py": "013db281080e643d2565b00cff42875d8253e87b3bd91bb17aa71c765507dde5",
+    "lib/registry_trust.py": "5942298c0487154d2473e9df5ba9f651518fbd8eba334ea264d9d3c961f06205",
+    "config/ai-3.5.2-cpu-images.json": "11d88306f97cbbe64de77c69bfed9651472fa2953139b8875f172c335928f582",
+    "config/ai-3.5.2-nvidia-images.json": "d31ad5a47ecd85e1a7c2a1dd02f4886fa2854b993f343335e3171eb90e0232bf",
+    "config/ai-3.5.3-cpu-images.json": "b8a4c7e2e5eae872fc0df469797a1c73d3b3395dbe1f31a535a8799c66518438",
+    "config/ai-3.5.3-nvidia-images.json": "70910adcc046d522260672faf862fe7fa99765f7f302ec20fe3c89f681a9cc27",
+    "config/ocp-4.22.22-gateway-images.json": "df9d8ce3fb256439a48dbef135e9151a78f6be287d26710135a2289c63544238",
+    "config/ocp-4.22.22-gpu-images.json": "38712c9ab6040ec1ea9fbb404f64534f33db41b28101894b4a7d2bdb91bd3525",
+    "config/versions.sh": "87229ade02d0d0aba7f45e9f9434d7826fbcc733aa3464986b148369cef43829",
+    "lib/operator-semantics/go.mod": "6102299c180461558f30f15023648229004e8d4d3f5c5d5c056094d6b3a7b6da",
+    "lib/operator-semantics/go.sum": "5518a2395b72bc3d52fdb4a6d534b5598b81ee1e8fe2730134542a4e3b37645e",
+    "lib/operator-semantics/main.go": "ec1bd2f4a2ccf3968165377a9188b1555df036e0d463b34e2ba995d3f8b23cc9"
+  },
+  "planningTransport": "Production Catalogs/Resolver/operators.prepare/image_config/image_refs and guest digest validation executed. Guest metadata transport used a live HTTPS Registry API adapter on macOS; native skopeo and native oc-mirror bulk export/import were not executed for these new combinations.",
+  "notClaimed": [
+    "full native oc-mirror export/import acceptance for the new combined bundle",
+    "GPU detection, driver compilation/loading or CUDA execution on hardware",
+    "new cluster, MTV, ODF or optional AI feature installation/functionality",
+    "non-amd64 availability"
+  ],
+  "imageChecks": [
+    {
+      "source": "quay.io/containerdisks/centos-stream@sha256:ab203e18a11dfd05508a84a3c6bd2a8e7971842b27f8dc8ff940550e5d4afdad",
+      "state": "passed",
+      "manifest": "quay.io/containerdisks/centos-stream@sha256:ab203e18a11dfd05508a84a3c6bd2a8e7971842b27f8dc8ff940550e5d4afdad",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 1,
+      "checkedAtUTC": "2026-11-17T05:32:31.442244+00:00"
+    },
+    {
+      "source": "quay.io/containerdisks/centos-stream@sha256:fee0bcb68009dbcf7d48fe0a702ceddb3a7ef12f8047c912baa7b81caa065908",
+      "state": "passed",
+      "manifest": "quay.io/containerdisks/centos-stream@sha256:fee0bcb68009dbcf7d48fe0a702ceddb3a7ef12f8047c912baa7b81caa065908",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 1,
+      "checkedAtUTC": "2026-11-17T05:32:32.925446+00:00"
+    },
+    {
+      "source": "quay.io/containerdisks/fedora@sha256:3c9d3f5c2fac28126f333377c78a46a6de74ce75a93025d42a4c5cdcf09108da",
+      "state": "passed",
+      "manifest": "quay.io/containerdisks/fedora@sha256:3c9d3f5c2fac28126f333377c78a46a6de74ce75a93025d42a4c5cdcf09108da",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 1,
+      "checkedAtUTC": "2026-11-17T05:32:32.861419+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/aaq-controller-rhel9@sha256:abc8e73063bc3a73f5661f8cc42d3fb764dce08e43310d08151288f44ebcf87f",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/aaq-controller-rhel9@sha256:bc5d1a23109da43e7c2c1e2fd1e7179dd08fda0bdc54094eafb2352544809977",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:32:40.866548+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/aaq-operator-rhel9@sha256:2b270e30102ed85258bef2f387a30309e10c4a64c853464fa879ab25049100e9",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/aaq-operator-rhel9@sha256:c4d1a7d2dae3e127725881c99668b69349f0b88add93f6e795e758268c0f0743",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:32:35.348296+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/aaq-server-rhel9@sha256:2646d8aae28cbfdc401d347c7875cb380c5f23714ca9cbb9275151d261d1abe7",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/aaq-server-rhel9@sha256:c0e6d38fc93b19f14565b0375b322f4fd98c07534c78b091a9335862cacd221d",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:32:46.318609+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/bridge-marker-rhel9@sha256:262fe60982cc89a66ec174974e5fc8cb9d8bf078ae759ac741ad671ba987437d",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/bridge-marker-rhel9@sha256:815b7a570d67ffe395e39bfdfb0e1f6461a04a96f39a798dfc5ddbd8b9faf2aa",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:32:51.457796+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/cluster-network-addons-operator-rhel9@sha256:4e529c223314ccdfe8513eebaf1b02ee8c168b422602dc99b09755c7407ee82c",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/cluster-network-addons-operator-rhel9@sha256:cc50d2e342286555ec2188a1e44893be29e75fb8f26d48737814e3bc16ac3c79",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:32:58.778506+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/cnv-containernetworking-plugins-rhel9@sha256:c80f6fe411eb4f948907d1d2dfe94a5495188e5c453cd0d76a612548838451ce",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/cnv-containernetworking-plugins-rhel9@sha256:0eae9590eac8432c8cf2575744ba647cc0a5fb67c51f38faf6966d60e81d8d5e",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:32:57.128659+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/cnv-must-gather-rhel9@sha256:ae64a2a041ba52413712e599b272fc5f46f1331844d0786c515b25c0a0079751",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/cnv-must-gather-rhel9@sha256:b469d4fcb9a5523e70f4d81032d8b692a416d0a3b866c678554265cd020d9f14",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 6,
+      "checkedAtUTC": "2026-11-17T05:33:09.416371+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/hco-bundle-registry-rhel9@sha256:0bc550e13de8ec98b97d8f57474621779715dc15b80a32c955844b63faf021fd",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/hco-bundle-registry-rhel9@sha256:0bc550e13de8ec98b97d8f57474621779715dc15b80a32c955844b63faf021fd",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 1,
+      "checkedAtUTC": "2026-11-17T05:33:03.686496+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/hostpath-csi-driver-rhel9@sha256:8920bfd245b951ac71abdc3303181bb87b518ad969ccb0c55b5a94923012d192",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/hostpath-csi-driver-rhel9@sha256:66d5f1b780e47e52fc1e1a440bae0bcaaa4fe218df6b2772ed845f8402f35297",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:33:06.693856+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/hostpath-provisioner-operator-rhel9@sha256:b8885d349f08e54dcd07889c806c9015f012fb8d6d02ac6106d53ac200f8ab53",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/hostpath-provisioner-operator-rhel9@sha256:6c595ab43e0223ab9acd5c8c03c95bd3c0358197cd7ba87116923b9a64bffbe5",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:33:15.191268+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/hostpath-provisioner-rhel9@sha256:9dfdecf3192734e2a07c379252e8e79f20193ee0278d89a2bf55428bb3da1d51",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/hostpath-provisioner-rhel9@sha256:7b428680e39b2a1eed27c7327b66a958f4ae4cc8a7c73365bc4a86041aa987f2",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:33:21.190525+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/hyperconverged-cluster-operator-rhel9@sha256:585065a6fd2ba221875029d3c3ee1a335334805fea7776bff08dddb56946748d",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/hyperconverged-cluster-operator-rhel9@sha256:e544dbacbc86fa17394b47d5e9244473c9773c33362eb0c94a549a6f0187b683",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:33:22.744233+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/hyperconverged-cluster-webhook-rhel9@sha256:ebb8da98415eba339976129b708bf37d916de07bdf640e797897078384a3c7b9",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/hyperconverged-cluster-webhook-rhel9@sha256:33621c4d4e2364625b487042ee7985af6e6cab1c5adebfa400cbfb7838d04809",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:33:26.013116+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubemacpool-rhel9@sha256:017c7e0ebb58aac38e6bb52eefbca027a6ea002634de29b5ae4110a0e37e0702",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubemacpool-rhel9@sha256:9b880d126ceac4c4b05279f78d0253d1f06631ddc490c82f9bdba7711d2a5b8c",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:33:33.380107+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubesecondarydns-rhel9@sha256:25a8f04dede2839c3a819fd044ba24bb32173663e7adbed0e241aee437aaae74",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubesecondarydns-rhel9@sha256:b61148bc5b125376422ba168a0777986008d29e92825515a6f75551d0a2a6253",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:33:35.906467+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubevirt-aie-webhook-rhel9@sha256:992bd5d7511a0198f0e3795f500d5e806bc4c5e2171368b3c5cf76c3d342605e",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubevirt-aie-webhook-rhel9@sha256:4251fd5712fbf3c0f75ec4464781e0872017393b14f4d1ecdca6352a35f5a406",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:33:36.308987+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubevirt-api-lifecycle-automation-rhel9@sha256:1cf28d1e2d9e529475d5e02657c00c98a2a4733c5efe2864e9c371c5f42a5cf5",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubevirt-api-lifecycle-automation-rhel9@sha256:8f5c4804051597217604c4542742b949e730a6343e37d75784dcf24f62568a86",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:33:45.804851+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubevirt-apiserver-proxy-rhel9@sha256:cf5451c841fbdffa228a5cae49ac2130ea8a6ffc841c17444032ab45790abf5f",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubevirt-apiserver-proxy-rhel9@sha256:c8205a5fd6de5fb0d74c2722e57ccecc1ef173465b11d313a595d6daa04b23c4",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:33:47.357826+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubevirt-common-instancetypes-rhel9@sha256:eaa0ce7e21df41210b5942a2188ec90917f9d608d72e99b76f0a317d4b762763",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubevirt-common-instancetypes-rhel9@sha256:4498a3e1baa14e1ce62523443bd803805e09077a26131842091e3fb970299fc6",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:33:51.834178+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubevirt-console-plugin-rhel9@sha256:ede23ff11d8a866937879112dc60a200e81040392fe1cdaa8e6b7fb07e862ee4",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubevirt-console-plugin-rhel9@sha256:5662b3b9e30aa0d739c105d9d7ff539562318a70315022925266ca917a695517",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 4,
+      "checkedAtUTC": "2026-11-17T05:34:00.663361+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubevirt-ipam-controller-rhel9@sha256:fdc734d882b5487922d9fe655804e7cd440c382c2bd5c33f61077e05edf7a3f1",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubevirt-ipam-controller-rhel9@sha256:7b291df40013cbf9a863d7bcc6e17878b20dd18550d4fee7ed1b82c1134d3320",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:00.390341+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubevirt-metrics-exporter-rhel9@sha256:a703ae0bd2c40e9384d4b6fd19053ed2febf5b5b3cee8e207523b8e598a7a2cb",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubevirt-metrics-exporter-rhel9@sha256:26b20991e75883003dfec887463b8babc0a8608d646c974d00db421f31c7a006",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:03.379060+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubevirt-redfish-rhel9@sha256:457d26eae0621c50e1311b1d5555875ee11a0f168ae8c7385803001e34603704",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubevirt-redfish-rhel9@sha256:c3980272323e2221c174b714074f51dd09fb9f92aaa06d3c6e7a6df100bd11cc",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:08.541828+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubevirt-ssp-operator-rhel9@sha256:ba58a66c2b39a889f96a854c8802a60a7775e8f10cb8076d6748256190c56a66",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubevirt-ssp-operator-rhel9@sha256:9e462fa37b0ef434795b9416d22d3dc136ba56508e83bf97c866379aab9a13b0",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:13.857654+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubevirt-storage-checkup-rhel9@sha256:7d9d2bb4fb6cf8ca2726be911714215429a05d623140d9ab178dda6cefac892c",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubevirt-storage-checkup-rhel9@sha256:1b623bba0b41fcef76047837b725798215e9a236ac19fb239f35ef0399c6e008",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:14.670918+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubevirt-tekton-tasks-create-datavolume-rhel9@sha256:bae6b21cbf59e8b2741fd7df090cf691d7d747562494e5eddc6a3b9b82bdd1a5",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubevirt-tekton-tasks-create-datavolume-rhel9@sha256:738b0940c441a7b0caf47f776028c839e66118354de0f99b3b0f2f85c169d679",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:13.294102+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubevirt-tekton-tasks-disk-virt-customize-rhel9@sha256:63b5611e4e5f5833b0d6d11bfe044793d14a5bc40614bb9aae6ec792852c531e",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubevirt-tekton-tasks-disk-virt-customize-rhel9@sha256:ff76c38b26e9ad670511d2e02a23e4be289509f4e01a2c46e5a6cd2db220c4c6",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 3,
+      "checkedAtUTC": "2026-11-17T05:34:24.974910+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/kubevirt-template-validator-rhel9@sha256:a4e3dacc468e8837246f545cec48ed834fa8da4f97364e57cf2015311e1fbe1e",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/kubevirt-template-validator-rhel9@sha256:a455566c871495aef359e05934b5ae532be823c36d49089a90e49d1505716608",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:26.687097+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/libguestfs-tools-rhel9@sha256:e44806841710c95f2eb97383022b629a6460c75d16c5fa93e7c2b2244fe7fa57",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/libguestfs-tools-rhel9@sha256:e6fa9ae5e4c76aa85fdf87d804e08be71e7c20f561e37b2c8ca91af00dbcb55a",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:27.261447+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/multus-dynamic-networks-rhel9@sha256:ce8c3a3a1463f7629b8e906ab543ee8808378a8e9fc3d2640cc85c32f4cd9e96",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/multus-dynamic-networks-rhel9@sha256:92837942a834ab515c87034f699fc159894bf7a5f30a59befb5b11700aed0f5c",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:34.578645+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/ocp-virt-validation-checkup-rhel9@sha256:7e6243b676725e92a7d287f79058c1d1e8a0a0b90884f89091709216e4337144",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/ocp-virt-validation-checkup-rhel9@sha256:36daa743ad7ba5b8597c9d62194ecb015471274a9038adbd1ddf4cf8c26683e7",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:37.519500+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/ovs-cni-plugin-rhel9@sha256:47aa0c4eee1c54bc309ded25b5ba88d074998e1e2e53b6fc8c02f47566896a2b",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/ovs-cni-plugin-rhel9@sha256:bc6429e6cdaf2a9e394f8835e3b45dac9beb5bc1daa64fbb508dbfe76f53bd0e",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:39.230571+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/pr-helper-rhel9@sha256:6f6a7eee15f9c24a84c44c6fc623c64bb91fecd36d164334474da7df0a502e6a",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/pr-helper-rhel9@sha256:899f7996e2d600b8f135d6bfc6a30cdad89e388ee00f46593946c3cf57070e6a",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:47.290919+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/redfish-event-listener-rhel9@sha256:0dc5c42327c59c5c42b890c2943fa03cec949e43c0000fc04a8c7de718c501b5",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/redfish-event-listener-rhel9@sha256:076fb724469a0e8254e93510ae5dfdfeab89c52918d06593a5ce4d6962b76167",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:52.578643+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/sidecar-shim-rhel9@sha256:472ac6336200691c77d9c24513e69b64ca44f49f125122caeb5bff898da05617",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/sidecar-shim-rhel9@sha256:20803642cae3b9b7e84ead02a55cad014042026c436ec57914044890c39ca8ac",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:54.430722+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/sriov-dp-admission-controller-rhel9@sha256:49b504a13e0496b15838dc9fdf9413fa2a385304d280fd0300bd8e61cb878a50",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/sriov-dp-admission-controller-rhel9@sha256:477a27e67df2ef6d8fd53efb1bfe4487006393ca7e3ab12b702133558fcc49cf",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:34:56.166954+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-api-rhel9@sha256:7b7fcd8b266957ca45434c78600398e9083f8828ff109fc723693aa3a621b00c",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-api-rhel9@sha256:6485ab34f8ca304afb91bfe58e7be53c4217804d9a7e73b8842ff4072483220c",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:35:00.710079+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-artifacts-server-rhel9@sha256:2069cea15ba80d580ef2ade1893f5aa83074ff6879471189702dae4c054bc164",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-artifacts-server-rhel9@sha256:25804d47c36b61bd29fbc5bfad2458a01233075a8772cc899d1e5a05351e2117",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 4,
+      "checkedAtUTC": "2026-11-17T05:35:05.459181+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-cdi-apiserver-rhel9@sha256:33b61add5905332fb4d29ccde51d4c4e9de3018666c6912f04c8a38f52638fd3",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-cdi-apiserver-rhel9@sha256:2289140c3fc0578e16e0e0bfa318eb6a82ca7f4bbeeb2278d7922878f7a34622",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:35:24.306163+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-cdi-cloner-rhel9@sha256:e42f470f167ebb8e9a38185efa141aa401761fd9954300fc65d0c2c7caad3a90",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-cdi-cloner-rhel9@sha256:a908ffb1eb7da94f33def9e6203725cd9e918010f9631e65741f0cf4356377f0",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:35:12.056623+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-cdi-controller-rhel9@sha256:9d2670459e89b94102dd4f606645bcd7ef0d7d0f33b87f6e77ad791e93520e42",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-cdi-controller-rhel9@sha256:c4f60b227598426ab84b3489adcc3c0920134f48ebd65ca1da7864a12c8a0a49",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:35:18.772275+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-cdi-importer-rhel9@sha256:57376cb2fafd8cffd7ff7508b8726a9f11874d48e3a22b48278dbd2cbb81aec1",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-cdi-importer-rhel9@sha256:809d3064dfa64f6bea5fe6181dcd646c8a793dceba8cf8c81b056a981128db2e",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:35:18.572757+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-cdi-operator-rhel9@sha256:bcfaed13703b5648f967003519a0feee0d88f2a57e9a401828a936c756b6889b",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-cdi-operator-rhel9@sha256:fde0fbc0e7910f73177a7cad75063ffccf32c5a88fda02a70f996a155eca1858",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:35:24.332800+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-cdi-uploadproxy-rhel9@sha256:03898d7d330561667518de1f26ac511c073d18e110dba0ac5c1c95f694d69d80",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-cdi-uploadproxy-rhel9@sha256:02a1883fa3bf522adebbc801c2c27755ccdb4c263c22f16f71a8e40510887206",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:35:31.185264+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-cdi-uploadserver-rhel9@sha256:091cf8d1589b4f447ea8c9ab223c000267d267c5862f3bdc0d3b475503761834",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-cdi-uploadserver-rhel9@sha256:7529e50f6ac2f6a929bbac5254dffd744ff5e606f1026aeaf895d1d8edb80f06",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:35:30.635141+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-controller-rhel9@sha256:b07d716e3e4ef6588cb9c4d8804d8bcfb758f33bef075964e2f03e1081b49bdc",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-controller-rhel9@sha256:1f900393e8f9c0a8b636ff67875cb5c456a43eabf6a84e5699469d8cfa3300c0",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:35:34.382914+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-exportproxy-rhel9@sha256:b9dca9baf6b7d56f0c46d56fe2d33b145d0062c2d2394dae346c5c95f35feaba",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-exportproxy-rhel9@sha256:6d3ad593c822093c86cd0e49711dc553cf16b50a18265a0ee82df166dbc90f8c",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:35:40.452575+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-exportserver-rhel9@sha256:4c1e11bed5e87abcf4bac872c8d9b9c6689fc350cae2c3874e85bb029fd6b74b",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-exportserver-rhel9@sha256:13b69329e9df69a9ef494cd9cef8aa80a02f05a724763012358d73bacc9ebd4c",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:35:43.654261+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-handler-rhel9@sha256:620fcf4abca3235112f0f2b34250b6cd6dc8215455a8bb468a8a9aedebce2699",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-handler-rhel9@sha256:1f1bc37c73f28bb7f6ca9e355a99d8f601abba5eb8266edbef76d5a002688dbb",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:35:43.887187+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-launcher-rhel9@sha256:426b4eca3b8c0e4923c046edff6241e6f085b3b79fdb5ba7ff22f40fd9ebf9d8",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-launcher-rhel9@sha256:ca0f8f18e318a37cb44463c902d6322f0ef4f23b6965f99426411a1b63486b4a",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:35:53.400334+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-migration-controller-rhel9@sha256:8a30c6596c217b4756822db99786edeaff2b694bc04924aed9c2f77fa7929db5",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-migration-controller-rhel9@sha256:168012dfd4499c3423d240c7df37c9582bb4c380a80521bc666a085c8073c4fd",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:35:55.066322+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-migration-operator-rhel9@sha256:19f46914b97f4682ace257de27068aedb749e849401dd351852ffc72727896f0",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-migration-operator-rhel9@sha256:3319f35e3f9990284d50ec234ad5983841bb7e76d044a5df6666bef7134e0ecb",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:01.778835+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-observability-controller-rhel9@sha256:e9aaf78da13a056123229191ebcab6e4ab31241ba13b0d209afb7e93e859c8a1",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-observability-controller-rhel9@sha256:657a2333bfc8a37ce802722571db78ec3e628a003eaed88076b57ae78da6dc91",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:03.753667+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-operator-rhel9@sha256:2563c3c54f11eb9fb6bc6e6b80c7f763c09927365ce9ea460f1a3525db831a6d",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-operator-rhel9@sha256:e6d854cec1daf994c209de5366f0de438bc4ea034c2c36259c480d14b139e166",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:07.731900+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-platform-autopilot-rhel9@sha256:f1371cdb4af54751b690b3b584a29f7d008c560e66d7c2ffd9f4057c190e8a41",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-platform-autopilot-rhel9@sha256:59b62763f3cea384b7c0f4821adfd651d50eb02650e2402b3b38dfb0764cf6ab",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:12.467501+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-synchronization-controller-rhel9@sha256:18878a961d1e45dcd8b27615934c68084bc09142a9656836e74e1c610dc9395a",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-synchronization-controller-rhel9@sha256:787ead143a3433535364b03480957a5a23f3dc1e160d0808c3fd3f6c7b75c47c",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:12.803948+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-template-apiserver-rhel9@sha256:39ce82fe3e45e4d843a761ca4ccf36b1df107d0ce09f9a00135154e1828958f8",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-template-apiserver-rhel9@sha256:274bea83b8840c6c1d44f022554fd22e99fd4f174781571de5316eec82a3b9ec",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:19.882122+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virt-template-controller-rhel9@sha256:1be9a78f515ecfd40d39c74c8f8e3b8f12bf006b9ecce0a360724d1d6a11994e",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virt-template-controller-rhel9@sha256:f01e32590e7ce5d841783c49059a3f9697af35e7e9c82f01d938a36a01816151",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:23.004923+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/virtio-win-rhel9@sha256:7385dd8de136fbc7759a585b82807b7da8bea2c182dacc48899ccc2375c1d713",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/virtio-win-rhel9@sha256:833b226e9486bcd3e4b74cc79593d9f55bd1c73436bc49c881f6bdc4ea2fbf86",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:23.911307+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/vm-console-proxy-rhel9@sha256:97539ae15b159a436fb0f5b886ce30dac27aa8e1601db28cb66877ce0ade93e1",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/vm-console-proxy-rhel9@sha256:357ba462e8f0c570fa0fac2816ddb6484dea2f665b9e737ca19a2267fc5e8c63",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:31.627986+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/vm-file-restore-operator-rhel9@sha256:3212ba5d2e73a508eb0ba162ccb13f3976a0b95d03eb95e81a3d63747bdb0241",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/vm-file-restore-operator-rhel9@sha256:f1f63e0b06f9abb73ff2095570dd1e773b2b70c5becc2136e716caaf7566dc90",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:32.708644+00:00"
+    },
+    {
+      "source": "registry.redhat.io/container-native-virtualization/wasp-agent-rhel9@sha256:3be46eade879cacac21ddc6900348a6533a35263bb7dcdc2043aa4cce7b4cbcb",
+      "state": "passed",
+      "manifest": "registry.redhat.io/container-native-virtualization/wasp-agent-rhel9@sha256:39b79d04aac0fe83054440384c72280e2fe2a60576bb1fc78753088b6e56bec3",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:34.220123+00:00"
+    },
+    {
+      "source": "registry.redhat.io/devworkspace/devworkspace-operator-bundle@sha256:67b5841444cdbf9e469381c079222cdf10e869db80c7c6650370d060cff9b47d",
+      "state": "passed",
+      "manifest": "registry.redhat.io/devworkspace/devworkspace-operator-bundle@sha256:67b5841444cdbf9e469381c079222cdf10e869db80c7c6650370d060cff9b47d",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 1,
+      "checkedAtUTC": "2026-11-17T08:47:28.680735+00:00"
+    },
+    {
+      "source": "registry.redhat.io/devworkspace/devworkspace-project-backup-rhel9@sha256:39260a49daeab028d0e68d4fddb89726426e9345b261c7fcff1a924c65f7d330",
+      "state": "passed",
+      "manifest": "registry.redhat.io/devworkspace/devworkspace-project-backup-rhel9@sha256:e34d81a545030fd25e19688411bb11fe9838c447176c8a6565a97634d83261b8",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T08:47:28.318917+00:00"
+    },
+    {
+      "source": "registry.redhat.io/devworkspace/devworkspace-project-clone-rhel9@sha256:57375c8a27a4a0fbc3febae271c3c184a797983160148abebf6a847008d40f72",
+      "state": "passed",
+      "manifest": "registry.redhat.io/devworkspace/devworkspace-project-clone-rhel9@sha256:ce225749f461ad8846337c108aad00437d93207d1c136aa7ae997e963a8068cb",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T08:47:33.963103+00:00"
+    },
+    {
+      "source": "registry.redhat.io/devworkspace/devworkspace-rhel9-operator@sha256:fdf7a9fa57d2f31f869c1253bf5e6345a76899daa3b5f5596d80341f6e450d97",
+      "state": "passed",
+      "manifest": "registry.redhat.io/devworkspace/devworkspace-rhel9-operator@sha256:3f3950500d7a3089b4cc7a9e129a9ad8a55a97a209ce02f7cee024909136cdb1",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T08:47:35.067748+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-api-rhel9@sha256:9d1b3faa18c7db2ded802a48d6f99ad5200369336b052f20132f98cc73d9b0bf",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-api-rhel9@sha256:9d1b3faa18c7db2ded802a48d6f99ad5200369336b052f20132f98cc73d9b0bf",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:34.708635+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-cli-download-rhel9@sha256:e6ed9a9615ae8b9e5265a13071a38010e281250c85e5779fbcbe1868c242e568",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-cli-download-rhel9@sha256:e6ed9a9615ae8b9e5265a13071a38010e281250c85e5779fbcbe1868c242e568",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 4,
+      "checkedAtUTC": "2026-11-17T05:36:45.303676+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-console-plugin-rhel9@sha256:98ccab3028e2e5501a2f5e318d253175000d14b3c2e2983d2a814578384dd7d0",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-console-plugin-rhel9@sha256:98ccab3028e2e5501a2f5e318d253175000d14b3c2e2983d2a814578384dd7d0",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 4,
+      "checkedAtUTC": "2026-11-17T05:36:46.990302+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-controller-rhel9@sha256:c245fde2339922f64c62bfc63ddc29ad74b45fa534dae1b6a7f9edd07d02f2a6",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-controller-rhel9@sha256:c245fde2339922f64c62bfc63ddc29ad74b45fa534dae1b6a7f9edd07d02f2a6",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:42.903968+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-copy-appliance-builder-rhel9@sha256:b59d7bc9a4f5959e87477395f15a48612dc8655bd69ea9ce2310cbd1fa3b77f4",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-copy-appliance-builder-rhel9@sha256:b59d7bc9a4f5959e87477395f15a48612dc8655bd69ea9ce2310cbd1fa3b77f4",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:51.836175+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-copy-appliance-nbd-container-rhel9@sha256:6c5b34e2fe3f703e4a19ccef0c62c23a9502710e728b1641ade538e8f627029b",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-copy-appliance-nbd-container-rhel9@sha256:6c5b34e2fe3f703e4a19ccef0c62c23a9502710e728b1641ade538e8f627029b",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:52.230667+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-deep-inspection-rhel10@sha256:cac65acf34b2ab2ff19710bf3d906bd84e1dd87ce547985f9b8bbb602c420f26",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-deep-inspection-rhel10@sha256:cac65acf34b2ab2ff19710bf3d906bd84e1dd87ce547985f9b8bbb602c420f26",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:36:58.231857+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-deep-inspection-rhel9@sha256:edbf232bfb869c575ed00624c7e811d5475809d90fe785ddffa05da33401cbd5",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-deep-inspection-rhel9@sha256:edbf232bfb869c575ed00624c7e811d5475809d90fe785ddffa05da33401cbd5",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:37:00.402489+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-hyperv-provider-server-rhel9@sha256:7733c5ca43b13bec8b84193b700b615f646f3023aa46ae650baf1a66b9c4f921",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-hyperv-provider-server-rhel9@sha256:7733c5ca43b13bec8b84193b700b615f646f3023aa46ae650baf1a66b9c4f921",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:37:03.405948+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-must-gather-rhel9@sha256:2513f027592155872f099af351b26237ae53cea5a358d6daa72afc1deeab0132",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-must-gather-rhel9@sha256:2513f027592155872f099af351b26237ae53cea5a358d6daa72afc1deeab0132",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 5,
+      "checkedAtUTC": "2026-11-17T05:37:13.165316+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-openstack-populator-rhel9@sha256:8202f779f7e9780a207ded2e49ad217d86bcb093af162360f5ad75605dba6036",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-openstack-populator-rhel9@sha256:8202f779f7e9780a207ded2e49ad217d86bcb093af162360f5ad75605dba6036",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:37:11.962698+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-operator-bundle@sha256:69c722fc321d7016b82dfe10487497e1be56306863670febd1c35fc36b0bc396",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-operator-bundle@sha256:69c722fc321d7016b82dfe10487497e1be56306863670febd1c35fc36b0bc396",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 1,
+      "checkedAtUTC": "2026-11-17T05:37:17.851592+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-ova-provider-server-rhel9@sha256:6ce284ad1cdbf053c3013f6b6cdbc613aa169d80f819533abaecce4d5a652c4f",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-ova-provider-server-rhel9@sha256:6ce284ad1cdbf053c3013f6b6cdbc613aa169d80f819533abaecce4d5a652c4f",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:37:24.908865+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-ova-proxy-rhel9@sha256:cdb69f3c68d447ef2022c04c3deaeb7ddbf4f29be624cbea3d329a4a4127a193",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-ova-proxy-rhel9@sha256:cdb69f3c68d447ef2022c04c3deaeb7ddbf4f29be624cbea3d329a4a4127a193",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:37:24.330802+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-populator-controller-rhel9@sha256:7d3158959a2ecc0183568bccb974ca6251274100f943cc90c2980b5794183a7c",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-populator-controller-rhel9@sha256:7d3158959a2ecc0183568bccb974ca6251274100f943cc90c2980b5794183a7c",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:37:27.836026+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-rhel9-operator@sha256:3d1a2dd33da673db582c0b56bf18f14053fbcdddf66b384cf4b4197730a8ed78",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-rhel9-operator@sha256:3d1a2dd33da673db582c0b56bf18f14053fbcdddf66b384cf4b4197730a8ed78",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 5,
+      "checkedAtUTC": "2026-11-17T05:37:45.164678+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-rhv-populator-rhel8@sha256:b072a193e9472553e918931007287270e7395d2de3c7144223b3d0b2955bab96",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-rhv-populator-rhel8@sha256:b072a193e9472553e918931007287270e7395d2de3c7144223b3d0b2955bab96",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:37:37.885005+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-rhv-populator-rhel8@sha256:dd0d268b6a1f5a48105df78fa3dcbccf3de40c492c5ae7c4c597a58a816dbeca",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-rhv-populator-rhel8@sha256:dd0d268b6a1f5a48105df78fa3dcbccf3de40c492c5ae7c4c597a58a816dbeca",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:37:38.083300+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-validation-rhel9@sha256:72ed98afda3a38acb52aa32670c776c566b855c63d2c3586eba87737f5199d9c",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-validation-rhel9@sha256:72ed98afda3a38acb52aa32670c776c566b855c63d2c3586eba87737f5199d9c",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:37:39.909803+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-virt-v2v-rhel10@sha256:4b96a56c9c72cdf6edf0ce5cf4497824c00da756f208b91a98122e76f3af959c",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-virt-v2v-rhel10@sha256:4b96a56c9c72cdf6edf0ce5cf4497824c00da756f208b91a98122e76f3af959c",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:37:45.604159+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-virt-v2v-rhel9@sha256:2e4ac5de70616cc90b54de364f5534e5c6b2f148f723383a15b29a86a3498028",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-virt-v2v-rhel9@sha256:2e4ac5de70616cc90b54de364f5534e5c6b2f148f723383a15b29a86a3498028",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:37:48.782865+00:00"
+    },
+    {
+      "source": "registry.redhat.io/migration-toolkit-virtualization/mtv-vsphere-copy-offload-populator-rhel9@sha256:37298e190ff42891099836d54ecf3a27a23bb102ebde68418ef35507e573fbb0",
+      "state": "passed",
+      "manifest": "registry.redhat.io/migration-toolkit-virtualization/mtv-vsphere-copy-offload-populator-rhel9@sha256:37298e190ff42891099836d54ecf3a27a23bb102ebde68418ef35507e573fbb0",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T05:37:53.844100+00:00"
+    },
+    {
+      "source": "registry.redhat.io/openshift4/ose-coredns-rhel9@sha256:4023dcf758240517ab8f3060eca20eae58955d7fa97cbcff59e116b7ed8cb976",
+      "state": "passed",
+      "manifest": "registry.redhat.io/openshift4/ose-coredns-rhel9@sha256:fd2b8c9f1c6bf057e17c04963006a2a37a32c28a9f899bf2486dfa1d6388854d",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 4,
+      "checkedAtUTC": "2026-11-17T05:39:15.189336+00:00"
+    },
+    {
+      "source": "registry.redhat.io/openshift4/ose-csi-external-provisioner-rhel9@sha256:689cf61f85fe37136e7e914e07f57ccea80c2fb102198af617d6d872ca36e9f3",
+      "state": "passed",
+      "manifest": "registry.redhat.io/openshift4/ose-csi-external-provisioner-rhel9@sha256:4e979972398ff0cc0e50294821ea9e0eb9038b66b0afcca9bb225cfd763c98ca",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 4,
+      "checkedAtUTC": "2026-11-17T05:39:43.441301+00:00"
+    },
+    {
+      "source": "registry.redhat.io/openshift4/ose-csi-external-snapshotter-rhel9@sha256:3fbe2d6881dcacc8920d51df2d31a7f9fcafff36df96e427a8bb0c6308ee7bfa",
+      "state": "passed",
+      "manifest": "registry.redhat.io/openshift4/ose-csi-external-snapshotter-rhel9@sha256:0446dbcfcdeeb49bb457e7a67af6bb9e08cdbaa21a30b0dbe3f246ecca929f7d",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 4,
+      "checkedAtUTC": "2026-11-17T05:40:07.800738+00:00"
+    },
+    {
+      "source": "registry.redhat.io/openshift4/ose-csi-livenessprobe-rhel9@sha256:c4db2cbbaecb77e6b3a4e8dd7ee7a4d4fa9ab69787e4330711a3abb1277af2ac",
+      "state": "passed",
+      "manifest": "registry.redhat.io/openshift4/ose-csi-livenessprobe-rhel9@sha256:3e428ad4c98e99f1a386d01272dc0b47e36dea2423279e29f9704d40e2cf93bb",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 4,
+      "checkedAtUTC": "2026-11-17T05:40:21.837238+00:00"
+    },
+    {
+      "source": "registry.redhat.io/openshift4/ose-csi-node-driver-registrar-rhel9@sha256:2a5e96bc702bc529b424e6c80f95d7d4fc4fe92f83df4a77c3b47eb3a30fe729",
+      "state": "passed",
+      "manifest": "registry.redhat.io/openshift4/ose-csi-node-driver-registrar-rhel9@sha256:525efb2e9196fc09359223a6342a87e43e18d094dad74511ca0125a30ef3219f",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 4,
+      "checkedAtUTC": "2026-11-17T05:40:34.112860+00:00"
+    },
+    {
+      "source": "registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:d017b7d199b1d54e889bb1eb6e572d8e6d94ad92610894009ee0562c2a5c0f51",
+      "state": "passed",
+      "manifest": "registry.redhat.io/openshift4/ose-kube-rbac-proxy-rhel9@sha256:9dee0e2e50ba834cb0a6d3007372f1673488f6538561a7dc0880a239dce9d59b",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 4,
+      "checkedAtUTC": "2026-11-17T05:40:50.329749+00:00"
+    },
+    {
+      "source": "registry.redhat.io/openshift5/ose-kube-rbac-proxy-rhel9@sha256:2b238541cb39357dcde3a00323e555c0e0150d7584f6703daba4a9311d6abc79",
+      "state": "passed",
+      "manifest": "registry.redhat.io/openshift5/ose-kube-rbac-proxy-rhel9@sha256:fea7df6f9d45da3471894e6e239c4c9f15dd42e845cd9d38a5b7a83fc2fc08d1",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 4,
+      "checkedAtUTC": "2026-11-17T08:47:53.810592+00:00"
+    },
+    {
+      "source": "registry.redhat.io/openshift5/ose-local-storage-diskmaker-rhel9@sha256:d7b03590cdd1d08a5f7ed9a0f9b2b1d1e56f4d53abf021760f73fad28b36a247",
+      "state": "passed",
+      "manifest": "registry.redhat.io/openshift5/ose-local-storage-diskmaker-rhel9@sha256:37e303b665e85e9b7ae75133bf6cbf457ea44fe8023f1ea3121e5cfa5977adf0",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 4,
+      "checkedAtUTC": "2026-11-17T08:48:00.219887+00:00"
+    },
+    {
+      "source": "registry.redhat.io/openshift5/ose-local-storage-mustgather-rhel9@sha256:14ebfd4ad51142c538684ad95cf1898244ee485f4780042eedab3ec0cba2b24b",
+      "state": "passed",
+      "manifest": "registry.redhat.io/openshift5/ose-local-storage-mustgather-rhel9@sha256:8ace1c0a150e03f1cf17ea663af2402f41c8fd5b95afb809df639915a150d2da",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 6,
+      "checkedAtUTC": "2026-11-17T08:48:07.674136+00:00"
+    },
+    {
+      "source": "registry.redhat.io/openshift5/ose-local-storage-operator-bundle@sha256:6fbbeccc5a3b788f12f6d4cd7fdd84f72029681f73cc9215713347294a898af1",
+      "state": "passed",
+      "manifest": "registry.redhat.io/openshift5/ose-local-storage-operator-bundle@sha256:6fbbeccc5a3b788f12f6d4cd7fdd84f72029681f73cc9215713347294a898af1",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 1,
+      "checkedAtUTC": "2026-11-17T08:47:56.194845+00:00"
+    },
+    {
+      "source": "registry.redhat.io/openshift5/ose-local-storage-rhel9-operator@sha256:4916b7ed02b410736ec932ad316035cf564b182e25a715798d12e851f158ccc1",
+      "state": "passed",
+      "manifest": "registry.redhat.io/openshift5/ose-local-storage-rhel9-operator@sha256:3067481cfd61cce8028e9ec6d4cc9b2ec759b56391a4367de62004380ad532bc",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 4,
+      "checkedAtUTC": "2026-11-17T08:48:00.683507+00:00"
+    },
+    {
+      "source": "registry.redhat.io/rhel10/rhel-guest-image@sha256:bb7217cb637bf5ed40fc5f15c1e3e12220ada83d51827e1d3a30462323b0dc90",
+      "state": "passed",
+      "manifest": "registry.redhat.io/rhel10/rhel-guest-image@sha256:bb7217cb637bf5ed40fc5f15c1e3e12220ada83d51827e1d3a30462323b0dc90",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 1,
+      "checkedAtUTC": "2026-11-17T05:41:13.559491+00:00"
+    },
+    {
+      "source": "registry.redhat.io/rhel9/rhel-guest-image@sha256:62266fa71041d3eb87f5b12e5860029380c786caedf5b11c541539fd12f74148",
+      "state": "passed",
+      "manifest": "registry.redhat.io/rhel9/rhel-guest-image@sha256:62266fa71041d3eb87f5b12e5860029380c786caedf5b11c541539fd12f74148",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 1,
+      "checkedAtUTC": "2026-11-17T05:41:16.040692+00:00"
+    },
+    {
+      "source": "registry.redhat.io/rhosdt/opentelemetry-collector-rhel9@sha256:b71f75d039eb8bae222f2318fbd781640affdcb7d1a4ed8219576d6b0677a0c7",
+      "state": "passed",
+      "manifest": "registry.redhat.io/rhosdt/opentelemetry-collector-rhel9@sha256:4c01a91ddd2b9eef441eb8bed225c114a5b9c4a75fcb4a5bd2406cd8328f9f3e",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T08:52:38.109477+00:00"
+    },
+    {
+      "source": "registry.redhat.io/rhosdt/opentelemetry-operator-bundle@sha256:7867473d6b4ef90f868180421e0bf489c7d86031b8c7a3948592298625aa394c",
+      "state": "passed",
+      "manifest": "registry.redhat.io/rhosdt/opentelemetry-operator-bundle@sha256:7867473d6b4ef90f868180421e0bf489c7d86031b8c7a3948592298625aa394c",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 1,
+      "checkedAtUTC": "2026-11-17T08:52:38.025502+00:00"
+    },
+    {
+      "source": "registry.redhat.io/rhosdt/opentelemetry-rhel9-operator@sha256:14a8719c57ed3d8dafcb5fd3caacf92d1100e0a988c989fffa809145ad2c59b7",
+      "state": "passed",
+      "manifest": "registry.redhat.io/rhosdt/opentelemetry-rhel9-operator@sha256:d0a8894737fd9dfaeff159865303a45599a0df4df9d6c479d24d9d3ae28ae0c1",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T08:52:42.014019+00:00"
+    },
+    {
+      "source": "registry.redhat.io/rhosdt/opentelemetry-target-allocator-rhel9@sha256:1f2fa60e00be441f5c7fbd94bf2087744cac7d69a214af562e512cd660e24a2e",
+      "state": "passed",
+      "manifest": "registry.redhat.io/rhosdt/opentelemetry-target-allocator-rhel9@sha256:1e782dca55b89b72601377cfde4727111bc18df734d513e5b4afd7c3ec33db2c",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T08:52:43.832128+00:00"
+    },
+    {
+      "source": "registry.redhat.io/ubi9/ubi-minimal@sha256:a50731d3397a4ee28583f1699842183d4d24fadcc565c4688487af9ee4e13a44",
+      "state": "passed",
+      "manifest": "registry.redhat.io/ubi9/ubi-minimal@sha256:865c6a875328a1174ff7f17599574412edd327aa47812951b9bead902806dc53",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 1,
+      "checkedAtUTC": "2026-11-17T08:52:52.412672+00:00"
+    },
+    {
+      "source": "registry.redhat.io/web-terminal/web-terminal-exec-rhel9@sha256:ad2e1604e05a84f0a301ea6a6554cb6ef847789bfe635520dbace820fde29f7a",
+      "state": "passed",
+      "manifest": "registry.redhat.io/web-terminal/web-terminal-exec-rhel9@sha256:ad2e1604e05a84f0a301ea6a6554cb6ef847789bfe635520dbace820fde29f7a",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T08:52:52.964422+00:00"
+    },
+    {
+      "source": "registry.redhat.io/web-terminal/web-terminal-operator-bundle@sha256:ba115046327065f2e34fc660e7f68f2418fecea4a07dd7e0c15ec995e4680664",
+      "state": "passed",
+      "manifest": "registry.redhat.io/web-terminal/web-terminal-operator-bundle@sha256:ba115046327065f2e34fc660e7f68f2418fecea4a07dd7e0c15ec995e4680664",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 1,
+      "checkedAtUTC": "2026-11-17T08:52:54.349622+00:00"
+    },
+    {
+      "source": "registry.redhat.io/web-terminal/web-terminal-rhel9-operator@sha256:c2ef5b7773324a0bc4fed27e3527c0f197148a787412d2a913e9757e95c2f55e",
+      "state": "passed",
+      "manifest": "registry.redhat.io/web-terminal/web-terminal-rhel9-operator@sha256:c2ef5b7773324a0bc4fed27e3527c0f197148a787412d2a913e9757e95c2f55e",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T08:52:54.548736+00:00"
+    },
+    {
+      "source": "registry.redhat.io/web-terminal/web-terminal-tooling-rhel9@sha256:0b7f24a14929daef656fbbdb70e55238924057a9cb52234a5fcca8a287e9d0e3",
+      "state": "passed",
+      "manifest": "registry.redhat.io/web-terminal/web-terminal-tooling-rhel9@sha256:0b7f24a14929daef656fbbdb70e55238924057a9cb52234a5fcca8a287e9d0e3",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T08:53:00.166048+00:00"
+    },
+    {
+      "source": "registry.redhat.io/workload-availability/node-healthcheck-must-gather-rhel9@sha256:bc08e3666c1001444ade1f9bf60839b87707241eb9a4a329b1a89edb59726cf9",
+      "state": "passed",
+      "manifest": "registry.redhat.io/workload-availability/node-healthcheck-must-gather-rhel9@sha256:f18a24e561004fc44d499c422d1f211ee2fc44985430f01402b5d1eb1901ab9f",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 5,
+      "checkedAtUTC": "2026-11-17T08:53:05.107614+00:00"
+    },
+    {
+      "source": "registry.redhat.io/workload-availability/node-healthcheck-operator-bundle@sha256:95d4dff3ff77ec14e1c227d0012625c93fa06d4bfdc460c89bb2e74ebfafbb21",
+      "state": "passed",
+      "manifest": "registry.redhat.io/workload-availability/node-healthcheck-operator-bundle@sha256:95d4dff3ff77ec14e1c227d0012625c93fa06d4bfdc460c89bb2e74ebfafbb21",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 1,
+      "checkedAtUTC": "2026-11-17T08:53:01.711739+00:00"
+    },
+    {
+      "source": "registry.redhat.io/workload-availability/node-healthcheck-rhel9-operator@sha256:0860ed471f0cdf7b9b060d231daf744237da0e712ce186a74223cf9925da57eb",
+      "state": "passed",
+      "manifest": "registry.redhat.io/workload-availability/node-healthcheck-rhel9-operator@sha256:eb494655eb30db479de7491e7ac48330c0f609b1e833d64979823a8240fbe9b8",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T08:53:07.613111+00:00"
+    },
+    {
+      "source": "registry.redhat.io/workload-availability/node-remediation-console-rhel9@sha256:3a76b7ca94cea7fd52abde93fb30bdf3359f1445859bee8ecbbb9b32dfb381bb",
+      "state": "passed",
+      "manifest": "registry.redhat.io/workload-availability/node-remediation-console-rhel9@sha256:3c26653d329021916ed720353fc96ef8c5c0fac333982fef3eda4843e2198cf9",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 4,
+      "checkedAtUTC": "2026-11-17T08:53:12.709526+00:00"
+    },
+    {
+      "source": "registry.redhat.io/workload-availability/self-node-remediation-operator-bundle@sha256:94856dec8ef203bc886807235ede572147feb371a1745719a0d978dd4bbf988c",
+      "state": "passed",
+      "manifest": "registry.redhat.io/workload-availability/self-node-remediation-operator-bundle@sha256:94856dec8ef203bc886807235ede572147feb371a1745719a0d978dd4bbf988c",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 1,
+      "checkedAtUTC": "2026-11-17T08:53:10.934457+00:00"
+    },
+    {
+      "source": "registry.redhat.io/workload-availability/self-node-remediation-rhel9-operator@sha256:489275884b17ada9bc4438e647dfba128d79de017b31fe7c24a3c7506de762b9",
+      "state": "passed",
+      "manifest": "registry.redhat.io/workload-availability/self-node-remediation-rhel9-operator@sha256:964fd0b09d65bac0c2de59d8a5656190d3c630ea7fc5ecb1a6fae07c7fc68904",
+      "architecture": "amd64",
+      "os": "linux",
+      "layersHEAD": 2,
+      "checkedAtUTC": "2026-11-17T08:53:18.104115+00:00"
+    }
+  ],
+  "previewLimitations": [
+    "AI support matrix does not list OCP 5.0",
+    "gpu-operator-certified absent from the real v5.0 certified catalog",
+    "ODF root/dependency bundles declare maxOpenShiftVersion=4.23; rejected on OCP 5.0"
+  ]
+}

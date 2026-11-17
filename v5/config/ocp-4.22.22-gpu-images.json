@@ -1,0 +1,9 @@
+{
+  "platformVersion": "4.22.22",
+  "architecture": "amd64",
+  "source": "quay.io/openshift-release-dev/ocp-release@sha256:03bc1715c33a8a6de571bb9845ac07f93eebcc03a5ff6182494fcbb6dfeb49a5",
+  "scope": "Target release Driver Toolkit for NVIDIA conventional driver builds",
+  "images": [
+    "quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:1e3c69574f69a11babcd045c10e2242f1ccd8d161043750366673ef1535296f6"
+  ]
+}
