@@ -26,7 +26,9 @@
 bash v5/prepare-operators.sh
 ```
 
-首层菜单选择“准备完整离线包”，填写保存目录、pull secret 和 oc-mirror 路径；随后搜索 Operator，选择包、channel/version，可重复添加。依赖解析后展示计划，确认后下载。只准备平台、不选 Operator 时，可在首层菜单选择“仅准备平台完整包”，或使用 `--platform-only`。
+首层菜单选择“准备完整离线包”，填写保存目录、pull secret 和 oc-mirror 路径；随后搜索 Operator，选择包、channel/version，可重复添加。选择 OCP-V 后多选系统镜像及 tag/digest，选择 ODF 后确认是否带本地存储组件。依赖解析后展示计划，确认后下载。只准备平台、不选 Operator 时，可在首层菜单选择“仅准备平台完整包”，或使用 `--platform-only`。
+
+完整模式同样接受可重复的 `--guest-image rhel9`、`--guest-image fedora`、`--guest-image centos-stream9` 和 `--guest-image-ref NAME=REGISTRY/REPO:TAG`；ODF 可用 `--no-odf-local-storage` 排除可选 LSO。这些选择随交付计划固定，重试不能悄悄换包，且不能与 `--platform-only` 混用。支持组合、全部预置和来源见 [Operator 与系统镜像](OPERATORS.md)。配置阶段导入后会在 `operators/guest-images-local.json` 写出实际本地系统镜像地址，供后续创建 VM 或注册持久化引导源。
 
 可复用的命令行示例：
 
@@ -108,6 +110,10 @@ AWS 明确由外部规则管理防火墙时可在安装和配置命令末尾增�
 实测范围及仍待验收的复杂组件见 [VALIDATION.md](VALIDATION.md)；Operator 依赖规则与额外镜像要求见 [OPERATORS.md](OPERATORS.md)。
 
 ## 产品清单的交接
+
+AI 新计划默认准备 NFD/NVIDIA/DTK/CUDA 工作台镜像，交互可选择仅 CPU，命令行可用 `--no-ai-nvidia`。GPU 组只核实 4.22.22；5.0 预览不支持该 AI/NVIDIA 组合。完整依赖、常用 Operator 与 Multus 内置范围见 [DEPENDENCIES.md](DEPENDENCIES.md)。
+
+GPU 组的 `00-nfd-subscription.json`、`reference/02-node-feature-discovery.json` 和 `reference/03-nvidia-clusterpolicy.json` 提供分阶段交接。先确认 NFD 标签，再安装 GPU Operator 并审阅 DTK 策略；不自动应用参考 CR。GPU 驱动、可分配资源、CUDA Pod 与 AI hardware profile 需在真实 GPU 节点验收，镜像准备不能替代该步骤。
 
 选中 Virtualization、ACM/MCE 或 LVMS 时，安装后配置还会在 Operator 包的 `product-manifests/` 中生成安装阶段清单：
 

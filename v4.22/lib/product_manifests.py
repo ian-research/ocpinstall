@@ -13,6 +13,8 @@ PRODUCTS = {
     'advanced-cluster-management': ('open-cluster-management', 'OwnNamespace'),
     'rhods-operator': ('redhat-ods-operator', 'AllNamespaces'),
     'lvms-operator': ('openshift-lvm-storage', 'OwnNamespace'),
+    'nfd': ('openshift-nfd', 'OwnNamespace'),
+    'gpu-operator-certified': ('nvidia-gpu-operator', 'OwnNamespace'),
 }
 
 
@@ -119,6 +121,29 @@ def render(plan, resources, destination, availability='High'):
                       'source': source['name'], 'sourceNamespace': source.get('namespace', 'openshift-marketplace'),
                       'installPlanApproval': 'Manual'}}]
     stages['01-subscriptions.json'] = {'apiVersion': 'v1', 'kind': 'List', 'items': subscriptions}
+    if 'gpu-operator-certified' in selected:
+        if 'nfd' not in selected:
+            raise ValueError('NVIDIA 产品清单缺少 NFD，请重新准备完整 GPU 配套包')
+        stages['00-nfd-subscription.json'] = {'apiVersion': 'v1', 'kind': 'List', 'items': [
+            item for item in subscriptions if item['metadata'].get('namespace') == 'openshift-nfd'
+            or (item['kind'] == 'Namespace' and item['metadata']['name'] == 'openshift-nfd')]}
+        discovery = vendor_example(selected['nfd'], 'nfd.openshift.io', 'NodeFeatureDiscovery')
+        discovery['metadata']['namespace'] = 'openshift-nfd'
+        stages['reference/02-node-feature-discovery.json'] = discovery
+        policy = vendor_example(selected['gpu-operator-certified'], 'nvidia.com', 'ClusterPolicy')
+        spec = policy['spec']
+        spec.setdefault('operator', {})['use_ocp_driver_toolkit'] = True
+        spec.setdefault('driver', {}).update(enabled=True, usePrecompiled=False, useNvidiaDriverCRD=False)
+        spec['driver'].setdefault('upgradePolicy', {})['autoUpgrade'] = False
+        for component in ('vgpuManager', 'vgpuDeviceManager', 'sandboxDevicePlugin', 'kataSandboxDevicePlugin',
+                          'vfioManager', 'ccManager', 'gds', 'gdrcopy', 'migManager'):
+            if component in spec:
+                spec[component]['enabled'] = False
+        if 'sandboxWorkloads' in spec:
+            spec['sandboxWorkloads']['enabled'] = False
+        if 'mig' in spec:
+            spec['mig']['strategy'] = 'none'
+        stages['reference/03-nvidia-clusterpolicy.json'] = policy
     if {'rhods-operator', 'lvms-operator'} <= selected.keys():
         stages['00-lvms-subscriptions.json'] = {'apiVersion': 'v1', 'kind': 'List', 'items': [
             item for item in subscriptions if item['metadata'].get('namespace') == 'openshift-lvm-storage'
@@ -174,8 +199,9 @@ def render(plan, resources, destination, availability='High'):
              'MCH 的 MCE 订阅源已固定到本包实际离线目录。']
     if 'kubevirt-hyperconverged' in selected:
         lines += ['', 'Virtualization 基础离线模式关闭公共引导镜像自动导入，避免尝试拉取未准备的 Fedora/CentOS 镜像。',
-                  '包内已镜像的 RHEL 9 container disk 可用于基础 VM；持久化或系统模板需要另外准备存储和引导源。',
-                  '其他系统请在新包中用 --image 准备所需镜像，并把自定义引导源指向实际本地镜像；不要直接重新启用在线默认源。',
+                  ('使用 guest-images-local.json 中实际导入的所选 containerDisk；持久化或系统模板需要另外准备存储和引导源。'
+                   if plan.get('guestImages') else '旧包未记录可选系统镜像；先核对已导入的 RHEL 9 镜像和实际镜像规则，再创建 VM。'),
+                  '其他系统可在新包中用 --guest-image/--guest-image-ref 准备，并把自定义引导源指向实际本地镜像；不要直接重新启用在线默认源。',
                   'HCO 就绪以实际 CRD 的 Available/Progressing/Degraded 条件及组件 Deployment 就绪为准，不依赖不存在的 status.phase。']
     if 'rhods-operator' in selected:
         lines += ['', 'AI 基础范围为 Dashboard 和 CPU Workbenches；清单来自所选固定 bundle 的厂商示例，按其声明选择 API。',
@@ -185,6 +211,14 @@ def render(plan, resources, destination, availability='High'):
                   '审阅并应用 02-ai-cpu-workbenches.json；它关闭其他组件及嵌套的可选功能，等待 DSC Ready 和实际控制器就绪。',
                   '使用真实 IDP 用户登录 Dashboard，创建 CPU Workbench、动态 PVC，验证 Python 执行和重启后的数据保留。',
                   '这些是新安装清单；已有 DSC 时先核对正在使用的功能，不能直接覆盖已有组件配置。']
+    if 'gpu-operator-certified' in selected:
+        lines += ['', '## NVIDIA GPU 配套（参考清单，需审阅后分阶段执行）',
+                  '先应用 00-nfd-subscription.json 并批准固定 CSV，再审阅创建 reference/02-node-feature-discovery.json，确认实际 PCI/GPU 标签。',
+                  '再使用 01 中的 NVIDIA 订阅，等待 GPU CSV Succeeded；审阅 reference/03-nvidia-clusterpolicy.json 后创建 ClusterPolicy。',
+                  '参考策略使用匹配平台的 DTK、常规驱动和容器 GPU；关闭 vGPU、VFIO、GDS、MIG 等可选路径，脚本仅生成参考、不自动应用。',
+                  'DTK ImageStream、构建账户凭据、实际 RHCOS 内核及 GPU 型号/驱动分支需在目标环境核对；本脚本未证明驱动已运行。',
+                  '确认 nvidia-smi、节点 nvidia.com/gpu 可分配资源及实际 CUDA Pod，再为 AI 创建 NVIDIA hardware profile 和 GPU Workbench。',
+                  'GPU 镜像已准备不代表现有 CPU 工作台会自动使用 GPU；vGPU/VM GPU 和预编译驱动需单独方案。']
     if 'lvms-operator' in selected:
         lines += ['', 'LVMS 订阅使用本包实际离线目录和固定 CSV；不会自动创建 LVMCluster 或选择磁盘。',
                   '先逐节点核对可用空白数据盘的身份、容量、文件系统和挂载状态，再按实际 CRD 创建 LVMCluster。',

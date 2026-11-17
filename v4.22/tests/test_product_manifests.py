@@ -23,6 +23,8 @@ class ProductManifestTests(unittest.TestCase):
                     for alias in sorted({'redhat', *aliases.values()})]
         selected = []
         gvks = {'kubevirt-hyperconverged': ('hco.kubevirt.io', 'HyperConverged'),
+                'nfd': ('nfd.openshift.io', 'NodeFeatureDiscovery'),
+                'gpu-operator-certified': ('nvidia.com', 'ClusterPolicy'),
                 'multicluster-engine': ('multicluster.openshift.io', 'MultiClusterEngine'),
                 'advanced-cluster-management': ('operator.open-cluster-management.io', 'MultiClusterHub')}
         for package in packages:
@@ -41,6 +43,13 @@ class ProductManifestTests(unittest.TestCase):
                      'spec': {'applicationsNamespace': 'redhat-ods-applications',
                               'trustedCABundle': {'managementState': 'Managed', 'customCABundle': ''}}}]
                 properties[0]['value']['annotations'] = {'alm-examples': json.dumps(examples)}
+            if package in ('nfd', 'gpu-operator-certified'):
+                group, kind = gvks[package]
+                example = {'apiVersion': group + '/v1', 'kind': kind,
+                           'metadata': {'name': 'vendor-example'}, 'spec': {}}
+                if package == 'gpu-operator-certified':
+                    example['spec'] = {key: {'enabled': True} for key in ('vgpuManager', 'vfioManager', 'gds', 'migManager')}
+                properties[0]['value']['annotations'] = {'alm-examples': json.dumps([example])}
             if package in gvks:
                 group, kind = gvks[package]
                 properties += [{'type': 'olm.gvk', 'value': {'group': group, 'kind': kind, 'version': v}} for v in ('v1beta1', 'v1')]
@@ -64,6 +73,19 @@ class ProductManifestTests(unittest.TestCase):
         self.assertEqual(override['startingCSV'], 'multicluster-engine.v5.0.0')
         self.assertEqual(override['installPlanApproval'], 'Manual')
         self.assertEqual(hub['spec']['availabilityConfig'], 'High')
+
+    def test_gpu_handoff_uses_nfd_and_the_actual_certified_catalog_without_enabling_vm_gpu_features(self):
+        plan, resources = self.fixture(['nfd', 'gpu-operator-certified'],
+            aliases={'gpu-operator-certified': 'certified'})
+        product_manifests.render(plan, resources, self.destination)
+        nfd = json.loads((self.destination / '00-nfd-subscription.json').read_text())
+        self.assertEqual([i['spec']['source'] for i in nfd['items'] if i['kind'] == 'Subscription'], ['offline-redhat'])
+        policy = json.loads((self.destination / 'reference/03-nvidia-clusterpolicy.json').read_text())
+        self.assertTrue(policy['spec']['operator']['use_ocp_driver_toolkit'])
+        self.assertFalse(policy['spec']['driver']['usePrecompiled'])
+        self.assertFalse(policy['spec']['driver']['upgradePolicy']['autoUpgrade'])
+        self.assertFalse(any(policy['spec'][key]['enabled'] for key in ('vgpuManager', 'vfioManager', 'gds', 'migManager')))
+        self.assertFalse((self.destination / '03-nvidia-clusterpolicy.json').exists())
 
     def test_suffix_aliases_point_to_their_own_catalogs(self):
         plan, resources = self.fixture(['advanced-cluster-management', 'multicluster-engine'],

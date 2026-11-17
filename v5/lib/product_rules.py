@@ -4,13 +4,61 @@ from pathlib import Path
 
 LIFECYCLE = 'https://access.redhat.com/support/policy/updates/openshift_operators'
 AI_SUPPORT = 'https://access.redhat.com/articles/rhoai-supported-configs'
+ODF_SOURCE = 'https://docs.redhat.com/en/documentation/red_hat_openshift_data_foundation/4.22/html/planning_your_deployment/disconnected-environment_rhodf'
+GPU_SUPPORT = 'https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/26.7/platform-support.html'
+# Both catalogs carry ODF 4.22, but its maxOpenShiftVersion=4.23 excludes OCP 5.
+# Match the complete ODF release, including its suffix, on the verified platform.
+ODF_PACKAGES = (
+    'odf-operator', 'odf-dependencies', 'ocs-operator', 'mcg-operator',
+    'odf-csi-addons-operator', 'ocs-client-operator', 'odf-prometheus-operator',
+    'recipe', 'rook-ceph-operator', 'cephcsi-operator',
+    'odf-external-snapshotter-operator', 'ocs-tls-profiles',
+)
+
+
+def odf_option(args, selections, interactive=False, prompt=None):
+    chosen = any(package_of(s) == 'odf-operator' for s in selections)
+    option = getattr(args, 'odf_local_storage', None)
+    if not chosen:
+        if option is not None:
+            raise ValueError('--odf-local-storage/--no-odf-local-storage 需要选择 odf-operator')
+        return False
+    if option is None and interactive:
+        answer = prompt('ODF 是否使用本地数据盘，并下载 Local Storage Operator？yes/no', 'yes')
+        if answer not in ('yes', 'no'):
+            raise ValueError('ODF 本地存储选项必须为 yes 或 no')
+        option = answer == 'yes'
+    return True if option is None else option
+
+
+def add_package(catalogs, selections, preferred_alias, package, version=None):
+    existing = [s for s in selections if package_of(s) == package]
+    if existing:
+        if len(existing) != 1:
+            raise ValueError('请为配套包选择唯一的目录/channel: ' + package)
+        spec = existing[0]
+    else:
+        aliases = sorted(a for a, p in catalogs.packages if p == package)
+        if preferred_alias in aliases:
+            alias = preferred_alias
+        elif len(aliases) == 1:
+            alias = aliases[0]
+        else:
+            raise ValueError('缺少或无法唯一定位配套包，请补充目录并明确选择: ' + package)
+        spec = alias + '/' + package + ('=' + version if version else '')
+        selections.append(spec)
+    root = catalogs.root(spec)
+    bundle = catalogs.bundles[next(iter(root['allowed']))]
+    if version and bundle['version'] != version:
+        raise ValueError(f'ODF 配套包 {package} 必须与主包版本 {version} 一致；当前为 {bundle["version"]}')
+    return bundle
 
 
 def package_of(selection):
     return selection.split('/', 1)[-1].split(':', 1)[0].split('=', 1)[0]
 
 
-def expand(catalogs, selections, target):
+def expand(catalogs, selections, target, guest_images=None, odf_local_storage=True):
     result = list(selections)
     requirements, images = [], []
     minor = target.rsplit('.', 1)[0]
@@ -23,15 +71,79 @@ def expand(catalogs, selections, target):
         if package == 'kubevirt-hyperconverged':
             if family != minor:
                 raise ValueError(f'Virtualization {version} 不属于 OpenShift {minor} 的官方支持组合；请改选对应版本/channel')
-            images.append('registry.redhat.io/rhel9/rhel-guest-image:latest')
+            images += (['registry.redhat.io/rhel9/rhel-guest-image:latest']
+                       if guest_images is None else guest_images)
             requirements.append({'product': 'virtualization', 'version': version,
-                'scope': '基础虚拟机；包含 HCO relatedImages 和 RHEL 9 guest container disk',
+                'scope': '基础虚拟机镜像准备；包含 HCO relatedImages 和所选 container disk',
                 'bootSourcePolicy': 'manual-offline',
                 'prerequisites': ['需在平台工作负载之外为控制组件和虚拟机预留 CPU/内存；多组件同时部署需叠加资源预算',
                     '节点具有可用 /dev/kvm；实际创建 VM 验证硬件虚拟化',
-                    '基础清单关闭公共引导源自动导入；Fedora/CentOS 等系统需另行镜像并配置本地引导源',
+                    '基础清单关闭公共引导源自动导入；所选系统归档后仍需配置本地引导源或使用本地 containerDisk 地址',
                     '持久化 VM 需相应 StorageClass；NMState/SR-IOV/MetalLB 按所选网络功能另选'],
                 'supportSource': LIFECYCLE})
+        elif package == 'mtv-operator':
+            supported = {'4.22': ('2.12', '5.0'), '5.0': ('5.0',)}
+            if family not in supported.get(minor, ()):
+                raise ValueError(f'MTV {version} / OpenShift {minor} 不在当前已核实的下载组合中')
+            requirements.append({'product': 'mtv', 'version': version,
+                'scope': 'MTV Operator、bundle 和全部 relatedImages；仅准备镜像',
+                'prerequisites': ['目标端须另行安装兼容的 OpenShift Virtualization；如需一起交付，请同时选择 kubevirt-hyperconverged',
+                    'VMware VDDK 不包含在 Operator 镜像中；需要时自行取得 SDK、构建私有镜像并通过 --image 一并准备',
+                    '不创建迁移源、网络/存储映射或迁移任务；源平台、权限和 VDDK 要求按迁移场景另行核对'],
+                'supportSource': LIFECYCLE})
+        elif package == 'odf-operator':
+            if family != '4.22' or minor != '4.22':
+                raise ValueError(f'ODF {version} / OpenShift {minor} 的兼容下载组合尚未核实；当前 5.0 目录中的 ODF 4.22 声明最高 OpenShift 4.23，不能用于 5.0 计划')
+            alias = selection.split('/', 1)[0]
+            for dependency in ODF_PACKAGES:
+                add_package(catalogs, result, alias, dependency, version)
+            if odf_local_storage:
+                storage = add_package(catalogs, result, alias, 'local-storage-operator')
+                if '.'.join(storage['version'].split('.')[:2]) != minor:
+                    raise ValueError('Local Storage Operator 版本必须匹配目标 OpenShift 版本')
+            requirements.append({'product': 'odf', 'version': version,
+                'scope': 'ODF 完整配套 Operator、bundle 和 relatedImages；仅准备镜像',
+                'downloadPackages': list(ODF_PACKAGES) + (['local-storage-operator'] if odf_local_storage else []),
+                'localStorageIncluded': odf_local_storage,
+                'prerequisites': ['ODF 配套包锁定与主包完全相同的版本，包含 odf-dependencies 声明的 TLS 等依赖',
+                    '本地盘模式额外准备匹配平台版本的 Local Storage Operator；动态/外部存储可显式选择不包含',
+                    '不创建 StorageCluster、不选择或初始化磁盘；实际部署时另行核对支持组合、拓扑和容量',
+                    '灾备/多集群组件不在基础下载组内，需要时另外选择对应 Operator'],
+                'supportSource': ODF_SOURCE})
+        elif package == 'node-healthcheck-operator':
+            providers = {'self-node-remediation', 'fence-agents-remediation', 'machine-deletion-remediation'}
+            if not any(package_of(s) in providers for s in result):
+                add_package(catalogs, result, selection.split('/', 1)[0], 'self-node-remediation')
+            requirements.append({'product': 'node-healthcheck', 'version': version,
+                'scope': '节点健康检测与所选修复提供者的镜像准备；默认配套 Self Node Remediation',
+                'prerequisites': ['安装 Operator 后仍需创建并审阅 NodeHealthCheck 与 remediation template；本脚本不触发节点重启或修复',
+                    '如显式选择 FAR 或 Machine Deletion Remediation，则保留该选择；硬件隔离/看门狗/控制平面仲裁要求需按拓扑核对'],
+                'supportSource': 'https://docs.redhat.com/en/documentation/workload_availability_for_red_hat_openshift/4.22-0'})
+        elif package == 'gpu-operator-certified':
+            if family != '26.7' or minor != '4.22':
+                raise ValueError('已核实的 NVIDIA GPU Operator 26.7 支持到 OCP 4.22；5.0 certified 目录无此包，不能借用 4.22 组合')
+            add_package(catalogs, result, selection.split('/', 1)[0], 'nfd')
+            path = Path(__file__).resolve().parent.parent / f'config/ocp-{target}-gpu-images.json'
+            if not path.is_file():
+                raise ValueError(f'GPU Driver Toolkit 尚未核实目标补丁 {target}；请先核对该平台实际发布镜像')
+            toolkit = json.loads(path.read_text())
+            if toolkit.get('platformVersion') != target or toolkit.get('architecture') != 'amd64':
+                raise ValueError('GPU Driver Toolkit 清单与目标平台/架构不一致')
+            declared = {i['name']: i['image'] for i in bundle.get('relatedImages', [])}
+            if not declared.get('driver-image'):
+                raise ValueError('NVIDIA bundle 缺少默认 driver-image，不能声称已准备驱动')
+            images += toolkit['images']
+            requirements.append({'product': 'nvidia-gpu', 'version': version,
+                'scope': 'NFD、GPU Operator、全部官方 relatedImages 和匹配平台 DTK；基础容器 GPU/默认驱动路径',
+                'driverMode': 'openshift-driver-toolkit', 'defaultDriverImage': declared['driver-image'],
+                'driverToolkitImageSource': toolkit['source'], 'driverToolkitImages': toolkit['images'],
+                'prerequisites': ['需要真正可用的受支持 NVIDIA GPU；按 GPU 型号选择受支持驱动分支，不代表当前机器已具备 GPU 功能',
+                    '先创建 NodeFeatureDiscovery 并确认硬件标签，再安装 GPU Operator/ClusterPolicy，保持 use_ocp_driver_toolkit=true',
+                    'OCP 4.22 常规驱动使用 rhel9.8 后缀，不能套用旧版 rhcos4.18/rhel9.6；DTK 必须匹配实际运行内核',
+                    '离线集群的 driver-toolkit ImageStream、镜像规则、构建服务账户凭据和本地仓库信任需就绪',
+                    '本轮只验证镜像准备；须另验 nvidia-smi、nvidia.com/gpu allocatable 和真实 CUDA 工作负载',
+                    'vGPU、GDS、RDMA、自定义/预编译驱动需另外准备许可、内核镜像或网络配套，不属于此基础路径'],
+                'supportSource': GPU_SUPPORT})
         elif package == 'advanced-cluster-management':
             if family != '5.0':
                 raise ValueError('自动业务依赖规则当前只覆盖 ACM 5.0 + MCE 5.0；其他组合请先补充并验证版本规则')
@@ -65,7 +177,12 @@ def expand(catalogs, selections, target):
             if gateway.get('platformVersion') != target or gateway.get('architecture') != 'amd64':
                 raise ValueError('AI 网关镜像清单与目标平台或架构不一致')
             images += runtime['images'] + gateway['images']
-            requirements.append({'product': 'ai', 'version': version, 'scope': 'Dashboard + CPU Workbenches',
+            gpu = any(package_of(s) == 'gpu-operator-certified' for s in result)
+            if gpu:
+                cuda = json.loads((Path(__file__).resolve().parent.parent / f'config/ai-{version}-nvidia-images.json').read_text())
+                images += cuda['images']
+            requirements.append({'product': 'ai', 'version': version,
+                'scope': 'Dashboard + CPU/NVIDIA CUDA Workbenches 镜像准备' if gpu else 'Dashboard + CPU Workbenches',
                 'runtimeImageSource': runtime['source'], 'supportSource': AI_SUPPORT,
                 'gatewayRuntimeImageSource': gateway['source'], 'gatewayPlatformVersion': target,
                 'gatewayRuntimeImages': gateway['images'],
@@ -73,5 +190,8 @@ def expand(catalogs, selections, target):
                     'SNO 按官方要求至少 32 CPU/128 GiB；另需默认动态 StorageClass 和真实 IDP 用户',
                     'KServe 需 cert-manager；训练/KubeRay 需 Kueue；Trainer 另需 JobSet',
                     'llm-d 需 Connectivity Link 和 LWS；GPU、对象存储、模型数据需按实际功能另外准备'],
-                'excludedFeatures': ['GPU', 'KServe/model serving', 'distributed training', 'llm-d', 'RAG']})
+                'nvidiaImagesIncluded': gpu,
+                'acceleratorImageSource': cuda['source'] if gpu else None,
+                'excludedFeatures': ([] if gpu else ['GPU']) + ['KServe/model serving', 'distributed training', 'llm-d', 'RAG'],
+                'acceleratorScope': 'NVIDIA CUDA/Python 3.12 工作台镜像准备；硬件、驱动及 GPU 工作台运行尚未验收' if gpu else 'CPU only'})
     return result, sorted(set(images)), requirements

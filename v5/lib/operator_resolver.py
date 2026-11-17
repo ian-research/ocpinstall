@@ -71,6 +71,7 @@ def required(bundle):
 class Catalogs:
     def __init__(self, sources, semantics, target_version=None):
         target_version = target_version or operator_profile.release()
+        self.target_version = target_version
         self.sources = sources
         self.semantics = semantics
         self.packages, self.channels, self.bundles = {}, {}, []
@@ -110,6 +111,7 @@ class Catalogs:
             bundle['preferredChannel'] = (package['defaultChannel'] if package['defaultChannel'] in bundle['channels']
                                           else bundle['channels'][0])
         self.bundles = [b for b in self.bundles if b['channels']]
+        self.bundle_versions = {(b['alias'], b['name']): b['version'] for b in self.bundles}
         self.incompatible = {}
         for b in self.bundles:
             for prop in b.get('properties', []):
@@ -166,6 +168,13 @@ class Catalogs:
             allowed = {i for i, b in enumerate(self.bundles) if b['alias'] == alias and b['package'] == package
                        and channel in b['channels'] and b['version'] == version}
         if len(allowed) != 1:
+            blocked = {maximum for (a, name), maximum in self.incompatible.items()
+                       if a == alias and name in (entries if version else heads)
+                       and (not version or self.bundle_versions[(a, name)] == version)}
+            if not allowed and blocked:
+                raise ValueError(f'{spec}: 没有兼容目标 OpenShift {self.target_version} 的 bundle；'
+                                 '目录声明的 maxOpenShiftVersion=' + ', '.join(sorted(blocked)) +
+                                 '。目录中可见不代表兼容，未生成下载计划。')
             raise ValueError(f'{spec}: 不能唯一定位 bundle，请核对版本和目录')
         return {'selection': spec, 'channel': channel, 'allowed': allowed}
 

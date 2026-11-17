@@ -183,6 +183,16 @@ class OperatorResolverTests(unittest.TestCase):
         data = {'a': package('root') + package('old', extra={'1.0.0': [{'type': 'olm.maxOpenShiftVersion', 'value': 4.8}]})}
         self.assertEqual(len(self.solve(data)), 1)
 
+    def test_incompatible_catalog_reports_platform_limit_without_masking_a_version_typo(self):
+        catalog = self.catalog({'a': package('root', extra={'1.0.0': [
+            {'type': 'olm.maxOpenShiftVersion', 'value': '4.21'}]})})
+        with self.assertRaisesRegex(ValueError, 'maxOpenShiftVersion=4.21'):
+            catalog.root('a/root')
+        with self.assertRaisesRegex(ValueError, 'maxOpenShiftVersion=4.21'):
+            catalog.root('a/root=1.0.0')
+        with self.assertRaisesRegex(ValueError, '不能唯一定位'):
+            catalog.root('a/root=9.9.9')
+
     def test_search_limit_is_distinct_from_unsatisfiable(self):
         catalog = self.catalog({'a': package('root', dependencies={'1.0.0': [pkg('provider')]}) + package('provider')})
         with self.assertRaisesRegex(ValueError, '超过上限'):
@@ -217,6 +227,11 @@ class OperatorBundleTests(unittest.TestCase):
             self.plan['selected'][0]['catalog'] = alias
             catalog = operators.image_config(self.plan)['mirror']['operators'][0]
             self.assertNotIn(catalog['targetTag'], catalog['targetCatalog'])
+
+    def test_nvidia_tag_and_digest_reference_keeps_the_digest_archive_tag(self):
+        digest = 'sha256:' + 'c' * 64
+        repository, tag, expected = operator_archive.image_tag('nvcr.io/nvidia/gpu-operator:v26.7.2@' + digest)
+        self.assertEqual((repository, tag, expected), ('nvidia/gpu-operator', digest.replace(':', '-'), digest))
 
     def test_plan_integrity_and_different_plan_rejected(self):
         operators.save_plan(self.bundle, self.plan)

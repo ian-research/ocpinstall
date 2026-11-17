@@ -78,6 +78,8 @@ class DeliveryTests(unittest.TestCase):
                     'lib/offline.py': '# public code', 'config/versions.sh': '# public profile',
                     'RHEL10-HELPER.md': 'public Helper guide',
                     'config/ocp-4.22.22-gateway-images.json': '{"images": []}',
+                    'config/ocp-4.22.22-gpu-images.json': '{"images": []}',
+                    'config/ai-3.5.2-nvidia-images.json': '{"images": []}',
                     'pull-secret.json': 'fixture credential', 'notes.md': 'fixture private note',
                     'config/auth.json': 'fixture credential', 'lib/auth.json': 'fixture credential'}
         for name, content in contents.items():
@@ -88,7 +90,8 @@ class DeliveryTests(unittest.TestCase):
             delivery.snapshot_scripts(self.root)
         copied = {str(p.relative_to(self.root / 'scripts')) for p in (self.root / 'scripts').rglob('*') if p.is_file()}
         self.assertEqual(copied, {'install-cluster.sh', 'README.md', 'lib/offline.py', 'config/versions.sh',
-                                 'RHEL10-HELPER.md', 'config/ocp-4.22.22-gateway-images.json'})
+                                 'RHEL10-HELPER.md', 'config/ocp-4.22.22-gateway-images.json',
+                                 'config/ocp-4.22.22-gpu-images.json', 'config/ai-3.5.2-nvidia-images.json'})
 
     def test_snapshot_rejects_destination_symlink_before_writing(self):
         outside = self.root.parent / 'outside'
@@ -178,6 +181,46 @@ class DeliveryTests(unittest.TestCase):
                     delivery.main()
             tools.assert_not_called()
         self.assertFalse((self.root / 'delivery-plan.json').exists())
+
+    def test_complete_delivery_forwards_guest_and_storage_choices_to_plan_and_export(self):
+        auth = self.root.parent / 'auth.json'
+        auth.write_text('{"auths":{"registry.test":{"auth":"fixture"}}}')
+        command = ['delivery.py', 'export', '--bundle', str(self.root), '--authfile', str(auth),
+                   '--select', 'redhat/odf-operator', '--guest-image', 'rhel9',
+                   '--guest-image-ref', 'custom=registry.test/guests/os:9', '--no-odf-local-storage', '--no-ai-nvidia']
+        def run(command):
+            if 'prepare-operators.sh' in str(command[1]) and command[2] == 'export':
+                (self.root / 'operators').mkdir()
+                offline.save_json(self.root / 'operators/checksums.json', {})
+        with patch.object(delivery.sys, 'argv', command), patch.object(delivery.sys, 'platform', 'linux'), \
+             patch.object(delivery.sys.stdin, 'isatty', return_value=False), \
+             patch.object(delivery, 'prepare_tools'), patch.object(delivery, 'prepare_boot'), \
+             patch.object(delivery, 'prepare_helper'), patch.object(delivery, 'snapshot_scripts'), \
+             patch.object(delivery, 'seal'), patch.object(delivery, 'run', side_effect=run) as execute:
+            delivery.main()
+        commands = [c.args[0] for c in execute.call_args_list if 'prepare-operators.sh' in str(c.args[0][1])]
+        self.assertEqual([c[2] for c in commands], ['plan', 'export'])
+        for command in commands:
+            self.assertEqual(command[command.index('--guest-image') + 1], 'rhel9')
+            self.assertEqual(command[command.index('--guest-image-ref') + 1], 'custom=registry.test/guests/os:9')
+            self.assertIn('--no-odf-local-storage', command)
+            self.assertIn('--no-ai-nvidia', command)
+        intent = json.loads((self.root / 'delivery-plan.json').read_text())
+        self.assertEqual(intent['guestImages'], ['rhel9'])
+        self.assertFalse(intent['odfLocalStorage'])
+
+    def test_platform_only_rejects_operator_options_before_downloading_tools(self):
+        auth = self.root.parent / 'auth.json'
+        auth.write_text('{"auths":{"registry.test":{"auth":"fixture"}}}')
+        for option in [['--guest-image', 'fedora'], ['--no-odf-local-storage'], ['--ai-nvidia']]:
+            command = ['delivery.py', 'export', '--bundle', str(self.root), '--authfile', str(auth),
+                       '--platform-only'] + option
+            with patch.object(delivery.sys, 'argv', command), patch.object(delivery.sys, 'platform', 'linux'), \
+                 patch.object(delivery.sys.stdin, 'isatty', return_value=False), \
+                 patch.object(delivery, 'prepare_tools') as tools:
+                with self.assertRaisesRegex(ValueError, '不能与 --platform-only'):
+                    delivery.main()
+                tools.assert_not_called()
 
     def test_installer_uses_relative_platform_and_helper_locations(self):
         args = SimpleNamespace(action='install', state_root=str(self.root.parent / 'private-state'), script_args=['--skip-firewalld'])

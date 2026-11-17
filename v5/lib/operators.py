@@ -19,6 +19,7 @@ import operator_profile
 import operator_archive
 import fcntl
 import product_rules
+import guest_images
 
 DEFAULT_CATALOG = 'registry.redhat.io/redhat/redhat-operator-index:v' + operator_profile.release().rsplit('.', 1)[0]
 NAME = re.compile(r'[a-z0-9][a-z0-9-]{0,30}')
@@ -141,8 +142,9 @@ def load_plan(bundle):
 
 def show_plan(plan):
     print('\n下载计划（平台镜像不重复下载）：')
+    requested = {product_rules.package_of(s) for s in plan.get('requestedRoots', plan['roots'])}
     for item in plan['selected']:
-        reason = '手动选择' if item['requested'] else '自动补齐依赖'
+        reason = '手动选择' if item['package'] in requested else '自动补齐依赖/产品配套包'
         print(f'  {item["catalog"]}/{item["package"]}:{item["channel"]} = {item["version"]}  [{reason}]')
         for requirement in item['dependencies']:
             print('    依赖 ' + json.dumps(requirement['constraint'], ensure_ascii=False) +
@@ -152,6 +154,8 @@ def show_plan(plan):
         print('组件范围：' + product['product'] + ' ' + product['version'] + ' — ' + product['scope'])
         for requirement in product['prerequisites']:
             print('  前提：' + requirement)
+    for guest in plan.get('guestImages', []):
+        print('虚拟机系统镜像：' + guest['name'] + ' → ' + guest['image'])
     print(f'附加运行镜像：{len(plan["additionalImages"])} 个')
     print('自动解析范围为目录声明的依赖和 relatedImages；厂商未声明的外部服务、授权和运行时镜像需补充。')
 
@@ -164,6 +168,8 @@ def interactive_selections(catalogs):
             if not selections:
                 raise ValueError('至少选择一个 Operator')
             return selections
+        if term.lower() == 'multus':
+            print('Multus 由平台的 Cluster Network Operator 管理，完整平台镜像包已包含；无需另装同名 Operator。桥接网络配置可按需选择 kubernetes-nmstate-operator。')
         matches = sorted((a, p) for a, p in catalogs.packages if term == '*' or term.lower() in p.lower())
         for index, (alias, package) in enumerate(matches, 1):
             print(f'  {index}. {alias}/{package}  默认 channel: {catalogs.packages[(alias, package)]["defaultChannel"]}')
@@ -196,6 +202,40 @@ def interactive_selections(catalogs):
             selections.append(spec)
 
 
+def ai_nvidia_selection(args, sources, catalogs, selections, semantic, auth, bundle, cache, interactive):
+    ai = any(product_rules.package_of(s) == 'rhods-operator' for s in selections)
+    option = getattr(args, 'ai_nvidia', None)
+    if not ai:
+        if option is not None:
+            raise ValueError('--ai-nvidia/--no-ai-nvidia 需要选择 rhods-operator')
+        return catalogs, selections, auth, False
+    if args.target_version.rsplit('.', 1)[0] != '4.22':
+        raise ValueError('当前官方 AI/NVIDIA 支持组合未核实 OpenShift 5.0；请使用 4.22 入口')
+    if option is None and interactive:
+        answer = prompt('AI 是否准备 NVIDIA GPU 配套（NFD、GPU Operator、DTK 和 CUDA 工作台镜像）？yes/no', 'yes')
+        if answer not in ('yes', 'no'):
+            raise ValueError('AI NVIDIA 选项必须为 yes 或 no')
+        option = answer == 'yes'
+    enabled = True if option is None else option
+    if enabled and not any(product_rules.package_of(s) == 'gpu-operator-certified' for s in selections):
+        aliases = sorted(a for a, p in catalogs.packages if p == 'gpu-operator-certified')
+        if not aliases:
+            alias = 'nvidia-certified'
+            if alias in {s['alias'] for s in sources}:
+                raise ValueError('nvidia-certified 别名已被占用；请明确加入包含 gpu-operator-certified 的 certified 目录')
+            if auth is None:
+                if not args.authfile and interactive:
+                    args.authfile = prompt('pull secret / registry auth JSON 路径')
+                auth = offline.auth_file(args, bundle)
+            sources.append(cached_catalog(alias, 'registry.redhat.io/redhat/certified-operator-index:v4.22', auth, cache))
+            catalogs = Catalogs(sources, semantic, args.target_version)
+            aliases = [alias]
+        if len(aliases) != 1:
+            raise ValueError('多个目录包含 NVIDIA GPU Operator，请显式 --select 选择目录/channel')
+        selections = [*selections, aliases[0] + '/gpu-operator-certified:v26.7']
+    return catalogs, selections, auth, enabled
+
+
 def prepare(args, bundle, cache, interactive):
     metadata = dict(item.split('=', 1) for item in args.catalog_metadata)
     choices = args.catalog
@@ -224,15 +264,29 @@ def prepare(args, bundle, cache, interactive):
     try:
         catalogs = Catalogs(sources, semantic, args.target_version)
         print(f'已读取 {len(catalogs.packages)} 个包、{len(catalogs.bundles)} 个 bundle；排除 {len(catalogs.incompatible)} 个声明不支持目标版本的 bundle')
-        selections = args.select or (interactive_selections(catalogs) if interactive else [])
+        selections = list(args.select or (interactive_selections(catalogs) if interactive else []))
         if not selections:
             raise ValueError('非交互模式请通过 --select 指定至少一个 Operator')
         requested = list(selections)
-        selections, runtime_images, requirements = product_rules.expand(catalogs, selections, args.target_version)
+        catalogs, selections, auth, ai_nvidia = ai_nvidia_selection(
+            args, sources, catalogs, selections, semantic, auth, bundle, cache, interactive)
+        specifications = guest_images.inputs(args,
+            virtualization=any(product_rules.package_of(s) == 'kubevirt-hyperconverged' for s in selections),
+            interactive=interactive, prompt=prompt)
+        local_storage = product_rules.odf_option(args, selections, interactive, prompt)
+        selections, runtime_images, requirements = product_rules.expand(
+            catalogs, selections, args.target_version,
+            guest_images=[], odf_local_storage=local_storage)
         roots = [catalogs.root(s) for s in selections]
         provided = json.loads(Path(args.provided_apis).expanduser().read_text()) if args.provided_apis else []
         resolver = Resolver(catalogs, provided, args.max_states)
         selected = resolver.solve(roots)
+        if specifications and auth is None:
+            if not args.authfile and interactive:
+                args.authfile = prompt('pull secret / registry auth JSON 路径')
+            auth = offline.auth_file(args, bundle)
+        guests = guest_images.pin(specifications, auth)
+        runtime_images = sorted(set(runtime_images + [g['image'] for g in guests]))
         if interactive and not args.image:
             extra = prompt('额外运行时镜像（可选，多个用逗号分隔，回车跳过）', '')
             args.image = [image.strip() for image in extra.split(',') if image.strip()]
@@ -249,6 +303,8 @@ def prepare(args, bundle, cache, interactive):
                 'catalogs': [{k: s[k] for k in ('alias', 'source', 'pinned')} for s in sources],
                 'roots': selections, 'selected': resolver.plan(roots, selected), 'providedAPIs': provided,
                 'requestedRoots': requested, 'requestedImages': requested_images,
+                'guestImageInputs': specifications, 'guestImages': guests,
+                'downloadOptions': {'odfLocalStorage': local_storage, 'aiNvidia': ai_nvidia},
                 'productRequirements': requirements,
                 'additionalImages': sorted(set(args.image)), 'archiveSize': args.archive_size}
         for image in plan['additionalImages']:
@@ -273,6 +329,11 @@ def main():
     parser.add_argument('--provided-apis', help='目标集群预置 API JSON 数组：group/version/kind；必须在目标离线集群同样存在')
     parser.add_argument('--target-version', default=operator_profile.release())
     parser.add_argument('--image', action='append', default=[], help='额外 operand 镜像；可重复')
+    guest_images.add_arguments(parser)
+    parser.add_argument('--ai-nvidia', action=argparse.BooleanOptionalAction, default=None,
+                        help='新 AI 计划默认包含 NFD/NVIDIA GPU 配套；仅 CPU 用 --no-ai-nvidia')
+    parser.add_argument('--odf-local-storage', action=argparse.BooleanOptionalAction, default=None,
+                        help='ODF 是否附带 Local Storage Operator；默认包含，动态/外部存储可用 --no-odf-local-storage')
     parser.add_argument('--archive-size', type=int, default=20)
     parser.add_argument('--cache-dir', help='独立缓存，默认 下载目录-cache')
     parser.add_argument('--registry', help='导入目标 hostname[:port]/project')
@@ -315,6 +376,7 @@ def main():
             cache.mkdir(parents=True, exist_ok=True)
             if (bundle / 'operators-plan.json').is_file():
                 plan = load_plan(bundle)
+                guest_images.validate_saved_options(args, plan)
                 if args.select and args.select != plan.get('requestedRoots', plan['roots']):
                     raise ValueError('已有不同选择，请使用新离线包目录')
                 if args.target_version != plan['targetVersion'] or (args.image and args.image != plan.get('requestedImages', plan['additionalImages'])):
@@ -352,7 +414,14 @@ def main():
             if not args.registry and interactive:
                 args.registry = prompt('导入目标 hostname:port/project')
             args.cache_dir = str(cache / 'mirror' / plan['planHash'] / 'import')
+            report = bundle / 'guest-images-local.json'
+            if plan.get('guestImages') and not args.dry_run:
+                report.unlink(missing_ok=True)
             offline.mirror(args, bundle, False, config, cwd=bundle)
+            if plan.get('guestImages') and not args.dry_run:
+                sources = guest_images.local_sources(plan, bundle / 'images/working-dir/cluster-resources', args.registry)
+                offline.save_json(report, sources)
+                print('虚拟机系统镜像的本地 Harbor 地址已写入 guest-images-local.json；尚未创建 VM 或导入磁盘。')
             print('下一步：审阅 images/working-dir/cluster-resources，再按 README 配合 setup-cluster.sh 应用。')
 
 
